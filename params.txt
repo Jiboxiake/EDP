@@ -1,0 +1,8 @@
+//raw specifies the input csv graph file
+//indexbase specifies the base name of the indexed point-to-point distances
+//bridgebase specifies the name of the node-to-bridges distances
+//algorithm: EdgeDisjointIndex
+raw, dc/dcgraph.csv
+indexbase, index/graph
+bridgebase, index/tobridge
+algorithm, EdgeDisjointIndex
