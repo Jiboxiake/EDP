@@ -58,7 +58,7 @@ public class BridgeEdgesComputationThread extends Thread
 						{
 							sourceVertex.lock.lock();
 							//partition.addToBridgeEdge(this.fromVertexId, (int)toDist.VertexID, toDist.Distance);
-							partition.addToBridgeEdge(this.fromVertexId, (int)toDist.VertexID, toDist);
+							partition.addToBridgeEdge(this.fromVertexId, (int)toDist.VertexID, toDist);//todo: in DO we can keep creating DO from this source vertex.
 							sourceVertex.numOfBridgeEdgesComputed++;
 							sourceVertex.bridgeEdgeAdded.signalAll();
 						} catch (ObjectNotFoundException e1) {

@@ -4,6 +4,7 @@ import java.util.HashMap;
 
 public class PartitionConnectedComponents 
 {
+	//todo: add local varibale distance oracle
 	public PartitionConnectedComponents(int initialNumOfComponents, Partition partition)
 	{
 		numOfConnectedComponents = initialNumOfComponents;

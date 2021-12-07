@@ -38,14 +38,14 @@ public class EdgeDisjointIndex
 		File file = new File(indexFolder);
         File[] files = file.listFiles();
         int numOfFiles = 0;
-        for (File f:files) 
-        {
-        	if (f.isFile() && f.exists())
-        	{
-        		f.delete();
-        		numOfFiles++;
-        	}
-        }
+		if(files!=null) {
+			for (File f : files) {
+				if (f.isFile() && f.exists()) {
+					f.delete();
+					numOfFiles++;
+				}
+			}
+		}
 		System.out.println("Contents of " + indexFolder + " were deleted (" + numOfFiles + ").");
 		long startTime = System.currentTimeMillis();
 		EdgeDisjointIndex index = new EdgeDisjointIndex(graph.Labels.size());

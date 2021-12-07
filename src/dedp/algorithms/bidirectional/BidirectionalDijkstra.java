@@ -87,7 +87,7 @@ public class BidirectionalDijkstra
 							fPQ.add(toDist);
 						}
 						//when scanning an arc (u, w) in the forward search and w is scanned in
-						//the reverse search, update µ if df(v) + d(v, w) + dr(w) < µ
+						//the reverse search, update ï¿½ if df(v) + d(v, w) + dr(w) < ï¿½
 						if (uDist.Distance + e.getWeight() +  getDist(to.getID(), bDistMap) < finalDistance)
 						{
 							finalDistance = uDist.Distance + e.getWeight() +  getDist(to.getID(), bDistMap);
@@ -127,7 +127,7 @@ public class BidirectionalDijkstra
 							bPQ.add(toDist);
 						}
 						//when scanning an arc (u, w) in the forward search and w is scanned in
-						//the reverse search, update µ if df(v) + d(v, w) + dr(w) < µ
+						//the reverse search, update ï¿½ if df(v) + d(v, w) + dr(w) < ï¿½
 						if (uDist.Distance + e.getWeight() +  getDist(to.getID(), fDistMap) < finalDistance)
 						{
 							finalDistance = uDist.Distance + e.getWeight() +  getDist(to.getID(), fDistMap);
@@ -140,7 +140,7 @@ public class BidirectionalDijkstra
 					break;
 				}
 			}
-			//topf + topr >= µ
+			//topf + topr >= ï¿½
 			DistanceFromSource fPeek = fPQ.peek();
 			DistanceFromSource bPeek = bPQ.peek();
 			if(fPeek != null && bPeek != null && fPeek.Distance + bPeek.Distance >= finalDistance)
@@ -161,6 +161,7 @@ public class BidirectionalDijkstra
 		Helper.DebugMsg("Edge disjoint dijkstra: exploring bridge edges = " + (exploringExternalEdgesTime));
 		*/
 		result.TotalProcessingTime = totalEndTime - totalStartTime;
+		//todo: update the distance oracle
 		return result;
 	}
 }

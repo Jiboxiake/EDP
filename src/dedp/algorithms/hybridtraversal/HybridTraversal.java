@@ -224,7 +224,7 @@ public class HybridTraversal
 			}
 			if(destVertex != null && currentPartition.inTheSameComponent(u, destVertex))
 			{
-				weight = currentPartition.getEdgeWeight(uId, destination);
+				weight = currentPartition.getEdgeWeight(uId, destination);//todo: modify getEdgeWeight using distance oracle
 				newDistance = uDist.Distance + weight;
 				//directedPathEntry = currentPartition.getEdgeWeight(uId, destination);
 				//newDistance = uDist.Distance + directedPathEntry.Weight;
@@ -293,12 +293,12 @@ public class HybridTraversal
 			for(i = uDist.OutEdgeIdToProcess; ; i++) //here explore only edges that lead to the external world
 			{
 				//e = toBridgeEdges.get(i);
-				e = currentPartition.getToBridgeEdge(uId, i);
+				e = currentPartition.getToBridgeEdge(uId, i);//todo: check how to use distance oracle for that. A bridge edge maps two sets
 				if(e == null)
 				{
 					break;
 				}
-				toVertex = e.getTo();
+				toVertex = e.getTo();//todo: under DO this is a set of vertices
 				toVertexId = toVertex.getId();
 				
 				if(countOfBridgeEdges == index.MaxToExplore /*&& (i < toBridgeEdgesSizeMinusOne)*/)
@@ -317,7 +317,7 @@ public class HybridTraversal
 				if(newDistance >= bestDistanceSoFar || (toDist != null && (toDist.Distance <= newDistance)))
 				{
 					continue;
-				}
+				}//else, if the new distance is better
 				countOfBridgeEdges++;
 				result.NumberOfExploredEdges++;
 				otherHomes = Helper.intersection(toVertex.OtherHomes, labelIDs);

@@ -480,14 +480,14 @@ public class Partition
 		long representative = LightEdge.getDirectedEdgeRepresentative(from, to);
 		PartitionVertex fromVertex = this.vertexes.get(from);
 		//Float weight = directedEdgeWeights.get(representative);
-		DirectedPathEntry directedPathEntry = directedEdgeWeights.get(representative);
+		DirectedPathEntry directedPathEntry = directedEdgeWeights.get(representative);//todo: in DO this is read from distance oracle
 		
 		//Float weight = directedPathEntry.Weight;
 		if(directedPathEntry == null || (directedPathEntry != null && directedPathEntry.TimeStamp < this.ConnectedComponents.getComponentTimeStamp(fromVertex.ComponentId)))
 		{
 			directedPathEntry = new DirectedPathEntry();
 			directedPathEntry.TimeStamp = ConnectedComponents.advanceTimeStamp();
-			SPResult directedResult = Dijkstra.shortestDistance(this, from, to);
+			SPResult directedResult = Dijkstra.shortestDistance(this, from, to);//Construct directly, we want to store a DO entry then
 			directedPathEntry.Weight = directedResult.Distance;
 			directedPathEntry.PathLength = directedResult.PathLength;
 			
@@ -564,7 +564,7 @@ public class Partition
 				
 				entry.BridgeEdges = toBridgeEdges;
 				entry.TimeStamp = ConnectedComponents.advanceTimeStamp();
-				vertexToBridgeEdges.put(fromVertexId, entry);
+				vertexToBridgeEdges.put(fromVertexId, entry);//todo: the key will be a morton code for DO
 				//while(vertexToBridgeEdges.get(fromVertexId) == null);
 				//debugging
 				//if(Constants.Debug)
