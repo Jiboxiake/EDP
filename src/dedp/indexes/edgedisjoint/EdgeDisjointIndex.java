@@ -71,7 +71,7 @@ public class EdgeDisjointIndex
 			//MSaber: to measure index time only
 			p.loadSavedIndex();
 			connectedCompDiscoverer = new ConnectedComponentsComputation();
-			connectedCompDiscoverer.buildSCC(p);
+			connectedCompDiscoverer.buildSCC(p);//construct connected components of this partition
 			//p.updateToBridgeEdges();
 		}
 		long endTime = System.currentTimeMillis();

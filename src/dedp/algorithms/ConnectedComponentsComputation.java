@@ -34,10 +34,10 @@ public class ConnectedComponentsComputation
     	numOfVertexes = partition.vertexCount();
     	vertexes = new ArrayList<PartitionVertex>(partition.getAllVertexes());
         isVisited = new boolean[numOfVertexes];
-        compIdOfVertex = new int[numOfVertexes]; 
+        compIdOfVertex = new int[numOfVertexes];
         currentComponentId = 0;
         numOfComponents = 0;
-        globalToLocalId = new HashMap<Integer, Integer>(numOfVertexes);
+        globalToLocalId = new HashMap<Integer, Integer>(numOfVertexes);//map global vertex id to local vertex id
         stack = new Stack<PartitionVertex>();
         
         for(int v = 0; v < numOfVertexes; v++)

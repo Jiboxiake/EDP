@@ -201,7 +201,7 @@ public class Partition
 		output.close();
 	}
 	*/
-	
+	//TODO: make this distance oracle entry
 	public void addIndexEntry(int from, int to, DirectedPathEntry entry) throws Exception
 	{
 		//append a line to the end of the file
