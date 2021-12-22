@@ -55,6 +55,8 @@ public class ConnectedComponentsComputation
             	dfs(vertex);
             }
         }
+		//also pass the vertex information into the connected components and construct the DO.
+		HashMap verticesToCC = new HashMap<Integer, HashMap<Integer, PartitionVertex>>();
         partition.ConnectedComponents = new PartitionConnectedComponents(this.NumOfComponents(), partition);
         return this.NumOfComponents();
     }
