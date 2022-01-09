@@ -80,7 +80,7 @@ public class GraphFileIO
 		eReader.close();
 		return graph;
 	}
-	
+	//TODO: rewrite loadPartition
 	public static Partition loadPartition(int label, String edgesFilePath, boolean isDirected, boolean firstRowIsHeader) throws IOException, NumberFormatException, DuplicateEntryException, ObjectNotFoundException
 	{
 		Partition partition = new Partition(label);

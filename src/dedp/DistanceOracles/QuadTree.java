@@ -1,11 +1,14 @@
 package dedp.DistanceOracles;
 
+import dedp.exceptions.ObjectNotFoundException;
+import dedp.indexes.edgedisjoint.Partition;
+import dedp.indexes.edgedisjoint.PartitionVertex;
+
 import java.util.HashMap;
 import java.util.Map;
-
+//todo: implement well-separated pairs
 public class QuadTree {
-    public static int max_depth;
-
+    public static int max_depth=20;
     private QuadTree parent;
     private QuadTree NW;
     private QuadTree NE;
@@ -20,9 +23,9 @@ public class QuadTree {
     private int vertical;
     private int horizontal;
     //todo: set reference to the original Node in EDP.
-    private HashMap <MortonCode, Node> vertices;
+    private HashMap <MortonCode, PartitionVertex> vertices;
 
-    public QuadTree(int top_bound, int bottom_bound, int left_bound, int right_bound, QuadTree parent, int level, HashMap <MortonCode, Node> vertices){
+    public QuadTree(int top_bound, int bottom_bound, int left_bound, int right_bound, QuadTree parent, int level, HashMap <MortonCode, PartitionVertex> vertices){
         this.top_bound=top_bound;
         this.bottom_bound=bottom_bound;
         this.left_bound=left_bound;
@@ -30,16 +33,16 @@ public class QuadTree {
         this.level=level;
         this.parent=parent;
         setMorton();
-        this.vertices=(HashMap <MortonCode, Node>)vertices.clone();
+        this.vertices=(HashMap <MortonCode, PartitionVertex>)vertices.clone();
         if(level<max_depth && vertices.size()>0){
             horizontal = (top_bound-bottom_bound)/2+bottom_bound;
             vertical = (right_bound-left_bound)/2+left_bound;
-            HashMap <MortonCode, Node> TL=new HashMap<>();
-            HashMap <MortonCode, Node> TR=new HashMap<>();
-            HashMap <MortonCode, Node> BL=new HashMap<>();
-            HashMap <MortonCode, Node> BR=new HashMap<>();
-            for(Map.Entry<MortonCode, Node> set: vertices.entrySet()){
-                Node v = set.getValue();
+            HashMap <MortonCode, PartitionVertex> TL=new HashMap<>();
+            HashMap <MortonCode, PartitionVertex> TR=new HashMap<>();
+            HashMap <MortonCode, PartitionVertex> BL=new HashMap<>();
+            HashMap <MortonCode, PartitionVertex> BR=new HashMap<>();
+            for(Map.Entry<MortonCode, PartitionVertex> set: vertices.entrySet()){
+                PartitionVertex v = set.getValue();
                 //check boundaries against what we set
                 int quadrant = classifier(top_bound, horizontal, bottom_bound, left_bound, vertical, right_bound, v);
                 if(quadrant==1){
@@ -60,9 +63,59 @@ public class QuadTree {
         }
     }
 
-    private int classifier (int top, int hor, int bot, int left, int ver, int right, Node v){
-        int x = v.x;
-        int y = v.y;
+    public QuadTree( HashMap <MortonCode, PartitionVertex> vertices){
+        this(Parser.normalizeLat(90.0), Parser.normalizeLat(-90.0), Parser.normalizeLon(-180.0), Parser.normalizeLon(180.0), null,0,vertices);
+    }
+
+    public boolean contain(PartitionVertex v){
+        return vertices.containsKey(v.morton());
+    }
+
+    public PartitionVertex getVertex(MortonCode mc)throws ObjectNotFoundException {
+        PartitionVertex toReturn=vertices.get(mc);
+        if(toReturn==null){
+            throw new ObjectNotFoundException("Vertex with mc: "+mc.morton+" not found");
+        }
+        return toReturn;
+    }
+
+    public QuadTree containingBlock(PartitionVertex v){
+        if(NW!=null){
+            if(NW.contain(v)){
+                return NW;
+            }
+        }
+        if(NE!=null){
+            if(NE.contain(v)){
+                return NE;
+            }
+        }
+        if(SW!=null){
+            if(SW.contain(v)){
+                return SW;
+            }
+        }
+        if(SE!=null){
+            if(SE.contain(v)){
+                return SE;
+            }
+        }
+        return null;
+    }
+
+    public void removal(MortonCode mc){
+        if(vertices.containsKey(mc)){
+            vertices.remove(mc);
+        }
+    }
+    //return whether the quadtree's all vertices are removed
+    public boolean isEmpty(){
+        return vertices.isEmpty();
+    }
+
+    private int classifier (int top, int hor, int bot, int left, int ver, int right, PartitionVertex v){
+        int x = v.longitude;
+        int y = v.latitude;
         assert(x<=top&&x>=bot);
         assert(y>=left&&y<=right);
         boolean isTop = y>(hor+1);
@@ -78,52 +131,56 @@ public class QuadTree {
         }
     }
 
-    public void insert(MortonCode mc, int x, int y){
-        Node v = new Node(x,y);
+    public void insert(PartitionVertex v){
         this.vertices.put(mc, v);
         if(level<max_depth) {
+            if(this.vertices.size()==1){
+                    NW=new QuadTree(top_bound,horizontal+1,left_bound, vertical, this, level+1, new HashMap <MortonCode, PartitionVertex>());
+                    NE=new QuadTree(top_bound, horizontal+1, vertical+1, right_bound, this, level+1, new HashMap <MortonCode, PartitionVertex>());
+                    SW=new QuadTree(horizontal, bottom_bound, left_bound, vertical, this, level+1, new HashMap <MortonCode, PartitionVertex>());
+                    SE=new QuadTree(horizontal, bottom_bound, vertical+1, right_bound, this, level+1, new HashMap <MortonCode, PartitionVertex>());
+            }
             int quadrant = classifier(top_bound, horizontal, bottom_bound, left_bound, vertical, right_bound, v);
             if(quadrant==1){
-                NW.insert(mc, x, y);
+                NW.insert(v);
             }else if(quadrant==2){
-                NE.insert(mc, x, y);
+                NE.insert(v);
             }else if(quadrant==3){
-                SW.insert(mc, x,y);
+                SW.insert(v);
             }else{
                 assert(quadrant==4);
-                SE.insert(mc,x,y);
+                SE.insert(v);
             }
         }
     }
     /*
     will delete in current level and in lower levels
      */
-    public void delete(MortonCode mc, int x, int y){
-        Node v = new Node(x,y);
+    public void delete(PartitionVertex v){
         this.vertices.remove(mc);
         if(level<max_depth) {
             int quadrant = classifier(top_bound, horizontal, bottom_bound, left_bound, vertical, right_bound, v);
             if(quadrant==1){
-                NW.delete(mc, x, y);
+                NW.delete(v);
                 if(NW.size()==0){
                     assert(NW.allNull());
                     this.NW=null;
                 }
             }else if(quadrant==2){
-                NE.delete(mc,x,y);
+                NE.delete(v);
                 if(NE.size()==0){
                     assert(NE.allNull());
                     this.NE=null;
                 }
             }else if(quadrant==3){
-                SW.delete(mc,x,y);
+                SW.delete(v);
                 if(SW.size()==0){
                     assert(SW.allNull());
                     this.SW=null;
                 }
             }else{
                 assert(quadrant==4);
-                SE.delete(mc,x,y);
+                SE.delete(v);
                 if(SE.size()==0){
                     assert(SE.allNull());
                     this.SE=null;
@@ -136,7 +193,7 @@ public class QuadTree {
         return NW==null && NE==null && SW==null && SE==null;
     }
 
-    public HashMap<MortonCode, Node> getVertices(){
+    public HashMap<MortonCode, PartitionVertex> getVertices(){
         return vertices;
     }
 
@@ -169,6 +226,7 @@ public class QuadTree {
 
     public boolean testMorton(){
         MortonCode toCompare=new MortonCode(top_bound, right_bound, level, false);
+       // MortonCode notEqual= new MortonCode(top_bound+1, right_bound+1, level, false);
         boolean result=mc.equals(toCompare);
         if(result==false){
             System.out.println("lat is "+bottom_bound+" lon is "+left_bound);
@@ -187,6 +245,62 @@ public class QuadTree {
         }
         return result;
 
+    }
+
+    public boolean testMorton2() throws CloneNotSupportedException {
+        boolean result=true;
+        MortonCode copy;
+        if(level<max_depth){
+            if(NW!=null) {
+                copy=NW.mc.shallowCopy();
+                copy.shift();
+                result = result && this.mc.exactlyEquals(copy) && NW.testMorton2();
+                if(!this.mc.exactlyEquals(copy)){
+                    mc.printBit();
+                    NW.mc.printBit();
+                   // copy.printBit();
+                    System.out.println("Complain 1");
+                }
+            }
+            if(NE!=null) {
+                copy=NE.mc.shallowCopy();
+                copy.shift();
+                result = result && this.mc.exactlyEquals(copy) && NE.testMorton2();
+                if(!this.mc.exactlyEquals(copy)){
+                    mc.printBit();
+                    NE.mc.printBit();
+                  //  copy.printBit();
+                    System.out.println("Complain 2");
+                }
+            }
+            if(SW!=null) {
+                copy=SW.mc.shallowCopy();
+                copy.shift();
+                result = result && this.mc.exactlyEquals(copy)&& SW.testMorton2();
+                if(!this.mc.exactlyEquals(copy)){
+                    mc.printBit();
+                    SW.mc.printBit();
+                 //   copy.printBit();
+                    System.out.println("Complain 3");
+                }
+            }
+            if(SE!=null) {
+                copy=SE.mc.shallowCopy();
+                copy.shift();
+                result = result && this.mc.exactlyEquals(copy) && SE.testMorton2();
+                if(!this.mc.exactlyEquals(copy)){
+                    mc.printBit();
+                    SE.mc.printBit();
+                 //   copy.printBit();
+                    System.out.println("Complain 4");
+                }
+            }
+        }
+     /*   if(!result){
+            mc.printBit();
+            System.out.println("Complain");
+        }*/
+        return result;
     }
 
 }

@@ -1,6 +1,6 @@
 package dedp.DistanceOracles;
 
-public class Node{
+/*public class Node{
     int x;
     int y;
     MortonCode mc;
@@ -9,4 +9,4 @@ public class Node{
         this.y=y;
         this.mc=new MortonCode(x,y,32, true);
     }
-}
+}*/

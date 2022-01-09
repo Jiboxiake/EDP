@@ -1,5 +1,7 @@
 package dedp.structures;
 
+import dedp.DistanceOracles.MortonCode;
+
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -77,7 +79,13 @@ public class Vertex implements Comparable<Vertex>
 		}
 		Collections.sort(outEdges);
 	}
-	
+
+	public void setCoordinates(int latitude, int longitude){
+		this.latitude=latitude;
+		this.longitude=longitude;
+		mc=new MortonCode(latitude, longitude, 0, true);
+	}
+
 	public void removeEdge(Vertex to)
 	{
 		Edge toDelete = null;
@@ -97,6 +105,9 @@ public class Vertex implements Comparable<Vertex>
 	protected long id;
 	public long ChWeight = 0;
 	public long ChOrder = 0;
+	public MortonCode mc;
+	public int longitude;
+	public int latitude;
 	public LinkedList<Edge> outEdges = new LinkedList<Edge>();
 	public LinkedList<Edge> inEdges = new LinkedList<Edge>();
 	

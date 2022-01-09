@@ -12,6 +12,8 @@ public class MortonCode implements Comparable<MortonCode> {
             int toRemove=64-2*level;
             morton= morton >> toRemove;
             morton= morton << toRemove;
+        }else{
+            this.level=32;
         }
 
     }
@@ -42,8 +44,19 @@ public class MortonCode implements Comparable<MortonCode> {
     }
 
     public void shift(){
-        morton= morton >> 2;
-        morton= morton << 2;
+        level--;
+        int toRemove=64-2*level;
+        morton= morton >> toRemove;
+        morton= morton << toRemove;
+    }
+    @Override
+    public Object clone(){
+        MortonCode copy = new MortonCode(morton,level,isNode);
+        return copy;
+    }
+
+    public MortonCode shallowCopy() throws CloneNotSupportedException {
+        return (MortonCode) this.clone();
     }
 
     public void printBit(){
@@ -68,6 +81,10 @@ public class MortonCode implements Comparable<MortonCode> {
         if(result==o.morton || this.morton==result)
             return true;
         return false;
+    }
+
+    public boolean exactlyEquals(MortonCode mc2){
+        return this.morton==mc2.morton;
     }
 
     @Override

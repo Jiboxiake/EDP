@@ -137,6 +137,7 @@ public class EdgeDisjointIndex
 			Vertex eTo = e.getTo();
 			List<Integer> outEdgesLabels = new ArrayList<Integer>();
 			List<Integer> inEdgesLabels = new ArrayList<Integer>();
+			//update the in and out edges of the head of this edge
 			for(Edge outE : eFrom.getOutEdges())
 			{
 				if(outE.getLabel() != label)
@@ -155,8 +156,11 @@ public class EdgeDisjointIndex
 			Collections.sort(outEdgesLabels);
 			Collections.sort(inEdgesLabels);
 			PartitionVertex vFrom = partition.getVertex((int)eFrom.getID(), true, outEdgesLabels, inEdgesLabels);
+			//set coordinates and Morton code
+			vFrom.setCoordinates(eFrom.latitude, eFrom.longitude);
 			outEdgesLabels.clear();
 			inEdgesLabels.clear();
+			//update the in and out edges of the tail of this edge
 			for(Edge outE : eTo.getOutEdges())
 			{
 				if(outE.getLabel() != label)
@@ -175,6 +179,7 @@ public class EdgeDisjointIndex
 			Collections.sort(outEdgesLabels);
 			Collections.sort(inEdgesLabels);
 			PartitionVertex vTo = partition.getVertex((int)eTo.getID(), true, outEdgesLabels, inEdgesLabels);
+			vTo.setCoordinates(eTo.latitude, eTo.longitude);
 			edge.setFrom(vFrom);
 			edge.setTo(vTo);
 			edge.setWeight(e.getWeight());
@@ -241,6 +246,8 @@ public class EdgeDisjointIndex
 		edge.setLabel(label);
 		vFrom.addEdge(edge);
 		partition.edges.put((int)e.getID(), edge);
+		vFrom.setCoordinates(eFrom.latitude, eFrom.longitude);
+		vTo.setCoordinates(eTo.latitude, eTo.longitude);
 		return edge;
 	}
 	

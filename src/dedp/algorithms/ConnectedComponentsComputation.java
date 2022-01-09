@@ -24,11 +24,11 @@ public class ConnectedComponentsComputation
     private int[] compIdOfVertex;
     private HashMap<Integer, Integer> globalToLocalId = null; 
     private int currentComponentId;   
-    private int numOfComponents;    
+    private int numOfComponents;//we get components from 0 to a number-1;
     private Stack<PartitionVertex> stack;
     private ArrayList<PartitionVertex> vertexes;
     private int numOfVertexes;
-    
+    //TODO: we need to partition the partition vertices into CC's.
     public int buildSCC(Partition partition) 
     {
     	numOfVertexes = partition.vertexCount();
@@ -56,8 +56,12 @@ public class ConnectedComponentsComputation
             }
         }
 		//also pass the vertex information into the connected components and construct the DO.
-		HashMap verticesToCC = new HashMap<Integer, HashMap<Integer, PartitionVertex>>();
-        partition.ConnectedComponents = new PartitionConnectedComponents(this.NumOfComponents(), partition);
+		//HashMap<Integer, PartitionVertex>[] verticesToCC = new HashMap[numOfComponents];
+		HashMap<Integer,ArrayList< PartitionVertex>>verticesToCC = new HashMap<>();
+		for(int i=0; i<numOfComponents; i++){
+			verticesToCC.put(i, new ArrayList<PartitionVertex>());
+		}
+        partition.ConnectedComponents = new PartitionConnectedComponents(this.NumOfComponents(), partition, verticesToCC);
         return this.NumOfComponents();
     }
     
@@ -94,6 +98,14 @@ public class ConnectedComponentsComputation
     	currentComponentId++;
     	numOfComponents = currentComponentId;
     }
+
+	private void groupVertices(HashMap<Integer, ArrayList<PartitionVertex>>verticesToCC){
+		for(int i=0; i<numOfVertexes; i++){
+
+			//add vertices to the corresponding connected component
+			verticesToCC.get(compIdOfVertex[vertexes.get(i).LocalId]).add(vertexes.get(i));
+		}
+	}
     
     /**
      * Returns the number of strong components.

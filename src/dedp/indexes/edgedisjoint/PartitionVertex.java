@@ -8,6 +8,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import dedp.DistanceOracles.MortonCode;
 import dedp.structures.Edge;
 import dedp.structures.Vertex;
 
@@ -45,7 +46,8 @@ public class PartitionVertex
 	{
 		return this.vertexId;
 	}
-	
+
+	//all add edge is adding an out edge.
 	public void addEdge(int id, PartitionVertex to, float weight, int label)
 	{
 		PartitionEdge edge = new PartitionEdge();
@@ -89,6 +91,18 @@ public class PartitionVertex
 		to.inEdges.remove(toDelete);
 		Collections.sort(this.outEdges);
 	}
+
+	public void setCoordinates(int latitude, int longitude){
+		this.latitude=latitude;
+		this.longitude=longitude;
+	}
+
+	public MortonCode morton(){
+
+		if(mc==null)
+		this.mc=new MortonCode(latitude, longitude, 0, true);
+		return mc;
+	}
 	
 	public boolean isBridge()
 	{
@@ -117,7 +131,9 @@ public class PartitionVertex
 	//the coming section is specific to the dynamic part
 	public int LocalId = -1;
 	public int ComponentId = -1;
-	
+	public int longitude;
+	public int latitude;
+	public MortonCode mc;
 	/*
 	protected int getToBridgeEdgeId()
 	{

@@ -19,17 +19,18 @@ public class SearchKey {
         int turn=0;
         long m1copy = m1.morton;
         long m2copy = m2.morton;
+        int ignore = 127-4*level;
         for(int i=0; i<128; i++){
             boolean set = false;
             if(turn%2==0){
                 long check = m1copy&1;
-                if(check==1){
+                if(check==1&&turn>ignore){
                     set=true;
                 }
                 m1copy= m1copy>>1;
             }else{
                 long check = m2copy&1;
-                if(check==1){
+                if(check==1&&turn>ignore){
                     set=true;
                 }
                 m2copy= m2copy>>1;
@@ -43,6 +44,7 @@ public class SearchKey {
     public int hashCode(){
         return key.hashCode();
     }
+    //todo: check if we need to have exact equal
     @Override
     public boolean equals(Object o){
         BitSet k1 = (BitSet) (((SearchKey)o).key.clone());

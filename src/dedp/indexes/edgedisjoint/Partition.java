@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import dedp.DistanceOracles.QuadTree;
 import dedp.algorithms.Dijkstra;
 import dedp.common.Constants;
 import dedp.exceptions.DuplicateEntryException;
@@ -52,7 +53,7 @@ public class Partition
 			toBridgeEdgesIndexFileBackward.createNewFile();
 		}
 	}
-	
+	//TODO: Now we read from distance oracle
 	public void loadSavedIndex() throws IOException, ObjectNotFoundException
 	{
 		//load the toBridge vertexes
@@ -78,6 +79,8 @@ public class Partition
 		}
 		reader.close();
 		//fill the vertexToBridgeEdges
+		//how can we use distance oracle here?
+		//a block of vertices can reach this bridge vertex?
 		int numOfEdges, i;
 		ArrayList<PartitionEdge> edges;
 		PartitionEdge edge;
@@ -107,6 +110,7 @@ public class Partition
 			}
 			Collections.sort(edges);
 			//vertexToBridgeEdges.put(from, edges);
+			//we can modify the "from" as a quadtree block
 			vertexToBridgeEdges.put(from, new BridgeEdgesEntry(edges, timeStamp));
 			PartitionVertex sourceVertex = this.getVertex(from);
 			sourceVertex.numOfBridgeEdgesComputed = edges.size();
@@ -201,7 +205,7 @@ public class Partition
 		output.close();
 	}
 	*/
-	//TODO: make this distance oracle entry
+	//right now everything is just written to and read from index files on disk
 	public void addIndexEntry(int from, int to, DirectedPathEntry entry) throws Exception
 	{
 		//append a line to the end of the file
@@ -209,6 +213,11 @@ public class Partition
 		output = new BufferedWriter(new FileWriter(getIndexFileName(), true));
 		output.append(from + "," + to + "," + entry.Weight + "," + entry.TimeStamp + "," + entry.PathLength + "\n");
 		output.close();
+	}
+
+	//TODO: add this to the corresponding distance oracle of a specific connected component
+	public void addOracleEntry(QuadTree from, QuadTree to, DirectedPathEntry entry, int CC_ID){
+
 	}
 	
 	public void addToBridgeIndexEntry(int from, BridgeEdgesEntry entry) throws Exception
@@ -223,6 +232,15 @@ public class Partition
 			output.append(edge.getTo().getId() + "," + edge.getWeight() + "," + edge.PathLength + "\n"); //format is BridgeVertexId,ShortestDistance
 		}
 		output.close();
+	}
+
+	/*
+	after we find the qaudtree blocks containing the from and the bridge vertex, we create a distance oracle entry containing
+	 */
+	//todo: from is a set of sets. To is a set of vertices.
+	//Ideally: quadtree t1 to v1, quadtree t2 to v2...
+	public void addToBridgeOracleEntry(BridgeEdgesEntry entry){
+
 	}
 	
 	public void addToBridgeIndexEntry_Backward(int from, ArrayList<PartitionEdge> toBridgeEdges) throws Exception
@@ -474,7 +492,10 @@ public class Partition
 		directedEdgeWeights.remove(representative);
 		return length;
 	}
-	
+
+	/*
+	Update this to allow using Distance oracle when possible
+	 */
 	public float getEdgeWeight(int from, int to) throws Exception
 	{
 		long representative = LightEdge.getDirectedEdgeRepresentative(from, to);
@@ -483,6 +504,7 @@ public class Partition
 		DirectedPathEntry directedPathEntry = directedEdgeWeights.get(representative);//todo: in DO this is read from distance oracle
 		
 		//Float weight = directedPathEntry.Weight;
+		//we need to manually compute the path weight
 		if(directedPathEntry == null || (directedPathEntry != null && directedPathEntry.TimeStamp < this.ConnectedComponents.getComponentTimeStamp(fromVertex.ComponentId)))
 		{
 			directedPathEntry = new DirectedPathEntry();
@@ -494,6 +516,7 @@ public class Partition
 			//cache size
 			if(Constants.CacheSize != Constants.NoCacheLimit)
 			{
+				//TODO: now we add to distance oracle instead
 				//directedPathEntry.indexEntry = new IndexEntry(this.Label, representative, this.Index.getNextCacheTimeStamp());
 				directedPathEntry.indexEntry = new IndexEntry(this.Label, representative);
 				this.Index.addIndexEntry(directedPathEntry.indexEntry, directedResult.PathLength);
@@ -704,7 +727,9 @@ public class Partition
 	
 	public Collection<Integer> bridgeVertexes = new ArrayList<Integer>();
 	public Collection<Integer> bridgeVertexesBackward = new ArrayList<Integer>();
-	
+
+	//TODO: set data structure for each connected component, likely hash map of hash maps
+
 	public int Label;
 	
 	protected Map<Integer, PartitionVertex> vertexes = new HashMap<Integer, PartitionVertex>();

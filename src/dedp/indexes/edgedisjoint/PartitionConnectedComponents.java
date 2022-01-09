@@ -1,12 +1,19 @@
 package dedp.indexes.edgedisjoint;
 
+import dedp.DistanceOracles.MortonCode;
+//import dedp.DistanceOracles.Node;
+import dedp.DistanceOracles.QuadForest;
+
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 public class PartitionConnectedComponents 
 {
 	//todo: add local varibale distance oracle
-	public PartitionConnectedComponents(int initialNumOfComponents, Partition partition)
+	public PartitionConnectedComponents(int initialNumOfComponents, Partition partition, HashMap<Integer, ArrayList<PartitionVertex> >verticesToCC)
 	{
+		this.verticesToCC= verticesToCC;
 		numOfConnectedComponents = initialNumOfComponents;
 		capacity = (int)((float)numOfConnectedComponents * (2f - loadFactor));
 		componentLastUpdateTimeStamp = new HashMap<Integer, Integer>(capacity, loadFactor);
@@ -16,15 +23,35 @@ public class PartitionConnectedComponents
 		}
 		lastTimeStamp = 0;
 		this.partition = partition;
+		//TODO: handle merge quadtree nodes and graph vertices
+		//Create a list of Morton codes for each CC.
+		HashMap<Integer, HashMap<MortonCode, PartitionVertex>> quadTreeSet= new HashMap<>();
+		for(Map.Entry<Integer, ArrayList<PartitionVertex>> cc: verticesToCC.entrySet()){
+			if(!quadTreeSet.containsKey(cc.getKey())){
+				HashMap<MortonCode, PartitionVertex> local =new HashMap<MortonCode, PartitionVertex>();
+				for(int i=0; i<cc.getValue().size(); i++){
+					PartitionVertex v = cc.getValue().get(i);
+					local.put(v.morton(), v);
+				}
+				quadTreeSet.put(cc.getKey(), local);
+			}else{
+					assert(false);
+			}
+		}
+		//now we create the quadtree for each CC.
+		//TODO: check reference between this class and partition
+		forest=new QuadForest(quadTreeSet);
+
 	}
-	
+	//TODO: handle dynamic graphs
 	public void addConnectedComponent(int componentId) throws Exception
 	{
-		if(componentLastUpdateTimeStamp.containsKey(componentId))
+		if(componentLastUpdateTimeStamp.containsKey(componentId)||verticesToCC.containsKey(componentId))
 		{
 			throw new Exception("PartitionConnectedComponents.addConnectedComponent: Component " + componentId + " already exists.");
 		}
 		this.componentLastUpdateTimeStamp.put(componentId, this.advanceTimeStamp());
+		//this.verticesToCC
 	}
 	
 	public void removeConnectedComponent(int componentId) throws Exception
@@ -89,5 +116,7 @@ public class PartitionConnectedComponents
 	protected int numOfConnectedComponents = -1;
 	protected int capacity = -1;
 	protected final float loadFactor = 0.75f;
+	protected QuadForest forest;
+	protected HashMap<Integer, ArrayList<PartitionVertex>>verticesToCC;
 	
 }

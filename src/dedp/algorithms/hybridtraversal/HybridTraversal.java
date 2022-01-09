@@ -216,23 +216,27 @@ public class HybridTraversal
 			u = currentPartition.getVertex(uDist.VertexId);
 			uId = uDist.VertexId;
 			destVertex = currentPartition.getVertex(destination);
+			//check if the current vertex is the destination
+			//if it is, we are done and can return this
 			if(uId == destination)
 			{
 				result.Distance = uDist.Distance;
 				result.PathLength = uDist.PathLength;
 				break;
 			}
+			//if the destination vertex is in the current partition and in the same CC
 			if(destVertex != null && currentPartition.inTheSameComponent(u, destVertex))
 			{
 				weight = currentPartition.getEdgeWeight(uId, destination);//todo: modify getEdgeWeight using distance oracle
 				newDistance = uDist.Distance + weight;
 				//directedPathEntry = currentPartition.getEdgeWeight(uId, destination);
 				//newDistance = uDist.Distance + directedPathEntry.Weight;
-
+				//if we observe better distance than the best so far
 				if(newDistance < bestDistanceSoFar)
 				{
 					//result.NumberOfExploredEdges++;
 					//get the distance of to node
+					//check if destination is in the distance map
 					toDist = distMap.get(destination);
 					if(toDist == null)
 					{
@@ -245,6 +249,7 @@ public class HybridTraversal
 						q.add(toDist);
 						distMap.put(destination, toDist);
 					}
+					//just like Dij, we find better distance for destination
 					else if (toDist.Distance > newDistance)
 					{
 						toDist.Distance = newDistance;
@@ -256,6 +261,7 @@ public class HybridTraversal
 					bestDistanceSoFar = newDistance;					
 				}
 			}
+			//if Dij reaches a bridge vertex
 			if(u.isBridge())
 			{
 				otherHomes = Helper.intersection(u.OtherHomes, labelIDs);
@@ -298,9 +304,9 @@ public class HybridTraversal
 				{
 					break;
 				}
-				toVertex = e.getTo();//todo: under DO this is a set of vertices
+				toVertex = e.getTo();//get a specific bridge vertex
 				toVertexId = toVertex.getId();
-				
+				//reach the max number of edges, in our case don't worry as degree of a vertex will be low.
 				if(countOfBridgeEdges == index.MaxToExplore /*&& (i < toBridgeEdgesSizeMinusOne)*/)
 				{
 					if(toVertexId != destination)
@@ -314,6 +320,8 @@ public class HybridTraversal
 				
 				toDist = distMap.get(toVertexId);
 				newDistance = uDist.Distance + e.getWeight();
+				//if going to bridge vertex is already more expensive than current explored path to dest, we ignore it
+				//or if the explored path to the bridge vertex is less expensive.
 				if(newDistance >= bestDistanceSoFar || (toDist != null && (toDist.Distance <= newDistance)))
 				{
 					continue;
@@ -348,6 +356,7 @@ public class HybridTraversal
 				{
 					for(int otherHome : otherHomes)
 					{
+						//get the distance map of the other partition
 						lblDistMap = partitionToDistMap.get(otherHome);
 						lblDist = lblDistMap.get(toVertexId);
 						if(lblDist == null)
