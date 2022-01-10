@@ -37,7 +37,7 @@ public class MortonCodeTest {
         //key.printBit();
         key.shift();
         //key.printBit();
-        HashMap<MortonCode, PartitionVertex> nodes=new HashMap<>();
+        HashMap<Integer, PartitionVertex> nodes=new HashMap<>();
         Random r = new Random();
         QuadTree.setMax_depth(20);
         Double minLat = -90.0;
@@ -54,7 +54,7 @@ public class MortonCodeTest {
             PartitionVertex vertex = new PartitionVertex();
             vertex.setId(i);
             vertex.setCoordinates(latInt, lonInt);
-            nodes.put(new MortonCode(latInt, lonInt, 0, true), vertex);
+            nodes.put(i, vertex);
         }
         QuadTree t = new QuadTree(Parser.normalizeLat(90.0), Parser.normalizeLat(-90.0), Parser.normalizeLon(-180.0), Parser.normalizeLon(180.0), null,0, nodes);
        // t.info();

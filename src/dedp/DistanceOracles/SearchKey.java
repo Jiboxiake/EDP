@@ -15,12 +15,20 @@ public class SearchKey {
 
     }
 
+    public SearchKey(MortonCode m1, MortonCode m2){
+        key=new BitSet(128);
+        this.level=32;
+        interleave(m1,m2);
+
+    }
+    //TODO: check correctness here
     public void interleave(MortonCode m1, MortonCode m2){
         int turn=0;
         long m1copy = m1.morton;
         long m2copy = m2.morton;
         int ignore = 127-4*level;
         for(int i=0; i<128; i++){
+            assert(turn==i);
             boolean set = false;
             if(turn%2==0){
                 long check = m1copy&1;

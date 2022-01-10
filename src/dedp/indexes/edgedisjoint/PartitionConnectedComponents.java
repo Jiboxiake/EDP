@@ -13,7 +13,7 @@ public class PartitionConnectedComponents
 	//todo: add local varibale distance oracle
 	public PartitionConnectedComponents(int initialNumOfComponents, Partition partition, HashMap<Integer, ArrayList<PartitionVertex> >verticesToCC)
 	{
-		this.verticesToCC= verticesToCC;
+	/*	this.verticesToCC= verticesToCC;
 		numOfConnectedComponents = initialNumOfComponents;
 		capacity = (int)((float)numOfConnectedComponents * (2f - loadFactor));
 		componentLastUpdateTimeStamp = new HashMap<Integer, Integer>(capacity, loadFactor);
@@ -25,10 +25,10 @@ public class PartitionConnectedComponents
 		this.partition = partition;
 		//TODO: handle merge quadtree nodes and graph vertices
 		//Create a list of Morton codes for each CC.
-		HashMap<Integer, HashMap<MortonCode, PartitionVertex>> quadTreeSet= new HashMap<>();
+		HashMap<Integer, HashMap<Integer, PartitionVertex>> quadTreeSet= new HashMap<>();
 		for(Map.Entry<Integer, ArrayList<PartitionVertex>> cc: verticesToCC.entrySet()){
 			if(!quadTreeSet.containsKey(cc.getKey())){
-				HashMap<MortonCode, PartitionVertex> local =new HashMap<MortonCode, PartitionVertex>();
+				HashMap<Integer, PartitionVertex> local =new HashMap<MortonCode, PartitionVertex>();
 				for(int i=0; i<cc.getValue().size(); i++){
 					PartitionVertex v = cc.getValue().get(i);
 					local.put(v.morton(), v);
@@ -40,7 +40,7 @@ public class PartitionConnectedComponents
 		}
 		//now we create the quadtree for each CC.
 		//TODO: check reference between this class and partition
-		forest=new QuadForest(quadTreeSet);
+		forest=new QuadForest(quadTreeSet);*/
 
 	}
 	//TODO: handle dynamic graphs

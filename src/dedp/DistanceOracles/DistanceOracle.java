@@ -1,6 +1,7 @@
 package dedp.DistanceOracles;
 
 import dedp.exceptions.ObjectNotFoundException;
+import dedp.indexes.edgedisjoint.PartitionEdge;
 import dedp.indexes.edgedisjoint.PartitionVertex;
 import dedp.structures.*;
 
@@ -17,20 +18,23 @@ public class DistanceOracle {
         e=error;
         s=2.0/e;
     }
+
+   /* public boolean isWellSeparated(int distance, QuadTree t1, QuadTree t2, Graph g, long id1, long id2, Integer Label) throws ObjectNotFoundException {
+        return semi_dijkstra(distance, id1, g, Label, t1)&&semi_dijkstra(distance, id2, g, Label, t2);
+    }*/
     /*
     //Here we will implement an optimization.
      */
-    public boolean isWellSeparated(int distance, QuadTree t1, QuadTree t2, Graph g, long id1, long id2, Integer Label) throws ObjectNotFoundException {
-        return semi_dijkstra(distance, id1, g, Label, t1)&&semi_dijkstra(distance, id2, g, Label, t2);
-    }
-    public boolean isWellSeparated(int distance, QuadTree t1, QuadTree t2, PartitionVertex u, PartitionVertex v)throws ObjectNotFoundException{
-
-        return false;
+    public static boolean isWellSeparated(int distance, QuadTree t1, QuadTree t2, PartitionVertex u, PartitionVertex v)throws ObjectNotFoundException{
+        double adjusted_d= (double)distance/s;
+        return approximate_comparison(adjusted_d, t1, u)&&approximate_comparison(adjusted_d, t2, v);
     }
     /*
     check when we reach a distance greater than distance/s, if we have traversed all vertices in a Quadtree block.
      */
-    public boolean approximate_comparison(double distance, QuadTree t, PartitionVertex u)throws ObjectNotFoundException{
+    //todo: may need to change VertexID type to int
+    public static boolean approximate_comparison(double distance, QuadTree t, PartitionVertex u)throws ObjectNotFoundException{
+        QuadTree copy = t.copy();
         PriorityQueue<DistanceFromSource> pq = new PriorityQueue<>();
         DistanceFromSource uDist = new DistanceFromSource();
         uDist.VertexID=u.getId();
@@ -41,14 +45,36 @@ public class DistanceOracle {
         pq.add(uDist);
         while(!pq.isEmpty()){
             uDist=pq.poll();
-           // PartitionVertex u=t.getVertex()
+            PartitionVertex v=copy.remove((int)uDist.VertexID);
+            if(v==null){
+                throw new ObjectNotFoundException("Vertex "+(int)uDist.VertexID+" not found");
+            }
+            if(uDist.Distance>distance){
+                return copy.isEmpty();
+            }
+            for(PartitionEdge pe: v.getOutEdges()){
+                PartitionVertex to = pe.getTo();
+                toDist = distMap.get(to.getId());
+                if(toDist==null){
+                    toDist = new DistanceFromSource();
+                    toDist.VertexID = to.getId();
+                    toDist.Distance = Float.POSITIVE_INFINITY;
+                    distMap.put((int)toDist.VertexID, toDist);
+                }
+                if(toDist.Distance > uDist.Distance + pe.getWeight()){
+                    toDist.Distance= pe.getWeight()+uDist.Distance;
+                    pq.remove(toDist);
+                    pq.add(toDist);
+                }
+            }
         }
-        return false;
+        //traverse all vertices in the block and the max distance is still leq distance, we know they are well separated then
+        return true;
     }
 
 
     //todo: want to only do this on a partition subgraph, not a whole graph
-    public boolean semi_dijkstra(int distance, long source, Graph graph, Integer Label, QuadTree t1)throws ObjectNotFoundException {
+   /* public boolean semi_dijkstra(int distance, long source, Graph graph, Integer Label, QuadTree t1)throws ObjectNotFoundException {
         distance = distance/(int)s;
         SPResult result = new SPResult();
         result.Distance = -1;
@@ -101,6 +127,6 @@ public class DistanceOracle {
             }
         }
         return false;
-    }
+    }*/
 
 }
