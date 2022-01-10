@@ -7,13 +7,13 @@ import dedp.DistanceOracles.QuadForest;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-
+//Now I want to see if we really need a timestamp.
 public class PartitionConnectedComponents 
 {
-	//todo: add local varibale distance oracle
+/*	//todo: add local varibale distance oracle
 	public PartitionConnectedComponents(int initialNumOfComponents, Partition partition, HashMap<Integer, ArrayList<PartitionVertex> >verticesToCC)
 	{
-	/*	this.verticesToCC= verticesToCC;
+		this.verticesToCC= verticesToCC;
 		numOfConnectedComponents = initialNumOfComponents;
 		capacity = (int)((float)numOfConnectedComponents * (2f - loadFactor));
 		componentLastUpdateTimeStamp = new HashMap<Integer, Integer>(capacity, loadFactor);
@@ -40,7 +40,7 @@ public class PartitionConnectedComponents
 		}
 		//now we create the quadtree for each CC.
 		//TODO: check reference between this class and partition
-		forest=new QuadForest(quadTreeSet);*/
+		forest=new QuadForest(quadTreeSet);
 
 	}
 	//TODO: handle dynamic graphs
@@ -118,5 +118,38 @@ public class PartitionConnectedComponents
 	protected final float loadFactor = 0.75f;
 	protected QuadForest forest;
 	protected HashMap<Integer, ArrayList<PartitionVertex>>verticesToCC;
-	
+	*/
+
+	public PartitionConnectedComponents(int initialNumOfComponents, Partition partition, HashMap<Integer, HashMap<Integer, PartitionVertex> >verticesToCC, HashMap<Integer,HashMap<Integer, PartitionEdge>>edgesToCC){
+		this.verticesToCC=verticesToCC;
+		this.partition=partition;
+		this.edgesToCC=edgesToCC;
+		capacity = (int)((float)numOfConnectedComponents * (2f - loadFactor));
+		numOfConnectedComponents=initialNumOfComponents;
+		connectedComponents=new HashMap<>();
+		for(int i=0; i<verticesToCC.size(); i++){
+			assert(verticesToCC.containsKey(i)&&edgesToCC.containsKey(i));
+			ConnectedComponent cc = new ConnectedComponent(i, partition, verticesToCC.get(i),edgesToCC.get(i));
+			connectedComponents.put(i, cc);
+		}
+	}
+
+	public boolean inSameComponent(PartitionVertex v1, PartitionVertex v2)
+	{
+		return (v1.ComponentId != -1) && (v1.ComponentId == v2.ComponentId);
+	}
+
+	public int getConnectedComponentsCount()
+	{
+		return this.numOfConnectedComponents;
+	}
+
+
+	protected Partition partition;
+	protected int numOfConnectedComponents = -1;
+	protected int capacity = -1;
+	protected final float loadFactor = 0.75f;
+	protected HashMap<Integer, HashMap<Integer, PartitionVertex>>verticesToCC;
+	HashMap<Integer,HashMap<Integer, PartitionEdge>>edgesToCC;
+	protected HashMap<Integer, ConnectedComponent> connectedComponents;
 }

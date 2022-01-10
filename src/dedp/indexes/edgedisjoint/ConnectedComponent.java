@@ -12,18 +12,18 @@ we try to create CC class to hold more data
  */
 public class ConnectedComponent {
     public int ID;
-    public int PartitionID;
+    public Partition partition;
     public HashMap<Integer, PartitionVertex> vertices;
     public HashMap<Integer, PartitionEdge> edges;
     public HashMap<SearchKey, Integer> DO;
     //public int timeStamp;
     public QuadTree tree;
 
-    public ConnectedComponent(int id, int PartitionID, HashMap<Integer, PartitionVertex> vertices, HashMap<Integer, PartitionEdge> edges){
+    public ConnectedComponent(int id, Partition partition, HashMap<Integer, PartitionVertex> vertices, HashMap<Integer, PartitionEdge> edges){
         this.vertices=vertices;
         this.edges=edges;
         this.ID=id;
-        this.PartitionID=PartitionID;
+        this.partition=partition;
         tree=new QuadTree(this.vertices);
        // this.timeStamp=timeStamp;
         DO=new HashMap<>();
@@ -36,10 +36,10 @@ public class ConnectedComponent {
     //TODO: may need to change distance type, now assume they are all integers
     public void addEntry(PartitionVertex u, PartitionVertex v, int distance) throws ObjectNotFoundException {
         if(!tree.contain(u)){
-            throw new ObjectNotFoundException("vertex: "+u.getId()+" not exist in connected component "+ID+" in partition "+PartitionID);
+            throw new ObjectNotFoundException("vertex: "+u.getId()+" not exist in connected component "+ID+" in partition "+partition.Label);
         }
         if(!tree.contain(v)){
-            throw new ObjectNotFoundException("vertex: "+v.getId()+" not exist in connected component "+ID+" in partition "+PartitionID);
+            throw new ObjectNotFoundException("vertex: "+v.getId()+" not exist in connected component "+ID+" in partition "+partition.Label);
         }
         QuadTree forU=tree, forV=tree;
         while(true){

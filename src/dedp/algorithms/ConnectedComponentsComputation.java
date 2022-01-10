@@ -28,6 +28,8 @@ public class ConnectedComponentsComputation
     private Stack<PartitionVertex> stack;
     private ArrayList<PartitionVertex> vertexes;
     private int numOfVertexes;
+	HashMap<Integer,HashMap<Integer, PartitionVertex>>verticesToCC;
+	HashMap<Integer,HashMap<Integer, PartitionEdge>>edgesToCC;
     //TODO: we need to partition the partition vertices into CC's.
     public int buildSCC(Partition partition) 
     {
@@ -48,6 +50,8 @@ public class ConnectedComponentsComputation
         	isVisited[v] = false;
         	compIdOfVertex[v] = -1;
         }
+		verticesToCC = new HashMap<>();
+		edgesToCC = new HashMap<>();
         for (PartitionVertex vertex : vertexes)
         {
             if (!isVisited[vertex.LocalId])
@@ -57,11 +61,9 @@ public class ConnectedComponentsComputation
         }
 		//also pass the vertex information into the connected components and construct the DO.
 		//HashMap<Integer, PartitionVertex>[] verticesToCC = new HashMap[numOfComponents];
-		HashMap<Integer,ArrayList< PartitionVertex>>verticesToCC = new HashMap<>();
-		for(int i=0; i<numOfComponents; i++){
-			verticesToCC.put(i, new ArrayList<PartitionVertex>());
-		}
-        partition.ConnectedComponents = new PartitionConnectedComponents(this.NumOfComponents(), partition, verticesToCC);
+
+		assert(verticesToCC.size()==this.NumOfComponents());
+        partition.ConnectedComponents = new PartitionConnectedComponents(this.NumOfComponents(), partition, verticesToCC, edgesToCC);
         return this.NumOfComponents();
     }
     
@@ -76,9 +78,18 @@ public class ConnectedComponentsComputation
     		compIdOfVertex[currentVertex.LocalId] = currentComponentId;
     		currentVertex.ComponentId = currentComponentId;
     		isVisited[currentVertex.LocalId] = true;
+			//insert the vertex to a hash map containing all vertices of this CC.
+			if(!verticesToCC.containsKey(currentVertex.ComponentId)){
+				verticesToCC.put(currentVertex.ComponentId, new HashMap<Integer, PartitionVertex>());
+			}
+			verticesToCC.get(currentVertex.ComponentId).put(currentVertex.getId(), currentVertex);
     		//iterate over outedges
     		for(PartitionEdge outEdge : currentVertex.outEdges)
     		{
+				if(!edgesToCC.containsKey(currentVertex.ComponentId)){
+					edgesToCC.put(currentVertex.ComponentId, new HashMap<Integer, PartitionEdge>());
+				}
+				edgesToCC.get(currentVertex.ComponentId).put(outEdge.getId(), outEdge);
     			reachableVertex = outEdge.getTo();
     			if(!isVisited[reachableVertex.LocalId])
     			{
