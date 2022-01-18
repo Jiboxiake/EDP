@@ -33,7 +33,7 @@ public class QuadTree {
         this.level=level;
         this.parent=parent;
         setMorton();
-        this.vertices=(HashMap <Integer, PartitionVertex>)vertices.clone();
+        this.vertices=vertices;
         if(level<max_depth && vertices.size()>0){
             horizontal = (top_bound-bottom_bound)/2+bottom_bound;
             vertical = (right_bound-left_bound)/2+left_bound;
@@ -82,8 +82,9 @@ public class QuadTree {
         return toReturn;
     }
 
-    public QuadTree copy(){
-        return new QuadTree(top_bound, bottom_bound, left_bound, right_bound, parent,level, vertices);
+
+    public HashMap<Integer, PartitionVertex> copy(){
+        return null;
     }
 
     public MortonCode getMC(){
@@ -91,6 +92,10 @@ public class QuadTree {
     }
 
     public QuadTree containingBlock(PartitionVertex v){
+        assert(!vertices.isEmpty());
+        if(vertices.size()==1){
+
+        }
         if(NW!=null){
             if(NW.contain(v)){
                 return NW;
@@ -111,6 +116,7 @@ public class QuadTree {
                 return SE;
             }
         }
+        assert(false);
         return null;
     }
 

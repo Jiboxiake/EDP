@@ -25,16 +25,17 @@ public class DistanceOracle {
     /*
     //Here we will implement an optimization.
      */
-    public static boolean isWellSeparated(int distance, QuadTree t1, QuadTree t2, PartitionVertex u, PartitionVertex v)throws ObjectNotFoundException{
+    public static boolean isWellSeparated(int distance, QuadTree t1, QuadTree t2, PartitionVertex u, PartitionVertex v, HashMap<Integer, PartitionVertex> vertices)throws ObjectNotFoundException{
         double adjusted_d= (double)distance/s;
-        return approximate_comparison(adjusted_d, t1, u)&&approximate_comparison(adjusted_d, t2, v);
+        return approximate_comparison(adjusted_d, t1, u, vertices)&&approximate_comparison(adjusted_d, t2, v, vertices);
     }
     /*
     check when we reach a distance greater than distance/s, if we have traversed all vertices in a Quadtree block.
      */
     //todo: may need to change VertexID type to int
-    public static boolean approximate_comparison(double distance, QuadTree t, PartitionVertex u)throws ObjectNotFoundException{
-        QuadTree copy = t.copy();
+    public static boolean approximate_comparison(double distance, QuadTree t, PartitionVertex u, HashMap<Integer, PartitionVertex> vertices)throws ObjectNotFoundException{
+        //QuadTree copy = t.copy();
+        HashMap<Integer, PartitionVertex>copy = t.getVertices();
         PriorityQueue<DistanceFromSource> pq = new PriorityQueue<>();
         DistanceFromSource uDist = new DistanceFromSource();
         uDist.VertexID=u.getId();
@@ -45,10 +46,10 @@ public class DistanceOracle {
         pq.add(uDist);
         while(!pq.isEmpty()){
             uDist=pq.poll();
-            PartitionVertex v=copy.remove((int)uDist.VertexID);
-            if(v==null){
-                throw new ObjectNotFoundException("Vertex "+(int)uDist.VertexID+" not found");
-            }
+            PartitionVertex v=vertices.get((int)uDist.VertexID);
+           if(copy.containsKey((int)uDist.VertexID)){
+               copy.remove((int)uDist.VertexID);
+           }
             if(uDist.Distance>distance){
                 return copy.isEmpty();
             }
@@ -70,6 +71,12 @@ public class DistanceOracle {
         }
         //traverse all vertices in the block and the max distance is still leq distance, we know they are well separated then
         return true;
+    }
+    /*
+    this method takes a graph as input and construct a DO for each partition's connected component.
+     */
+    public static void DO_Construction(){
+
     }
 
 

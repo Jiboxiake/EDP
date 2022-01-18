@@ -17,6 +17,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import dedp.DistanceOracles.DistanceOracle;
+import dedp.DistanceOracles.DistanceOracleThread;
+import dedp.DistanceOracles.Global;
 import dedp.DistanceOracles.QuadTree;
 import dedp.algorithms.Dijkstra;
 import dedp.common.Constants;
@@ -53,7 +56,21 @@ public class Partition
 			toBridgeEdgesIndexFileBackward.createNewFile();
 		}
 	}
-	//TODO: Now we read from distance oracle
+
+	public Partition(int label, String DO_NAME)throws IOException{
+		this.Label=label;
+		this.DO_NAME=DO_NAME;
+		File DOFile= new File(DO_NAME);
+		if(!DOFile.exists()){
+			DOFile.createNewFile();
+		}
+	}
+	//TODO: Now we read from distance oracle, but for now assume we always have to compute it.
+	public void loadSavedDO() throws IOException, ObjectNotFoundException{
+
+	}
+
+
 	public void loadSavedIndex() throws IOException, ObjectNotFoundException
 	{
 		//load the toBridge vertexes
@@ -215,8 +232,13 @@ public class Partition
 		output.close();
 	}
 
+	//right to on disk DO
+	public void addDOEntry()throws Exception{
+
+	}
+
 	//TODO: add this to the corresponding distance oracle of a specific connected component
-	public void addOracleEntry(QuadTree from, QuadTree to, DirectedPathEntry entry, int CC_ID){
+	public void addOracleEntry(PartitionVertex from, PartitionVertex to, DirectedPathEntry entry, int CC_ID){
 
 	}
 	
@@ -317,7 +339,8 @@ public class Partition
 		*/
 		return vertex;
 	}
-
+	//TODO: modify and deal with it regarding the connected component
+	//if the same, or different
 	public PartitionEdge addEdge(int edgeID, int from, int to, float weight, int label, boolean isDirected, List<Integer> otherHomes, List<Integer> otherHomesBackward) throws DuplicateEntryException, ObjectNotFoundException
 	{
 		return addEdge(edgeID, from, to, weight, label, isDirected, true, otherHomes, otherHomesBackward);
@@ -505,7 +528,7 @@ public class Partition
 		
 		//Float weight = directedPathEntry.Weight;
 		//we need to manually compute the path weight
-		if(directedPathEntry == null || (directedPathEntry != null && directedPathEntry.TimeStamp < this.ConnectedComponents.getComponentTimeStamp(fromVertex.ComponentId)))
+	/*	if(directedPathEntry == null || (directedPathEntry != null && directedPathEntry.TimeStamp < this.ConnectedComponents.getComponentTimeStamp(fromVertex.ComponentId)))
 		{
 			directedPathEntry = new DirectedPathEntry();
 			directedPathEntry.TimeStamp = ConnectedComponents.advanceTimeStamp();
@@ -544,7 +567,7 @@ public class Partition
 		{
 			this.Index.hitIndexEntry(directedPathEntry.indexEntry);
 			this.Index.recordCacheHit();
-		}
+		}*/
 		float weight = directedPathEntry.Weight;
 		if (weight == -1)
 		{
@@ -553,6 +576,30 @@ public class Partition
 		}
 		return weight;
 		//return directedPathEntry;
+	}
+
+	public int getEdgeWeightDO(int from, int to) throws Exception {
+		return getEdgeWeight(vertexes.get(from), vertexes.get(to));
+	}
+
+	public int getEdgeWeight(PartitionVertex u, PartitionVertex v)throws Exception{
+		ConnectedComponent cc = this.ConnectedComponents.getConnectedComponent(u.ComponentId);
+		assert(u.ComponentId==v.ComponentId&&cc.vertices.containsKey(u.vertexId)&&cc.vertices.containsKey(v.vertexId));
+		int result = cc.lookUp(u,v);
+		if(result>0){
+			Global.DO_hit();
+			return result;
+		}
+		//now we have to manually compute it
+		SPResult directedResult = Dijkstra.shortestDistance(this, u.vertexId, v.vertexId);
+		Global.Dij_exec();
+		result= (int)directedResult.Distance;
+		//todo: distance oracle computation thread
+		DistanceOracleThread t = new DistanceOracleThread();
+		t.setCC(cc);
+		t.setParameters(u, v, result);
+		t.start();
+		return result;
 	}
 	
 	public PartitionEdge getToBridgeEdge(int fromVertexId, int edgeOrder) throws Exception
@@ -563,7 +610,7 @@ public class Partition
 		PartitionVertex sourceVertex = this.getVertex(fromVertexId);
 		sourceVertex.lock.lock();
 		BridgeEdgesEntry entry = vertexToBridgeEdges.get(fromVertexId);
-		if(entry == null || (entry != null && entry.TimeStamp < ConnectedComponents.getComponentTimeStamp(sourceVertex.ComponentId))) //we have to compute it and save it
+	/*	if(entry == null || (entry != null && entry.TimeStamp < ConnectedComponents.getComponentTimeStamp(sourceVertex.ComponentId))) //we have to compute it and save it
 		{
 			//run the thread to start computing the shortcuts
 			try
@@ -618,7 +665,7 @@ public class Partition
 			vertexToBridgeEdges.put(fromVertexId, entry);
 			*/
 			//run the thread to compute the edges
-			BridgeEdgesComputationThread bridgeThread = new BridgeEdgesComputationThread();
+	/*		BridgeEdgesComputationThread bridgeThread = new BridgeEdgesComputationThread();
 			entry.Thread = bridgeThread;
 			bridgeThread.fromVertexId = fromVertexId;
 			bridgeThread.partition = this;
@@ -647,7 +694,14 @@ public class Partition
 			partitionEdge = toBridgeEdges.get(edgeOrder);
 			entry.NumberOfUsedEdges = Math.max(entry.NumberOfUsedEdges, edgeOrder);
 		}
-		return partitionEdge;
+		return partitionEdge;*/
+		return null;
+	}
+	//Now every CC knows its bridge vertices
+	public PartitionEdge getToBridgeEdge(PartitionVertex from, int edgeOrder){
+		ConnectedComponent cc = this.ConnectedComponents.getConnectedComponent(from.ComponentId);
+		//now what to do? get a thread to find all vertices?
+		return null;
 	}
 
 
@@ -691,7 +745,7 @@ public class Partition
 		PartitionEdge partitionEdge = null;
 		Float weight = null;
 		PartitionVertex sourceVertex = this.vertexes.get(fromVertexId);
-		if(entry == null || (entry != null && entry.TimeStamp < ConnectedComponents.getComponentTimeStamp(sourceVertex.ComponentId))) //we have to compute it and save it
+	/*	if(entry == null || (entry != null && entry.TimeStamp < ConnectedComponents.getComponentTimeStamp(sourceVertex.ComponentId))) //we have to compute it and save it
 		{
 			entry = new BridgeEdgesEntry();
 			entry.TimeStamp = ConnectedComponents.advanceTimeStamp();
@@ -703,7 +757,7 @@ public class Partition
 			{
 				addToBridgeIndexEntry(fromVertexId, entry);
 			}
-		}
+		}*/
 		return entry.BridgeEdges;
 	}
 	
@@ -731,6 +785,7 @@ public class Partition
 	//TODO: set data structure for each connected component, likely hash map of hash maps
 
 	public int Label;
+	public String DO_NAME;
 	
 	protected Map<Integer, PartitionVertex> vertexes = new HashMap<Integer, PartitionVertex>();
 	protected Map<Integer, PartitionEdge> edges = new HashMap<Integer, PartitionEdge>();
@@ -788,17 +843,17 @@ public class Partition
 	
 	public PartitionConnectedComponents ConnectedComponents = null;
 	
-	public int getVertexComponentTimeStamp(PartitionVertex vertex)
+	/*public int getVertexComponentTimeStamp(PartitionVertex vertex)
 	{
 		return this.ConnectedComponents.getComponentTimeStamp(vertex.ComponentId);
 	}
-	
+	*/
 	public void updateEdgeWeight(int edgeId, float newWeight) throws Exception
 	{
 		PartitionEdge edge = this.edges.get(edgeId);
 		edge.setWeight(newWeight);
 		int sourceVertexComponentId = edge.getFrom().ComponentId;
-		this.ConnectedComponents.advanceComponentTimeStamp(sourceVertexComponentId);
+		//this.ConnectedComponents.advanceComponentTimeStamp(sourceVertexComponentId);
 	}
 	
 	public boolean inTheSameComponent(PartitionVertex v1, PartitionVertex v2)
@@ -806,7 +861,9 @@ public class Partition
 		return this.ConnectedComponents.inSameComponent(v1, v2);
 	}
 	
-	
+	public void printCCs(){
+		this.ConnectedComponents.printCC();
+	}
 	
 	
 	public static void main(String[] args) throws NumberFormatException, IOException, DuplicateEntryException, ObjectNotFoundException

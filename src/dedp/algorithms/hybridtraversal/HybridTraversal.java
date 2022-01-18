@@ -389,5 +389,10 @@ public class HybridTraversal
 		result.TotalProcessingTime = totalEndTime - totalStartTime;
 		return result;
 	}
+
+	//TODO: finish this
+	public static SPResult shortestDistanceWithEdgeDisjointDistanceOracle(EdgeDisjointIndex index, int source, int destination, List<Integer> labelIDs) throws Exception{
+		return null;
+	}
 	
 }
