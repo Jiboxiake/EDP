@@ -5,10 +5,11 @@ import dedp.indexes.edgedisjoint.Partition;
 import dedp.indexes.edgedisjoint.PartitionVertex;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 //todo: implement well-separated pairs
 public class QuadTree {
-    public static int max_depth=20;
+    public static int max_depth=25;
     private QuadTree parent;
     private QuadTree NW;
     private QuadTree NE;
@@ -23,7 +24,8 @@ public class QuadTree {
     private int vertical;
     private int horizontal;
     //todo: set reference to the original Node in EDP.
-    private HashMap <Integer, PartitionVertex> vertices;
+   // private HashMap <Integer, PartitionVertex> vertices;
+    private HashSet<Integer> vertices;
 
     public QuadTree(int top_bound, int bottom_bound, int left_bound, int right_bound, QuadTree parent, int level, HashMap <Integer, PartitionVertex> vertices){
         this.top_bound=top_bound;
@@ -33,29 +35,32 @@ public class QuadTree {
         this.level=level;
         this.parent=parent;
         setMorton();
-        this.vertices=vertices;
-        if(level<max_depth && vertices.size()>0){
-            horizontal = (top_bound-bottom_bound)/2+bottom_bound;
-            vertical = (right_bound-left_bound)/2+left_bound;
-            HashMap <Integer, PartitionVertex> TL=new HashMap<>();
-            HashMap <Integer, PartitionVertex> TR=new HashMap<>();
-            HashMap <Integer, PartitionVertex> BL=new HashMap<>();
-            HashMap <Integer, PartitionVertex> BR=new HashMap<>();
-            for(Map.Entry<Integer, PartitionVertex> set: vertices.entrySet()){
-                PartitionVertex v = set.getValue();
-                //check boundaries against what we set
-                int quadrant = classifier(top_bound, horizontal, bottom_bound, left_bound, vertical, right_bound, v);
-                if(quadrant==1){
-                    TL.put(set.getKey(),v);
-                }else if(quadrant==2){
-                    TR.put(set.getKey(),v);
-                }else if(quadrant==3){
-                    BL.put(set.getKey(),v);
-                }else{
-                    assert(quadrant==4);
-                    BR.put(set.getKey(),v);
-                }
+        //this.vertices=vertices;
+        this.vertices= new HashSet<Integer>(vertices.size());
+        HashMap <Integer, PartitionVertex> TL=new HashMap<>();
+        HashMap <Integer, PartitionVertex> TR=new HashMap<>();
+        HashMap <Integer, PartitionVertex> BL=new HashMap<>();
+        HashMap <Integer, PartitionVertex> BR=new HashMap<>();
+        horizontal = (top_bound-bottom_bound)/2+bottom_bound;
+        vertical = (right_bound-left_bound)/2+left_bound;
+        for(Map.Entry<Integer, PartitionVertex> set: vertices.entrySet()){
+            this.vertices.add(set.getKey());
+            PartitionVertex v = set.getValue();
+            //check boundaries against what we set
+            int quadrant = classifier(top_bound, horizontal, bottom_bound, left_bound, vertical, right_bound, v);
+            if(quadrant==1){
+                TL.put(set.getKey(),v);
+            }else if(quadrant==2){
+                TR.put(set.getKey(),v);
+            }else if(quadrant==3){
+                BL.put(set.getKey(),v);
+            }else{
+                assert(quadrant==4);
+                BR.put(set.getKey(),v);
             }
+        }
+
+        if(level<max_depth && vertices.size()>0){
             NW=new QuadTree(top_bound,horizontal+1,left_bound, vertical, this, level+1, TL);
             NE=new QuadTree(top_bound, horizontal+1, vertical+1, right_bound, this, level+1, TR);
             SW=new QuadTree(horizontal, bottom_bound, left_bound, vertical, this, level+1, BL);
@@ -64,27 +69,27 @@ public class QuadTree {
     }
 
     public QuadTree( HashMap <Integer, PartitionVertex> vertices){
-        this(Parser.normalizeLat(90.0), Parser.normalizeLat(-90.0), Parser.normalizeLon(-180.0), Parser.normalizeLon(180.0), null,0,vertices);
+        this(Parser.normalizeLat(Parser.max_lat), Parser.normalizeLat(Parser.min_lat), Parser.normalizeLon(Parser.min_long), Parser.normalizeLon(Parser.max_long), null,0,vertices);
     }
 
     public boolean contain(PartitionVertex v){
-        return vertices.containsKey(v.getId());
+        return vertices.contains(v.getId());
     }
 
     public int getLevel(){
         return level;
     }
-    public PartitionVertex getVertex(Integer vID)throws ObjectNotFoundException {
+  /*  public PartitionVertex getVertex(Integer vID)throws ObjectNotFoundException {
         PartitionVertex toReturn=vertices.get(vID);
         if(toReturn==null){
             throw new ObjectNotFoundException("Vertex with mc: "+mc.morton+" not found");
         }
         return toReturn;
-    }
+    }*/
 
 
-    public HashMap<Integer, PartitionVertex> copy(){
-        return null;
+    public HashSet<Integer> copy(){
+        return new HashSet<>(vertices);
     }
 
     public MortonCode getMC(){
@@ -93,9 +98,6 @@ public class QuadTree {
 
     public QuadTree containingBlock(PartitionVertex v){
         assert(!vertices.isEmpty());
-        if(vertices.size()==1){
-
-        }
         if(NW!=null){
             if(NW.contain(v)){
                 return NW;
@@ -120,13 +122,39 @@ public class QuadTree {
         return null;
     }
 
-    public PartitionVertex remove(Integer id){
-        if(vertices.containsKey(id)){
-            PartitionVertex toReturn=vertices.get(id);
+    public boolean reachMaxLevel(){
+        return level==max_depth;
+    }
+
+   /* public void remove(Integer id){
+        if(vertices.contains(id)){
             vertices.remove(id);
-            return toReturn;
         }
-        return null;
+    }*/
+    public void remove(PartitionVertex v){
+        if(vertices.contains(v.getId())){
+            this.vertices.remove(v.getId());
+            if(NW!=null){
+                if(NW.contain(v)){
+                    NW.remove(v);
+                }
+            }
+            if(NE!=null){
+                if(NE.contain(v)){
+                    NE.remove(v);
+                }
+            }
+            if(SW!=null){
+                if(SW.contain(v)){
+                 SW.remove(v);
+                }
+            }
+            if(SE!=null){
+                if(SE.contain(v)){
+                    SE.remove(v);
+                }
+            }
+        }
     }
     //return whether the quadtree's all vertices are removed
     public boolean isEmpty(){
@@ -152,7 +180,7 @@ public class QuadTree {
     }
 
     public void insert(PartitionVertex v){
-        this.vertices.put(v.getId(), v);
+        this.vertices.add(v.getId());
         if(level<max_depth) {
            /* if(this.vertices.size()==1){
                     NW=new QuadTree(top_bound,horizontal+1,left_bound, vertical, this, level+1, new HashMap <Integer, PartitionVertex>());
@@ -221,7 +249,7 @@ public class QuadTree {
         return NW==null && NE==null && SW==null && SE==null;
     }
 
-    public HashMap<Integer, PartitionVertex> getVertices(){
+    public HashSet<Integer> getVertices(){
         return vertices;
     }
 

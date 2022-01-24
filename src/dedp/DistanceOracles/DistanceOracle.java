@@ -6,6 +6,7 @@ import dedp.indexes.edgedisjoint.PartitionVertex;
 import dedp.structures.*;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.PriorityQueue;
 
@@ -35,7 +36,7 @@ public class DistanceOracle {
     //todo: may need to change VertexID type to int
     public static boolean approximate_comparison(double distance, QuadTree t, PartitionVertex u, HashMap<Integer, PartitionVertex> vertices)throws ObjectNotFoundException{
         //QuadTree copy = t.copy();
-        HashMap<Integer, PartitionVertex>copy = t.getVertices();
+        HashSet<Integer> copy = t.copy();
         PriorityQueue<DistanceFromSource> pq = new PriorityQueue<>();
         DistanceFromSource uDist = new DistanceFromSource();
         uDist.VertexID=u.getId();
@@ -47,7 +48,7 @@ public class DistanceOracle {
         while(!pq.isEmpty()){
             uDist=pq.poll();
             PartitionVertex v=vertices.get((int)uDist.VertexID);
-           if(copy.containsKey((int)uDist.VertexID)){
+           if(copy.contains((int)uDist.VertexID)){
                copy.remove((int)uDist.VertexID);
            }
             if(uDist.Distance>distance){

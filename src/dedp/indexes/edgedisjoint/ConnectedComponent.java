@@ -65,7 +65,7 @@ public class ConnectedComponent {
                 forU = forU.containingBlock(u);
                 forV = forV.containingBlock(v);
                 assert (forU.getLevel() == forV.getLevel());
-                if (DistanceOracle.isWellSeparated(distance, forU, forV, u, v, vertices)) {
+                if (DistanceOracle.isWellSeparated(distance, forU, forV, u, v, vertices)||(forU.reachMaxLevel()&&forV.reachMaxLevel())) {
                     SearchKey key = new SearchKey(forU.getMC(), forV.getMC(), forU.getLevel());
                     writeLock.lock();
                     DO.put(key, distance);

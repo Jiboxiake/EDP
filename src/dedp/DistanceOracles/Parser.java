@@ -1,18 +1,20 @@
 package dedp.DistanceOracles;
 //TODO: modify range and omit common bits.
 public class Parser {
-    private static final int max_lat=90;
-    private static final int min_lat=-90;
-    private static final int max_long=180;
-    private static final int min_long=-180;
+    public static final double max_lat=41.5;
+    public static final double min_lat=40.4;
+    public static final double max_long=-73.5;
+    public static final double min_long=-74.5;
     public static int normalizeLat(double latitude){
-        double z=(latitude-(double)min_lat)/((double)max_lat-(double)min_lat);
-        int result = (int)(2147483647.0*z);
+        assert(latitude>=min_lat&&latitude<=max_lat);
+        double z=(latitude-min_lat)/(max_lat-min_lat);
+        int result = (int)(1073741823.0*z);
         return result;
     }
     public static int normalizeLon(double longitude){
-        double z=(longitude-(double)min_long)/((double)max_long-(double)min_long);
-        int result = (int)(2147483647.0*z);
+        assert(longitude>=min_long&&longitude<=max_long);
+        double z=(longitude-min_long)/(max_long-min_long);
+        int result = (int)(1073741823.0*z);
         return result;
     }
 }

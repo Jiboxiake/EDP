@@ -145,10 +145,10 @@ public class DistanceOracleTest {
 
         int i=0;
         ExecutorService pool = Executors.newFixedThreadPool(16);
-        while(i<1000) {
+        while(i<10000) {
             i++;
-            int from = ThreadLocalRandom.current().nextInt(1, 264346/256 + 1);
-            int to = ThreadLocalRandom.current().nextInt(264346/5*4 + 1, 264346 + 1);
+            int from = ThreadLocalRandom.current().nextInt(1, 264346/2 + 1);
+            int to = ThreadLocalRandom.current().nextInt(264346/2 + 1, 264346 + 1);
             DOTestThread t = new DOTestThread();
             t.setParameter(i,from, to);
             t.setPartition(this.partition);
