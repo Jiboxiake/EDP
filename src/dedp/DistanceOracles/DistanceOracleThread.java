@@ -9,7 +9,7 @@ public class DistanceOracleThread extends Thread {
     public ConnectedComponent cc=null;
     public PartitionVertex source =null;
     public PartitionVertex destination = null;
-    public int distance = -1;
+    public float distance = -1;
     @Override
     public void run(){
         assert(distance>0);
@@ -23,7 +23,7 @@ public class DistanceOracleThread extends Thread {
     public void setCC(ConnectedComponent cc){
         this.cc=cc;
     }
-    public void setParameters(PartitionVertex source, PartitionVertex destination, int distance){
+    public void setParameters(PartitionVertex source, PartitionVertex destination, float distance){
         this.source=source;
         this.destination=destination;
         this.distance=distance;

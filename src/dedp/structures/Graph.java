@@ -365,6 +365,11 @@ public class Graph
 		}
 	}
 
+	public void printStats(){
+		System.out.println("Number of vertices is "+vertexes.size());
+		System.out.println("Number of edges is "+edges.size());
+	}
+
 	
 
 }

@@ -69,7 +69,7 @@ public class EdgeDisjointIndex
 			p.updateBridgeVertexes();
 			//p.updateBridgeVertexesBackward();
 			//MSaber: to measure index time only
-			p.loadSavedIndex();
+			//p.loadSavedIndex();
 			connectedCompDiscoverer = new ConnectedComponentsComputation();
 			connectedCompDiscoverer.buildSCC(p);//construct connected components of this partition
 			//p.updateToBridgeEdges();
@@ -95,7 +95,7 @@ public class EdgeDisjointIndex
 		for(int i = 0; i < partitions.length; i++)
 		{
 			partitions[i] = new Partition(i);
-			partitions[i].Index = this;
+			/*partitions[i].Index = this;*/
 		}
 	}	
 	

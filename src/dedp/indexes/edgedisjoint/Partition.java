@@ -16,11 +16,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
-import dedp.DistanceOracles.DistanceOracle;
-import dedp.DistanceOracles.DistanceOracleThread;
-import dedp.DistanceOracles.Global;
-import dedp.DistanceOracles.QuadTree;
+import dedp.DistanceOracles.*;
 import dedp.algorithms.Dijkstra;
 import dedp.common.Constants;
 import dedp.exceptions.DuplicateEntryException;
@@ -40,7 +38,7 @@ public class Partition
 	{
 		this.Label = label;
 		
-		File indexFile = new File(getIndexFileName());
+		/*File indexFile = new File(getIndexFileName());
 		if(!indexFile.exists())
 		{
 		    indexFile.createNewFile();
@@ -54,7 +52,7 @@ public class Partition
 		if(!toBridgeEdgesIndexFileBackward.exists())
 		{
 			toBridgeEdgesIndexFileBackward.createNewFile();
-		}
+		}*/
 	}
 
 	public Partition(int label, String DO_NAME)throws IOException{
@@ -102,7 +100,7 @@ public class Partition
 		ArrayList<PartitionEdge> edges;
 		PartitionEdge edge;
 		reader = new BufferedReader(new FileReader(getToBridgeFileName()));
-		vertexToBridgeEdges.clear();
+		//vertexToBridgeEdges.clear();
 		while((line = reader.readLine()) != null)
 		{
 			temp = line.split(",");
@@ -128,7 +126,7 @@ public class Partition
 			Collections.sort(edges);
 			//vertexToBridgeEdges.put(from, edges);
 			//we can modify the "from" as a quadtree block
-			vertexToBridgeEdges.put(from, new BridgeEdgesEntry(edges, timeStamp));
+			//vertexToBridgeEdges.put(from, new BridgeEdgesEntry(edges, timeStamp));
 			PartitionVertex sourceVertex = this.getVertex(from);
 			sourceVertex.numOfBridgeEdgesComputed = edges.size();
 			sourceVertex.allBridgeEdgesComputed = true;
@@ -136,7 +134,7 @@ public class Partition
 		reader.close();
 		//fill the vertexToBridgeEdgesBackward
 		reader = new BufferedReader(new FileReader(getToBridgeFileName_Backward()));
-		vertexToBridgeEdgesBackward.clear();
+		//vertexToBridgeEdgesBackward.clear();
 		while((line = reader.readLine()) != null)
 		{
 			temp = line.split(",");
@@ -157,7 +155,7 @@ public class Partition
 				edges.add(edge);
 			}
 			Collections.sort(edges);
-			vertexToBridgeEdgesBackward.put(from, edges);
+			//vertexToBridgeEdgesBackward.put(from, edges);
 		}
 		reader.close();
 	}
@@ -245,7 +243,7 @@ public class Partition
 	public void addToBridgeIndexEntry(int from, BridgeEdgesEntry entry) throws Exception
 	{
 		//append a line to the end of the file
-		Writer output;
+	/*	Writer output;
 		output = new BufferedWriter(new FileWriter(getToBridgeFileName(), true));
 		//write the bridge edges
 		output.append(from + "," + entry.BridgeEdges.size() + "," + entry.TimeStamp + "\n"); //format is SourceVertexId,NumberOfToBridgeEdges, timestamp
@@ -253,7 +251,7 @@ public class Partition
 		{
 			output.append(edge.getTo().getId() + "," + edge.getWeight() + "," + edge.PathLength + "\n"); //format is BridgeVertexId,ShortestDistance
 		}
-		output.close();
+		output.close();*/
 	}
 
 	/*
@@ -578,14 +576,14 @@ public class Partition
 		//return directedPathEntry;
 	}
 
-	public int getEdgeWeightDO(int from, int to) throws Exception {
+	public float getEdgeWeightDO(int from, int to) throws Exception {
 		return getEdgeWeight(vertexes.get(from), vertexes.get(to));
 	}
 
-	public int getEdgeWeight(PartitionVertex u, PartitionVertex v)throws Exception{
+	public float getEdgeWeight(PartitionVertex u, PartitionVertex v)throws Exception{
 		ConnectedComponent cc = this.ConnectedComponents.getConnectedComponent(u.ComponentId);
 		assert(u.ComponentId==v.ComponentId&&cc.vertices.containsKey(u.vertexId)&&cc.vertices.containsKey(v.vertexId));
-		int result = cc.lookUp(u,v);
+		float result = cc.lookUp(u,v);
 		if(result>0){
 			Global.DO_hit();
 			return result;
@@ -601,82 +599,42 @@ public class Partition
 		t.start();
 		return result;
 	}
-	
+
+	//Now the current implementation still stores the exact bridge vertices
+	//todo: I may still need to store references to bridge computation threads in each CC
 	public PartitionEdge getToBridgeEdge(int fromVertexId, int edgeOrder) throws Exception
 	{
 		ArrayList<PartitionEdge> toBridgeEdges = null;
 		PartitionEdge partitionEdge = null;
-		Float weight = null;
 		PartitionVertex sourceVertex = this.getVertex(fromVertexId);
+		ConnectedComponent cc = this.ConnectedComponents.getConnectedComponent(sourceVertex.ComponentId);
+		Float weight = null;
+		BridgeEdgesEntry entry=null;
 		sourceVertex.lock.lock();
-		BridgeEdgesEntry entry = vertexToBridgeEdges.get(fromVertexId);
-	/*	if(entry == null || (entry != null && entry.TimeStamp < ConnectedComponents.getComponentTimeStamp(sourceVertex.ComponentId))) //we have to compute it and save it
-		{
-			//run the thread to start computing the shortcuts
-			try
-			{
-				
-				sourceVertex.numOfBridgeEdgesComputed = 0;
-				
-				//msaber: begin fixing threading issue
-				toBridgeEdges = new ArrayList<PartitionEdge>(this.bridgeVertexes.size());
-				if(entry == null)
-				{
-					entry = new BridgeEdgesEntry();
+		//vertexToBridgeEdges=this.ConnectedComponents.getConnectedComponent(sourceVertex.ComponentId).vertexToBridgeEdges;
+			//todo: fix this with new API
+			entry = cc.getBridgeEdgeEntry(fromVertexId);
+			if (entry == null) {
+				try {
+
+					sourceVertex.numOfBridgeEdgesComputed = 0;
+					entry=cc.createNewEntry(fromVertexId);
+					//System.out.println("Partition is "+this.Label+" add "+fromVertexId);
+					//System.out.println(vertexToBridgeEdges);
+				} finally {
+					sourceVertex.lock.unlock();
 				}
-				else
-				{
-					entry.Thread.NonTerminated = false;
-					//entry.Thread.join();
-					entry = new BridgeEdgesEntry();
-					//vertexToBridgeEdges.remove(entry);
-				}
-				
-				entry.BridgeEdges = toBridgeEdges;
-				entry.TimeStamp = ConnectedComponents.advanceTimeStamp();
-				vertexToBridgeEdges.put(fromVertexId, entry);//todo: the key will be a morton code for DO
-				//while(vertexToBridgeEdges.get(fromVertexId) == null);
-				//debugging
-				//if(Constants.Debug)
-				{
-					//if(fromVertexId == 555962 || fromVertexId == 166568 || fromVertexId == 151268 || fromVertexId == 168840 || fromVertexId == 151145)
-					{
-						//System.out.println("noticee: vertex " + fromVertexId + " is added...");
-					}
-				}
-				//msaber: end fixing threading issue
-			}
-			finally
-			{
+				toBridgeEdges=entry.BridgeEdges;
+				BridgeEdgesComputationThread bridgeThread = new BridgeEdgesComputationThread();
+				entry.Thread = bridgeThread;
+				bridgeThread.fromVertexId = fromVertexId;
+				bridgeThread.partition = this;
+				bridgeThread.start();
+			} else {
+				toBridgeEdges = entry.BridgeEdges;
 				sourceVertex.lock.unlock();
 			}
-			/*
-			toBridgeEdges = new ArrayList<PartitionEdge>(this.bridgeVertexes.size());
-			if(entry == null)
-			{
-				entry = new BridgeEdgesEntry();
-			}
-			else
-			{
-				vertexToBridgeEdges.remove(entry);
-			}
-			entry.BridgeEdges = toBridgeEdges;
-			entry.TimeStamp = ConnectedComponents.advanceTimeStamp();
-			vertexToBridgeEdges.put(fromVertexId, entry);
-			*/
-			//run the thread to compute the edges
-	/*		BridgeEdgesComputationThread bridgeThread = new BridgeEdgesComputationThread();
-			entry.Thread = bridgeThread;
-			bridgeThread.fromVertexId = fromVertexId;
-			bridgeThread.partition = this;
-			bridgeThread.start(); //compute and save to disk (one thread per source vertex);
-		}
-		else
-		{
-			toBridgeEdges = entry.BridgeEdges;
-			sourceVertex.lock.unlock();
-		}
-		
+
 		sourceVertex.lock.lock();
 		try
 		{
@@ -684,40 +642,50 @@ public class Partition
 			{
 				sourceVertex.bridgeEdgeAdded.await();
 			}
+			if (edgeOrder < sourceVertex.numOfBridgeEdgesComputed) {
+				partitionEdge = toBridgeEdges.get(edgeOrder);
+				entry.NumberOfUsedEdges = Math.max(entry.NumberOfUsedEdges, edgeOrder);
+			}
+
+			return partitionEdge;
+
 		}
 		finally
 		{
 			sourceVertex.lock.unlock();
 		}
-		if(edgeOrder < sourceVertex.numOfBridgeEdgesComputed)
-		{
-			partitionEdge = toBridgeEdges.get(edgeOrder);
-			entry.NumberOfUsedEdges = Math.max(entry.NumberOfUsedEdges, edgeOrder);
-		}
-		return partitionEdge;*/
-		return null;
 	}
 	//Now every CC knows its bridge vertices
-	public PartitionEdge getToBridgeEdge(PartitionVertex from, int edgeOrder){
-		ConnectedComponent cc = this.ConnectedComponents.getConnectedComponent(from.ComponentId);
-		//now what to do? get a thread to find all vertices?
-		return null;
+	public PartitionEdge getToBridgeEdge(PartitionVertex from, int edgeOrder) throws Exception {
+		return getToBridgeEdge(from.vertexId, edgeOrder);
 	}
 
 
 	public void addToBridgeEdge(int from, int to, DistanceFromSource distFromSource) throws ObjectNotFoundException
 	{
-		PartitionEdge partitionEdge = new PartitionEdge();
-		partitionEdge.setFrom(this.getVertex(from));
-		partitionEdge.setTo(this.getVertex(to));
-		partitionEdge.setWeight(distFromSource.Distance);
-		partitionEdge.PathLength = distFromSource.PathLength;
-		while(vertexToBridgeEdges.get(from) == null)
-		{
-			System.out.println("Vertex with id " + from + " does not exist in partition " + this.Label);
-		}
-		//vertexToBridgeEdges.get(from).add(partitionEdge);
-		vertexToBridgeEdges.get(from).BridgeEdges.add(partitionEdge);
+		PartitionVertex sourceVertex = this.getVertex(from);
+		//vertexToBridgeEdges=this.ConnectedComponents.getConnectedComponent(sourceVertex.ComponentId).vertexToBridgeEdges;
+		ConnectedComponent cc = this.ConnectedComponents.getConnectedComponent(sourceVertex.ComponentId);
+			PartitionEdge partitionEdge = new PartitionEdge();
+			partitionEdge.setFrom(this.getVertex(from));
+			partitionEdge.setTo(this.getVertex(to));
+			partitionEdge.setWeight(distFromSource.Distance);
+			partitionEdge.PathLength = distFromSource.PathLength;
+			cc.addBridgeEntry(from, partitionEdge);
+			//BridgeEdgesEntry entry = vertexToBridgeEdges.get(from);
+			/*while (vertexToBridgeEdges.get(from) == null) {
+				//System.out.println(vertexToBridgeEdges);
+				System.out.println("Partition is " + this.Label + " error is at: " + from);
+				//boolean b = vertexToBridgeEdges.containsKey(from);
+				//System.exit(1);
+				//System.out.println("Vertex with id " + from + " does not exist in partition " + this.Label);
+			}
+			//vertexToBridgeEdges.get(from).add(partitionEdge);
+
+			vertexToBridgeEdges.get(from).BridgeEdges.add(partitionEdge);*/
+
+
+
 	}
 
 	
@@ -740,30 +708,33 @@ public class Partition
 	
 	public ArrayList<PartitionEdge> getToBridgeEdges(int fromVertexId) throws Exception
 	{
-		//ArrayList<PartitionEdge> toBridgeEdges = vertexToBridgeEdges.get(fromVertexId);
+	/*	PartitionVertex sourceVertex = this.getVertex(fromVertexId);
+		vertexToBridgeEdges=this.ConnectedComponents.getConnectedComponent(sourceVertex.ComponentId).vertexToBridgeEdges;
 		BridgeEdgesEntry entry = vertexToBridgeEdges.get(fromVertexId);
 		PartitionEdge partitionEdge = null;
 		Float weight = null;
-		PartitionVertex sourceVertex = this.vertexes.get(fromVertexId);
-	/*	if(entry == null || (entry != null && entry.TimeStamp < ConnectedComponents.getComponentTimeStamp(sourceVertex.ComponentId))) //we have to compute it and save it
+
+		if(entry == null ) //we have to compute it and save it
 		{
 			entry = new BridgeEdgesEntry();
-			entry.TimeStamp = ConnectedComponents.advanceTimeStamp();
 			entry.BridgeEdges = Dijkstra.shortestDistance(this, fromVertexId, this.bridgeVertexes);
 			Collections.sort(entry.BridgeEdges);
+			synchronized (vertexToBridgeEdges) {
 			vertexToBridgeEdges.put(fromVertexId, entry);
+		}
 			//save those computed edges into the "getToBridgeFileName" file
 			if(Constants.SaveIndexEntriesToDisk)
 			{
 				addToBridgeIndexEntry(fromVertexId, entry);
 			}
-		}*/
-		return entry.BridgeEdges;
+		}
+		return entry.BridgeEdges;*/
+		return null;
 	}
 	
 	public ArrayList<PartitionEdge> getToBridgeEdgesBackward(int fromVertexId) throws Exception
 	{
-		ArrayList<PartitionEdge> toBridgeEdgesBackward = vertexToBridgeEdgesBackward.get(fromVertexId);
+		/*ArrayList<PartitionEdge> toBridgeEdgesBackward = vertexToBridgeEdgesBackward.get(fromVertexId);
 		if(toBridgeEdgesBackward == null) //we have to compute it and save it
 		{
 			toBridgeEdgesBackward = Dijkstra.shortestDistanceBackward(this, fromVertexId, this.bridgeVertexes);
@@ -773,10 +744,13 @@ public class Partition
 			addToBridgeIndexEntry_Backward(fromVertexId, toBridgeEdgesBackward);
 		}
 		return toBridgeEdgesBackward;
+		 */
+		return null;
 	}
 	
 	
-	public EdgeDisjointIndex Index = null;
+	//public EdgeDisjointIndex Index = null;
+	public HybridDOEDPIndex Index=null;
 	public Graph ContractedGraph = null;
 	
 	public Collection<Integer> bridgeVertexes = new ArrayList<Integer>();
@@ -788,14 +762,14 @@ public class Partition
 	public String DO_NAME;
 	
 	protected Map<Integer, PartitionVertex> vertexes = new HashMap<Integer, PartitionVertex>();
-	protected Map<Integer, PartitionEdge> edges = new HashMap<Integer, PartitionEdge>();
+	public Map<Integer, PartitionEdge> edges = new HashMap<Integer, PartitionEdge>();
 	
 	
 	//protected Map<Long, Float> directedEdgeWeights = new HashMap<Long, Float>();
 	protected Map<Long, DirectedPathEntry> directedEdgeWeights = new HashMap<Long, DirectedPathEntry>();
-	protected Map<Integer, BridgeEdgesEntry> vertexToBridgeEdges  = new HashMap<Integer, BridgeEdgesEntry>(); //forward
+	protected Map<Integer, BridgeEdgesEntry> vertexToBridgeEdges  = null; //forward
 	//protected Map<Integer, ArrayList<PartitionEdge>> vertexToBridgeEdges  = new HashMap<Integer, ArrayList<PartitionEdge>>(); //forward
-	protected Map<Integer, ArrayList<PartitionEdge>> vertexToBridgeEdgesBackward  = new HashMap<Integer, ArrayList<PartitionEdge>>(); //backward
+	//protected Map<Integer, ArrayList<PartitionEdge>> vertexToBridgeEdgesBackward  = new HashMap<Integer, ArrayList<PartitionEdge>>(); //backward
 	protected Integer[] edgeIDs = null;
 	//the following section is specific to the dynamic part
 	int totalPathLengthDirected = 0;
@@ -810,7 +784,7 @@ public class Partition
 		this.vertexes.clear();
 		this.directedEdgeWeights.clear();
 		this.vertexToBridgeEdges.clear();
-		this.vertexToBridgeEdgesBackward.clear();
+		//this.vertexToBridgeEdgesBackward.clear();
 		this.directedPathsRequested.clear();
 		this.edgeIDs = null;
 	}

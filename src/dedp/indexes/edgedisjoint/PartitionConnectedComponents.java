@@ -130,7 +130,7 @@ public class PartitionConnectedComponents
 		connectedComponents=new HashMap<>();
 		for(int i=0; i<verticesToCC.size(); i++){
 			assert(verticesToCC.containsKey(i)&&edgesToCC.containsKey(i));
-			ConnectedComponent cc = new ConnectedComponent(i, partition, verticesToCC.get(i),edgesToCC.get(i));
+			ConnectedComponent cc = new ConnectedComponent(i, partition, verticesToCC.get(i),edgesToCC.get(i), bridgeVerticesToCC.get(i));
 			connectedComponents.put(i, cc);
 		}
 	}

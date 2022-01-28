@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Random;
 
+import dedp.DistanceOracles.HybridDOEDPIndex;
 import dedp.common.Constants;
 import dedp.common.Helper;
 import dedp.exceptions.ObjectNotFoundException;
@@ -391,8 +392,253 @@ public class HybridTraversal
 	}
 
 	//TODO: finish this
-	public static SPResult shortestDistanceWithEdgeDisjointDistanceOracle(EdgeDisjointIndex index, int source, int destination, List<Integer> labelIDs) throws Exception{
-		return null;
+	public static SPResult shortestDistanceWithEdgeDisjointDistanceOracle(HybridDOEDPIndex index, int source, int destination, List<Integer> labelIDs) throws Exception{
+
+		SPResult result = new SPResult();
+		result.Distance = -1;
+		result.NumberOfExploredEdges = 0;
+		result.NumberOfExploredNodes = 0;
+		result.NumberOfHybridEdgesExplored = 0;
+		//
+		PriorityQueue<EdgeDisjointQueueEntry> q = new PriorityQueue<EdgeDisjointQueueEntry>();
+		//maps partition id to a distanceMap
+		Map<Integer, Map<Integer, EdgeDisjointQueueEntry>> partitionToDistMap = new HashMap<Integer, Map<Integer, EdgeDisjointQueueEntry>>();
+		for(int label : labelIDs)
+		{
+			partitionToDistMap.put(label, new HashMap<Integer, EdgeDisjointQueueEntry>());
+		}
+		Map<Integer, EdgeDisjointQueueEntry> distMap = null;
+		Map<Integer, EdgeDisjointQueueEntry> lblDistMap = null;
+		ArrayList<PartitionEdge> toBridgeEdges;
+		PartitionEdge e;
+		int i = 0;
+		int countOfBridgeEdges = 0;
+		EdgeDisjointQueueEntry lblDist = null;
+		Partition currentPartition = null;
+		PartitionVertex u = null;
+		PartitionVertex destVertex = null;
+		PartitionVertex toVertex = null;
+		EdgeDisjointQueueEntry uDist = new EdgeDisjointQueueEntry();
+		uDist.VertexId = source;
+		/*Research: does this choice affects performance?*/
+		uDist.setPartitionId(index.PlainGraph.getVertex(source), labelIDs);
+		uDist.Distance = 0;
+		uDist.PotentialDistance = 0;
+		uDist.OutEdgeIdToProcess = 0;
+		uDist.PathLength = 0;
+		if(uDist.PartitionId != DistFromSource.NoPartitionExistsId)
+		{
+			q.add(uDist);
+			partitionToDistMap.get(uDist.PartitionId).put(source, uDist);
+			result.NumberOfExploredNodes++;
+		}
+		EdgeDisjointQueueEntry toDist = null;
+		float bestDistanceSoFar = Float.POSITIVE_INFINITY;
+		float weight = 0;
+		List<Integer> otherHomes = null;
+		float newDistance = 0;
+		boolean furtherExplore = false;
+	/*	int iterationId = 0;
+		Random traversalGuess = new Random(source * destination);
+		float traversalGuessThreshold = 0.5f;
+		int alreadyExplored = 0;*/
+		int uId, toVertexId;
+		long totalStartTime = System.nanoTime();
+		int count=0;
+		while(!q.isEmpty())
+		{
+			//System.out.println(bestDistanceSoFar);
+			count++;
+
+			result.NumberOfExploredNodes++;
+			uDist = q.poll();
+		/*	if(count%50==0){
+				count++;
+				count--;
+			}*/
+			//System.out.println("Currently is at "+uDist.VertexId);
+			currentPartition = index.getPartition(uDist.PartitionId);
+			distMap = partitionToDistMap.get(uDist.PartitionId);
+			u = currentPartition.getVertex(uDist.VertexId);
+			uId = uDist.VertexId;
+			destVertex = currentPartition.getVertex(destination);
+			//check if the current vertex is the destination
+			//if it is, we are done and can return this
+			if(uId == destination)
+			{
+				result.Distance = uDist.Distance;
+				result.PathLength = uDist.PathLength;
+				//System.out.println("Number of iterations is "+count);
+				break;
+			}
+			//if the destination vertex is in the current partition and in the same CC
+			if(destVertex != null && currentPartition.inTheSameComponent(u, destVertex))
+			{
+				weight = currentPartition.getEdgeWeightDO(uId, destination);
+				newDistance = uDist.Distance + weight;
+				//System.out.println(newDistance);
+				//directedPathEntry = currentPartition.getEdgeWeight(uId, destination);
+				//newDistance = uDist.Distance + directedPathEntry.Weight;
+				//if we observe better distance than the best so far
+				if(newDistance < bestDistanceSoFar)
+				{
+					//System.out.println(bestDistanceSoFar);
+					//result.NumberOfExploredEdges++;
+					//get the distance of to node
+					//check if destination is in the distance map
+					toDist = distMap.get(destination);
+					if(toDist == null)
+					{
+						toDist = new EdgeDisjointQueueEntry();
+						toDist.VertexId = destination;
+						toDist.PartitionId = currentPartition.Label;
+						toDist.Distance = newDistance;
+						toDist.PotentialDistance = toDist.Distance;
+						toDist.OutEdgeIdToProcess = 0;
+						q.add(toDist);
+						distMap.put(destination, toDist);
+					}
+					//just like Dij, we find better distance for destination
+					else if (toDist.Distance > newDistance)
+					{
+						toDist.Distance = newDistance;
+						toDist.PotentialDistance = newDistance;
+						toDist.OutEdgeIdToProcess = 0;
+						q.remove(toDist); //remove if it exists
+						q.add(toDist);
+					}
+					bestDistanceSoFar = newDistance;
+				}
+			}
+			//if Dij reaches a bridge vertex
+			if(u.isBridge())
+			{
+				otherHomes = Helper.intersection(u.OtherHomes, labelIDs);
+				for(int otherHome : otherHomes)
+				{
+					result.NumberOfHybridEdgesExplored++;
+					lblDistMap = partitionToDistMap.get(otherHome);
+					lblDist = lblDistMap.get(uId);
+					if(lblDist == null)
+					{
+						lblDist = new EdgeDisjointQueueEntry();
+						lblDist.VertexId = uId;
+						lblDist.PartitionId = otherHome;
+						lblDist.Distance = uDist.Distance;
+						lblDist.PotentialDistance = uDist.Distance;
+						lblDist.OutEdgeIdToProcess = 0;
+						q.add(lblDist);
+						lblDistMap.put(lblDist.VertexId, lblDist);
+					}
+					else if(lblDist.Distance > uDist.Distance)
+					{
+						lblDist.Distance = uDist.Distance;
+						lblDist.PotentialDistance = uDist.Distance;
+						lblDist.OutEdgeIdToProcess = 0;
+						lblDist.OutEdgeIdToProcess = 0;
+						q.remove(lblDist); //remove if it exists
+						q.add(lblDist);
+					}
+				}
+			}
+			//toBridgeEdges = currentPartition.getToBridgeEdges(uId);
+			//toBridgeEdgesSize = toBridgeEdges.size();
+			//toBridgeEdgesSizeMinusOne = toBridgeEdgesSize - 1;
+			countOfBridgeEdges = 0;
+			for(i = uDist.OutEdgeIdToProcess; ; i++) //here explore only edges that lead to the external world
+			{
+				//e = toBridgeEdges.get(i);
+				//todo: error happening here
+				e = currentPartition.getToBridgeEdge(uId, i);
+				if(e == null)
+				{
+					break;
+				}
+				toVertex = e.getTo();//get a specific bridge vertex
+				toVertexId = toVertex.getId();
+				//reach the max number of edges, in our case don't worry as degree of a vertex will be low.
+				if(countOfBridgeEdges == index.MaxToExplore /*&& (i < toBridgeEdgesSizeMinusOne)*/)
+				{
+					if(toVertexId != destination)
+					{
+						uDist.OutEdgeIdToProcess = i;
+						uDist.PotentialDistance = uDist.Distance + e.getWeight();
+						q.add(uDist);
+						break;
+					}
+				}
+
+				toDist = distMap.get(toVertexId);
+				newDistance = uDist.Distance + e.getWeight();
+				//if going to bridge vertex is already more expensive than current explored path to dest, we ignore it
+				//or if the explored path to the bridge vertex is less expensive.
+				if(newDistance >= bestDistanceSoFar || (toDist != null && (toDist.Distance <= newDistance)))
+				{
+					continue;
+				}//else, if the new distance is better
+				countOfBridgeEdges++;
+				result.NumberOfExploredEdges++;
+				otherHomes = Helper.intersection(toVertex.OtherHomes, labelIDs);
+				furtherExplore = false;
+				if(otherHomes.size() > 0)
+				{
+					//update the distance to the toVertex if we have a shorter way
+					if(toDist == null)
+					{
+						toDist = new EdgeDisjointQueueEntry();
+						toDist.VertexId = toVertexId;
+						toDist.PartitionId = currentPartition.Label;
+						toDist.Distance = newDistance;
+						toDist.PotentialDistance = newDistance;
+						q.add(toDist);
+						distMap.put(toDist.VertexId, toDist);
+					}
+					else if(toDist.Distance > newDistance)
+					{
+						toDist.Distance = newDistance;
+						toDist.PotentialDistance = newDistance;
+						q.remove(toDist); //remove if it exists
+						q.add(toDist);
+					}
+					furtherExplore = true;
+				}
+				if(furtherExplore)
+				{
+					for(int otherHome : otherHomes)
+					{
+						//get the distance map of the other partition
+						lblDistMap = partitionToDistMap.get(otherHome);
+						lblDist = lblDistMap.get(toVertexId);
+						if(lblDist == null)
+						{
+							lblDist = new EdgeDisjointQueueEntry();
+							lblDist.VertexId = toVertexId;
+							lblDist.PartitionId = otherHome;
+							lblDist.Distance = newDistance;
+							lblDist.PotentialDistance = newDistance;
+							q.add(lblDist);
+							lblDistMap.put(lblDist.VertexId, lblDist);
+						}
+						else if(lblDist.Distance > newDistance)
+						{
+							lblDist.Distance = newDistance;
+							lblDist.PotentialDistance = newDistance;
+							q.remove(lblDist); //remove if it exists
+							q.add(lblDist);
+						}
+					}
+				}
+			}
+		}
+		long totalEndTime = System.nanoTime();
+/*
+		Helper.DebugMsg("Edge disjoint dijkstra: destination checking = " + (destinationChecking));
+		Helper.DebugMsg("Edge disjoint dijkstra: isBridge handking logic = " + (bridgeNodeTime));
+		Helper.DebugMsg("Edge disjoint dijkstra: exploring bridge edges = " + (exploringExternalEdgesTime));
+		Helper.DebugMsg("Edge disjoint dijkstra: first part after dequeue = " + (afterDequeueTime));*/
+		result.TotalProcessingTime = totalEndTime - totalStartTime;
+		return result;
+		
 	}
 	
 }

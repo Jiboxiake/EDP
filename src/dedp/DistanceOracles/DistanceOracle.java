@@ -26,8 +26,8 @@ public class DistanceOracle {
     /*
     //Here we will implement an optimization.
      */
-    public static boolean isWellSeparated(int distance, QuadTree t1, QuadTree t2, PartitionVertex u, PartitionVertex v, HashMap<Integer, PartitionVertex> vertices)throws ObjectNotFoundException{
-        double adjusted_d= (double)distance/s;
+    public static boolean isWellSeparated(float distance, QuadTree t1, QuadTree t2, PartitionVertex u, PartitionVertex v, HashMap<Integer, PartitionVertex> vertices)throws ObjectNotFoundException{
+        double adjusted_d= distance/s;
         return approximate_comparison(adjusted_d, t1, u, vertices)&&approximate_comparison(adjusted_d, t2, v, vertices);
     }
     /*
@@ -73,68 +73,9 @@ public class DistanceOracle {
         //traverse all vertices in the block and the max distance is still leq distance, we know they are well separated then
         return true;
     }
-    /*
-    this method takes a graph as input and construct a DO for each partition's connected component.
-     */
-    public static void DO_Construction(){
-
-    }
 
 
-    //todo: want to only do this on a partition subgraph, not a whole graph
-   /* public boolean semi_dijkstra(int distance, long source, Graph graph, Integer Label, QuadTree t1)throws ObjectNotFoundException {
-        distance = distance/(int)s;
-        SPResult result = new SPResult();
-        result.Distance = -1;
-        result.NumberOfExploredEdges = 0;
-        result.NumberOfExploredNodes = 0;
-        //intialize single-source
-        PriorityQueue<DistanceFromSource> q = new PriorityQueue<DistanceFromSource>();
-        Vertex u = null;
-        DistanceFromSource uDist = new DistanceFromSource();
-        uDist.VertexID = source;
-        uDist.Distance = 0;
-        q.add(uDist);
-        Map<Long, DistanceFromSource> distMap = new HashMap<Long, DistanceFromSource>();
-        distMap.put(source, uDist);
-        DistanceFromSource toDist = null;
-        while(!q.isEmpty())
-        {
-            result.NumberOfExploredNodes++;
-            uDist = q.poll();
-            u = graph.getVertex(uDist.VertexID);
-            //remove the most recent vertex from the quadtree
-            MortonCode mc = u.mc;
-            t1.removal(mc);
-            if(uDist.Distance>distance)
-            {
-               return t1.isEmpty();
-            }
-            for(Edge e : u.getOutEdges()) //here explore only direct monoedges and bridge edges only of the same color
-            {
-                if(Label==(e.getLabel()))
-                {
-                    Vertex to = e.getTo();
-                    result.NumberOfExploredEdges++;
-                    //get the distance of to node
-                    toDist = distMap.get(to.getID());
-                    if(toDist == null)
-                    {
-                        toDist = new DistanceFromSource();
-                        toDist.VertexID = to.getID();
-                        toDist.Distance = Float.POSITIVE_INFINITY;
-                        distMap.put(toDist.VertexID, toDist);
-                    }
-                    if(toDist.Distance > uDist.Distance + e.getWeight())
-                    {
-                        toDist.Distance = uDist.Distance + e.getWeight();
-                        q.remove(toDist); //remove if it exists
-                        q.add(toDist);
-                    }
-                }
-            }
-        }
-        return false;
-    }*/
+
+
 
 }

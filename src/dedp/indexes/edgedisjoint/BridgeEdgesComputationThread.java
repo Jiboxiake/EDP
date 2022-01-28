@@ -39,6 +39,29 @@ public class BridgeEdgesComputationThread extends Thread
 				// TODO Auto-generated catch block
 				e2.printStackTrace();
 			}
+
+			//add to bridge edge
+			if(partition.isBridgeVertex((int)uDist.VertexID)&&uDist.VertexID!=sourceVertex.vertexId)
+			{
+				try
+				{
+					sourceVertex.lock.lock();
+					//partition.addToBridgeEdge(this.fromVertexId, (int)toDist.VertexID, toDist.Distance);
+					//
+					partition.addToBridgeEdge(this.fromVertexId, (int)uDist.VertexID, uDist);
+					sourceVertex.numOfBridgeEdgesComputed++;
+					sourceVertex.bridgeEdgeAdded.signalAll();
+
+				} catch (ObjectNotFoundException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				finally
+				{
+					sourceVertex.lock.unlock();
+				}
+			}
+
 			for(PartitionEdge e : u.outEdges) //here explore only direct monoedges and bridge edges only of the same color
 			{
 				PartitionVertex to = e.getTo();
@@ -52,7 +75,7 @@ public class BridgeEdgesComputationThread extends Thread
 					toDist.PathLength = uDist.PathLength + 1;
 					q.add(toDist);
 					distMap.put(toDist.VertexID, toDist);
-					if(partition.isBridgeVertex((int)toDist.VertexID))
+			/*		if(partition.isBridgeVertex((int)toDist.VertexID))
 					{
 						try 
 						{
@@ -69,7 +92,7 @@ public class BridgeEdgesComputationThread extends Thread
 						{
 							sourceVertex.lock.unlock();
 						}
-					}
+					}*/
 				}
 				else if(toDist.Distance > uDist.Distance + e.getWeight())
 				{
@@ -93,7 +116,8 @@ public class BridgeEdgesComputationThread extends Thread
 		try {
 			if(NonTerminated)
 			{
-				partition.addToBridgeIndexEntry(fromVertexId, partition.vertexToBridgeEdges.get(fromVertexId));
+				//store to local disk
+				//partition.addToBridgeIndexEntry(fromVertexId, partition.vertexToBridgeEdges.get(fromVertexId));
 			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
