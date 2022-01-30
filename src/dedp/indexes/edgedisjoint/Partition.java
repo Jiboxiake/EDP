@@ -584,7 +584,7 @@ public class Partition
 		ConnectedComponent cc = this.ConnectedComponents.getConnectedComponent(u.ComponentId);
 		assert(u.ComponentId==v.ComponentId&&cc.vertices.containsKey(u.vertexId)&&cc.vertices.containsKey(v.vertexId));
 		float result = cc.lookUp(u,v);
-		if(result>0){
+		if(result>0.0){
 			Global.DO_hit();
 			return result;
 		}

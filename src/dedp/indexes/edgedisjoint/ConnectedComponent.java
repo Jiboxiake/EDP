@@ -1,9 +1,6 @@
 package dedp.indexes.edgedisjoint;
 
-import dedp.DistanceOracles.DistanceOracle;
-import dedp.DistanceOracles.MortonCode;
-import dedp.DistanceOracles.QuadTree;
-import dedp.DistanceOracles.SearchKey;
+import dedp.DistanceOracles.*;
 import dedp.exceptions.ObjectNotFoundException;
 
 import java.util.ArrayList;
@@ -80,8 +77,10 @@ public class ConnectedComponent {
                     writeLock.lock();
                     DO.put(key, distance);
                     writeLock.unlock();
+                    Global.addWSP();
                     return;
                 }
+                Global.addNotWellSeparated();
             }
         }
         finally{

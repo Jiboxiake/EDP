@@ -10,6 +10,9 @@ import dedp.structures.Vertex;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class EDP_DO_Test {
     private Graph g;
@@ -144,12 +147,13 @@ public class EDP_DO_Test {
 
     public void test() throws Exception {
         ArrayList<Integer>list = new ArrayList<>();
-       for(int i=0; i<g.LabelsIDs.size()/7;i++){
+       for(int i=0; i<g.LabelsIDs.size();i++){
             list.add(i);
         }
        // list.add(2);
         SPResult r=HybridTraversal.shortestDistanceWithEdgeDisjointDistanceOracle(index, 345, 21312, list);
-        System.out.println("Shortest distance = " + r.Distance);
+        //System.out.println("Shortest distance = " + r.Distance);
+        Global.printResult();
     }
     public void test2() throws Exception {
         ArrayList<Integer>list = new ArrayList<>();
@@ -157,12 +161,33 @@ public class EDP_DO_Test {
             list.add(i);
         }
         SPResult r=HybridTraversal.shortestDistanceWithEdgeDisjointDistanceOracle(index, 9, 1, list);
-        System.out.println("Shortest distance = " + r.Distance);
+        Global.printResult();
     }
-
+    //todo: check garbage collection, implement LRU regarding bridge edges
     public static void main(String[] args) throws Exception {
         EDP_DO_Test t = new EDP_DO_Test();
         t.loadGraph();
-        t.test();
+        ArrayList<Integer>list = new ArrayList<>();
+        for(int i=0; i<t.g.LabelsIDs.size()/4;i++){
+            list.add(i);
+        }
+        int i =0;
+       // ExecutorService pool = Executors.newFixedThreadPool(5);
+        while(i<6){
+            i++;
+            int from = ThreadLocalRandom.current().nextInt(1, 271450/300 + 1);
+            int to = ThreadLocalRandom.current().nextInt(271450/5*4 + 1, 271450+1);
+            EDP_DO_Test_Thread th = new EDP_DO_Test_Thread();
+           // th.setParameter(i,from, to, list, t.index);
+           // pool.execute(th);
+           SPResult r=HybridTraversal.shortestDistanceWithEdgeDisjointDistanceOracle(t.index, from, to, list);
+            System.out.println("Shortest distance = " + r.Distance);
+        }
+     /*   pool.shutdown();
+        while(!pool.isTerminated()){
+
+        }*/
+        Global.printResult();
+        //t.test();
     }
 }

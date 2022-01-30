@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Random;
 
+import dedp.DistanceOracles.Global;
 import dedp.DistanceOracles.HybridDOEDPIndex;
 import dedp.common.Constants;
 import dedp.common.Helper;
@@ -210,6 +211,8 @@ public class HybridTraversal
 		long totalStartTime = System.nanoTime();
 		while(!q.isEmpty())
 		{
+
+			//System.out.println("dsafasdfasdfas");
 			result.NumberOfExploredNodes++;
 			uDist = q.poll();
 			currentPartition = index.getPartition(uDist.PartitionId);
@@ -448,8 +451,8 @@ public class HybridTraversal
 		while(!q.isEmpty())
 		{
 			//System.out.println(bestDistanceSoFar);
-			count++;
-
+			//count++;
+			Global.addVertex();
 			result.NumberOfExploredNodes++;
 			uDist = q.poll();
 		/*	if(count%50==0){
@@ -600,6 +603,7 @@ public class HybridTraversal
 						q.remove(toDist); //remove if it exists
 						q.add(toDist);
 					}
+					Global.bridge_added();
 					furtherExplore = true;
 				}
 				if(furtherExplore)
@@ -618,6 +622,7 @@ public class HybridTraversal
 							lblDist.PotentialDistance = newDistance;
 							q.add(lblDist);
 							lblDistMap.put(lblDist.VertexId, lblDist);
+							Global.bridge_vertices_added();
 						}
 						else if(lblDist.Distance > newDistance)
 						{
