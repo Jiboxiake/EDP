@@ -3,9 +3,7 @@ package dedp.indexes.edgedisjoint;
 import dedp.DistanceOracles.*;
 import dedp.exceptions.ObjectNotFoundException;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -22,6 +20,7 @@ public class ConnectedComponent {
     public HashMap<Integer, PartitionEdge> edges;
     public HashMap<SearchKey, Float> DO;
     protected HashMap<Integer, BridgeEdgesEntry> vertexToBridgeEdges; //forward
+   // private LRU cache;
     //public int timeStamp;
     public QuadTree tree;
     //the lock for read and write of distance oracle
@@ -39,6 +38,7 @@ public class ConnectedComponent {
         this.vertices=vertices;
         this.edges=edges;
         this.ID=id;
+        //this.cache=new LRU(5);
         this.partition=partition;
         tree=new QuadTree(this.vertices);
        // this.timeStamp=timeStamp;
@@ -58,7 +58,7 @@ public class ConnectedComponent {
         vertexToBridgeEdges.clear();
     }
     //TODO: think about how locks may influence the performance.
-    public void addEntry(PartitionVertex u, PartitionVertex v, float distance) throws ObjectNotFoundException {
+    public void addDOEntry(PartitionVertex u, PartitionVertex v, float distance) throws ObjectNotFoundException {
 
         try {
             if (!tree.contain(u)) {
@@ -75,6 +75,7 @@ public class ConnectedComponent {
                 if (DistanceOracle.isWellSeparated(distance, forU, forV, u, v, vertices)||(forU.reachMaxLevel()&&forV.reachMaxLevel())) {
                     SearchKey key = new SearchKey(forU.getMC(), forV.getMC(), forU.getLevel());
                     writeLock.lock();
+                    DO.remove(key);
                     DO.put(key, distance);
                     writeLock.unlock();
                     Global.addWSP();
@@ -115,6 +116,26 @@ public class ConnectedComponent {
         }
         return this.bridgeVertices.size();
     }
+
+    public boolean checkBridgeDO(PartitionVertex source, ArrayList<PartitionEdge>bridgeList){
+        boolean got=true;
+        for(Map.Entry<Integer, PartitionVertex>set:bridgeVertices.entrySet()){
+          float result= this.lookUp(source, set.getValue());
+          if(result<0) {
+              got = false;
+          }else{
+              PartitionEdge e = new PartitionEdge();
+              e.setFrom(source);
+              e.setTo(set.getValue());
+              e.setWeight(result);
+              e.setLabel(this.partition.Label);
+              bridgeList.add(e);
+          }
+        }
+        Collections.sort(bridgeList);
+        return got;
+    }
+
 
     /*
     returning the approximate distance between a source and a destination

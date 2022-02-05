@@ -655,11 +655,22 @@ public class Partition
 			sourceVertex.lock.unlock();
 		}
 	}
+
+
+
 	//Now every CC knows its bridge vertices
 	public PartitionEdge getToBridgeEdge(PartitionVertex from, int edgeOrder) throws Exception {
 		return getToBridgeEdge(from.vertexId, edgeOrder);
 	}
 
+	public ArrayList<PartitionEdge> getToBridgeEdgesFromDO(PartitionVertex from){
+		return null;
+	}
+
+	public ArrayList<PartitionEdge> getToBridgeEdgesFromDO(int from) throws ObjectNotFoundException {
+		PartitionVertex fromV = this.getVertex(from);
+		return getToBridgeEdgesFromDO(fromV);
+	}
 
 	public void addToBridgeEdge(int from, int to, DistanceFromSource distFromSource) throws ObjectNotFoundException
 	{

@@ -14,7 +14,7 @@ public class DistanceOracleThread extends Thread {
     public void run(){
         assert(distance>0);
         try {
-            cc.addEntry(source, destination, distance);
+            cc.addDOEntry(source, destination, distance);
         }catch( ObjectNotFoundException e){
             System.out.println(e.getMessage());
         }

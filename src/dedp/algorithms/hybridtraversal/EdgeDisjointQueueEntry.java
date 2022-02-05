@@ -13,6 +13,9 @@ public class EdgeDisjointQueueEntry implements Comparable<EdgeDisjointQueueEntry
 	public float PotentialDistance;
 	public int PartitionId;
 	public int PathLength;
+	//public boolean first;
+	//public boolean getDO;
+
 	
 	public void setPartitionId(Vertex vertex, List<Integer> labelIDs)
 	{
