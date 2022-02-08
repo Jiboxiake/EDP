@@ -585,7 +585,7 @@ public class Partition
 		assert(u.ComponentId==v.ComponentId&&cc.vertices.containsKey(u.vertexId)&&cc.vertices.containsKey(v.vertexId));
 		float result = cc.lookUp(u,v);
 		if(result>0.0){
-			Global.DO_hit();
+			//Global.DO_hit();
 			return result;
 		}
 		//now we have to manually compute it
@@ -849,7 +849,9 @@ public class Partition
 	public void printCCs(){
 		this.ConnectedComponents.printCC();
 	}
-	
+	public void conditionPrintCCs(int num){
+		ConnectedComponents.conditionPrintCC(num);
+	}
 	
 	public static void main(String[] args) throws NumberFormatException, IOException, DuplicateEntryException, ObjectNotFoundException
 	{

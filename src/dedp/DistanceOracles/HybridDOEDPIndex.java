@@ -430,7 +430,7 @@ public class HybridDOEDPIndex {
 
     //public Graph GlobalIndexGraph = null;
 
-    protected Partition[] partitions = null;
+    public Partition[] partitions = null;
 
     //for the cache size...
     public long CacheSize = 0;

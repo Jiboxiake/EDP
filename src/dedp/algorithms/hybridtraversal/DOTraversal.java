@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Random;
 
+import dedp.DistanceOracles.BridgeEdgeDOThread;
 import dedp.DistanceOracles.DOQueueEntry;
 import dedp.DistanceOracles.Global;
 import dedp.DistanceOracles.HybridDOEDPIndex;
@@ -166,10 +167,14 @@ public class DOTraversal {
                         for(int i=0; ;i++){
                             e=bridgeList.get(i);
                             boolean continue_search=dealBridgeEdge(result,partitionToDistMap, labelIDs,index,destination,bestDistanceSoFar,currentPartition,uDist,distMap,q,i,e);
-
+                            if(!continue_search){
+                                break;
+                            }
                         }
                     }else{
-                        //we must start bridge edge computation
+                        //bridge edge computation is already started during the check process
+
+
                     }
 
                 }

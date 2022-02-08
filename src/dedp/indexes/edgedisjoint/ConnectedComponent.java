@@ -49,6 +49,7 @@ public class ConnectedComponent {
         System.out.println("This is connected component: "+ID);
         System.out.println("This has "+vertices.size()+ " vertices.");
         System.out.println("This has "+edges.size()+" edges.");
+        System.out.println("This has bridge vertices "+bridgeVertices.size()+" vertices");
     }
 
     //todo: destroy DO and bridge edge thread when updating the CC
@@ -117,11 +118,16 @@ public class ConnectedComponent {
         return this.bridgeVertices.size();
     }
 
-    public boolean checkBridgeDO(PartitionVertex source, ArrayList<PartitionEdge>bridgeList){
+    public boolean checkBridgeDO(PartitionVertex source, ArrayList<PartitionEdge>bridgeList) throws ObjectNotFoundException {
+        if(!vertices.containsKey(source.getId())){
+            throw new ObjectNotFoundException("vertex "+source.getId()+" not found in CC "+this.ID);
+        }
+        HashMap<Integer, PartitionVertex> potentialBridgeDestinations = new HashMap<>();
         boolean got=true;
         for(Map.Entry<Integer, PartitionVertex>set:bridgeVertices.entrySet()){
           float result= this.lookUp(source, set.getValue());
           if(result<0) {
+              potentialBridgeDestinations.put(set.getKey(), set.getValue());
               got = false;
           }else{
               PartitionEdge e = new PartitionEdge();
@@ -133,6 +139,17 @@ public class ConnectedComponent {
           }
         }
         Collections.sort(bridgeList);
+        //if DO doesn't contain everything, we must start computation
+        if(!got){
+            source.lock.lock();
+            source.thread=new BridgeEdgeDOThread();
+            source.underBridgeComputation=true;
+            source.thread.setParameters(this,source,potentialBridgeDestinations,bridgeList,0);
+            source.thread.start();
+            //System.out.println("execution starts");
+            source.lock.unlock();
+        }
+        //Collections.sort(bridgeList);
         return got;
     }
 
@@ -146,16 +163,24 @@ public class ConnectedComponent {
         readLock.lock();
         try {
             SearchKey key = new SearchKey(u.mc, v.mc);
+            //todo: only for undirected graph
+            SearchKey reverseKey = new SearchKey(v.mc,u.mc);
             for (int i = 0; i < 33; i++) {
                 if (DO.containsKey(key)) {
                     assert (DO.get(key) > 0);
+                    Global.DO_hit();
                     return DO.get(key);
+                }else if(DO.containsKey(reverseKey)){
+                    Global.DO_hit();
+                    return DO.get(reverseKey);
                 }
                 key.shift();
+                reverseKey.shift();
             }
         }finally{
             readLock.unlock();
         }
+
             return -1;
 
 

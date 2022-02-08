@@ -8,6 +8,7 @@ public class Global {
     private static int failed_WSP;
     private static int WSP_found;
     private static int num_vertices;
+    private static int bridge_do_count;
 
 
     public synchronized static void DO_hit(){
@@ -31,6 +32,9 @@ public class Global {
     public synchronized static void addVertex(){
         num_vertices++;
     }
+    public synchronized static void addBridge_do_count(){
+        bridge_do_count++;
+    }
 
     public static void printResult(){
         System.out.println("number of DO hit is: "+DO_Count);
@@ -40,6 +44,6 @@ public class Global {
         System.out.println("number of vertex explored is "+num_vertices);
         System.out.println("number of failed WSP is: "+failed_WSP);
         System.out.println("number of WSP found is: "+WSP_found);
-
+        System.out.println("number of DO creation for bridge edges is "+bridge_do_count);
     }
 }

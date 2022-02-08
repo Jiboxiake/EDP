@@ -155,6 +155,13 @@ public class PartitionConnectedComponents
 		}
 	}
 
+	public void conditionPrintCC(int num){
+		for(Map.Entry<Integer, ConnectedComponent>e:connectedComponents.entrySet()){
+			if(e.getValue().vertices.size()>num)
+			e.getValue().print();
+		}
+	}
+
 
 	protected Partition partition;
 	protected int numOfConnectedComponents = -1;
