@@ -16,6 +16,7 @@ public class BridgeEdgeDOThread extends Thread{
     private ConnectedComponent cc;
     private ArrayList<PartitionEdge> bridgeEdgeList;
     private int maxGuarantee;
+
     //Compute until destination is empty
     @Override
     public void run(){
@@ -42,6 +43,9 @@ public class BridgeEdgeDOThread extends Thread{
                 e.setWeight(en.distance);
                 bridgeEdgeList.add(e);
                 Collections.sort(bridgeEdgeList);
+                source.lock.lock();
+                source.numOfBridgeEdgesComputed++;
+                source.lock.unlock();
                 try {
                     float check=cc.lookUp(source, en.vertex);
                     if(check<0){
@@ -56,8 +60,11 @@ public class BridgeEdgeDOThread extends Thread{
             //todo:check if this is correct
             if(bridgeEdgeList.size()>maxGuarantee&&bridgeEdgeList.get(maxGuarantee).getWeight()<en.distance){
                     maxGuarantee++;
-                    source.numOfBridgeEdgesComputed=maxGuarantee;
+                    source.lock.lock();
+                    //source.numOfBridgeEdgesComputed=maxGuarantee;
                     //todo: signal waiting thread
+                    source.bridgeEdgeAdded.signalAll();
+                    source.lock.unlock();
                 }
 
             for(int i=0; i<en.vertex.outEdges.size();i++){
@@ -75,13 +82,16 @@ public class BridgeEdgeDOThread extends Thread{
                 }
             }
             //if we have fully computed distance to all bridge vertices, we
-            if(bridgeEdgeList.size()==cc.bridgeVerticesSize()){
+            if(bridgeEdgeList.size()==cc.bridgeVerticesSize()||(source.isBridge()&&bridgeEdgeList.size()==cc.bridgeVertices.size()-1)){
                 source.lock.lock();
                 source.bridgeEdgeAdded.signalAll();
+                source.allBridgeEdgesComputed=true;
                 source.underBridgeComputation=false;
                 source.lock.unlock();
-                System.out.println("exit");
+                //System.out.println("exit");
                 //Collections.sort(bridgeEdgeList);
+                //maybe null the list reference before we return?
+                this.bridgeEdgeList=null;
                 return;
             }
         }

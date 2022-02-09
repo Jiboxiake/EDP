@@ -22,7 +22,7 @@ import dedp.structures.Edge;
 import dedp.structures.Graph;
 import dedp.structures.SPResult;
 import dedp.structures.Vertex;
-
+//todo: garbage collection after a search.
 public class DOTraversal {
     public static SPResult shortestDistanceWithDO(HybridDOEDPIndex index, int source, int destination, List<Integer> labelIDs) throws Exception {
         SPResult result = new SPResult();
@@ -130,6 +130,9 @@ public class DOTraversal {
             //Now we try to add the bridge edges
             //first we check if this is the first time we meet this vertex
             if (uDist.first) {
+                if(uDist.OutEdgeIdToProcess!=0){
+                    throw new Exception("Error: uDist out edge id is wrong");
+                }
                 uDist.setFirst();
                 HashMap<Integer, ArrayList<PartitionEdge>> partitionBridgeMap;
                 if (!partitionVertexBridgeEdges.containsKey(currentPartition.Label)) {
@@ -138,42 +141,55 @@ public class DOTraversal {
                 } else {
                     partitionBridgeMap = partitionVertexBridgeEdges.get(currentPartition.Label);
                 }
+                u.lock.lock();
                 //if it is already under bridge computation and first time
                 if (u.underBridgeComputation) {
+                    //todo: lock here?
                     //check lock/concurrency of bridge list, towards the end of computation
                     ArrayList<PartitionEdge> bridgeList = u.thread.getBridgeEdgeList();
                     partitionBridgeMap.put(u.getId(), bridgeList);
-                    for (int i = 0; ; i++) {
-                        u.lock.lock();
+                    int bridgeEdgeFound=0;
+                    for (int i = uDist.OutEdgeIdToProcess; ; i++) {
+                        if(bridgeEdgeFound!=0) {
+                            u.lock.lock();
+                        }
                         //todo: check synchronization here
-                        if (u.numOfBridgeEdgesComputed-1 <=i ) {
+                        while (u.numOfBridgeEdgesComputed <i+1 ) {
                             u.bridgeEdgeAdded.await();
                         }
                         u.lock.unlock();
                         PartitionEdge edge = bridgeList.get(i);
-                        boolean continue_check = dealBridgeEdge(result,partitionToDistMap,labelIDs, index, destination, bestDistanceSoFar, currentPartition, uDist, distMap, q, i, edge);
+                        boolean continue_check = dealBridgeEdge(result,partitionToDistMap,labelIDs, index, destination, bestDistanceSoFar, currentPartition, uDist, distMap, q, bridgeEdgeFound,i, edge);
                         if(!continue_check){
                             break;
+                        }else{
+                            bridgeEdgeFound++;
                         }
                     }
                 } else {//if u is not currently under bridge edge computation
                     ArrayList<PartitionEdge>bridgeList = new ArrayList<>();
                     ConnectedComponent cc =currentPartition.ConnectedComponents.getConnectedComponent(u.ComponentId);
-                    boolean hitDO=cc.checkBridgeDO(u,bridgeList);
-                    if(hitDO){
+                    //where to lock?
+                    cc.checkBridgeDO(u,bridgeList);
+                    //unlock?
+                    int bridgeEdgeFound=0;
+                    if(u.allBridgeEdgesComputed){
+                        u.lock.unlock();
                         uDist.setDO();
                         partitionBridgeMap.put(u.getId(), bridgeList);
                         //just read from the bridgelist is enough
                         for(int i=0; ;i++){
                             e=bridgeList.get(i);
-                            boolean continue_search=dealBridgeEdge(result,partitionToDistMap, labelIDs,index,destination,bestDistanceSoFar,currentPartition,uDist,distMap,q,i,e);
+                            boolean continue_search=dealBridgeEdge(result,partitionToDistMap, labelIDs,index,destination,bestDistanceSoFar,currentPartition,uDist,distMap,q,bridgeEdgeFound,i,e);
                             if(!continue_search){
                                 break;
+                            }else{
+                                bridgeEdgeFound++;
                             }
                         }
                     }else{
                         //bridge edge computation is already started during the check process
-
+                        
 
                     }
 
@@ -184,9 +200,10 @@ public class DOTraversal {
             }
 
         }
+        //todo: garbage collection thread(empty all vertices' bridge lists if no one else is using it).
         return result;
     }
-    public static boolean dealBridgeEdge(SPResult result,Map<Integer, Map<Integer, DOQueueEntry>> partitionToDistMap,List<Integer> labelIDs,HybridDOEDPIndex index, int destination, float bestDistanceSoFar, Partition currentPartition,DOQueueEntry uDist, Map<Integer, DOQueueEntry> distMap, PriorityQueue<DOQueueEntry> q, int i, PartitionEdge e){
+    public static boolean dealBridgeEdge(SPResult result,Map<Integer, Map<Integer, DOQueueEntry>> partitionToDistMap,List<Integer> labelIDs,HybridDOEDPIndex index, int destination, float bestDistanceSoFar, Partition currentPartition,DOQueueEntry uDist, Map<Integer, DOQueueEntry> distMap, PriorityQueue<DOQueueEntry> q, int bridgeEdgeFound,int i, PartitionEdge e){
 
         if(e == null)
         {
@@ -195,7 +212,7 @@ public class DOTraversal {
         PartitionVertex toVertex = e.getTo();//get a specific bridge vertex
         int toVertexId = toVertex.getId();
         //reach the max number of edges, in our case don't worry as degree of a vertex will be low.
-        if(i == index.MaxToExplore /*&& (i < toBridgeEdgesSizeMinusOne)*/)
+        if(bridgeEdgeFound == index.MaxToExplore /*&& (i < toBridgeEdgesSizeMinusOne)*/)
         {
             if(toVertexId != destination)
             {

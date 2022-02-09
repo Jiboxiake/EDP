@@ -125,6 +125,7 @@ public class ConnectedComponent {
         HashMap<Integer, PartitionVertex> potentialBridgeDestinations = new HashMap<>();
         boolean got=true;
         for(Map.Entry<Integer, PartitionVertex>set:bridgeVertices.entrySet()){
+            if(source.getId()!=set.getKey()){
           float result= this.lookUp(source, set.getValue());
           if(result<0) {
               potentialBridgeDestinations.put(set.getKey(), set.getValue());
@@ -137,17 +138,25 @@ public class ConnectedComponent {
               e.setLabel(this.partition.Label);
               bridgeList.add(e);
           }
+            }
         }
         Collections.sort(bridgeList);
+
         //if DO doesn't contain everything, we must start computation
         if(!got){
-            source.lock.lock();
+            //source.lock.lock();
+            source.numOfBridgeEdgesComputed=bridgeList.size();
             source.thread=new BridgeEdgeDOThread();
             source.underBridgeComputation=true;
             source.thread.setParameters(this,source,potentialBridgeDestinations,bridgeList,0);
             source.thread.start();
             //System.out.println("execution starts");
-            source.lock.unlock();
+           // source.lock.unlock();
+        }else{
+          //  source.lock.lock();
+            source.allBridgeEdgesComputed=true;
+            source.numOfBridgeEdgesComputed=bridgeList.size();
+          //  source.lock.unlock();
         }
         //Collections.sort(bridgeList);
         return got;
@@ -158,7 +167,6 @@ public class ConnectedComponent {
     returning the approximate distance between a source and a destination
     returning -1 if DO entry doesn't exist
      */
-    //todo: may need to change this to long or double
     public float lookUp(PartitionVertex u, PartitionVertex v){
         readLock.lock();
         try {

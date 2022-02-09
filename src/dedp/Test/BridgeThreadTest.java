@@ -102,14 +102,19 @@ public class BridgeThreadTest {
         Random generator = new Random();
         Object[] values = cc.vertices.values().toArray();
         cc.print();
-        for(int i=0;i<10;i++) {
+        for(int i=0;i<20;i++) {
             Object randomValue = values[generator.nextInt(values.length)];
             PartitionVertex v = (PartitionVertex) randomValue;
             ArrayList<PartitionEdge> bridgeList = new ArrayList<>();
             cc.checkBridgeDO(v, bridgeList);
             v.lock.lock();
-            v.bridgeEdgeAdded.await();
+            //todo: check synchronization here
+            while (v.numOfBridgeEdgesComputed <cc.bridgeVertices.size()||(v.isBridge()&&v.numOfBridgeEdgesComputed+1<cc.bridgeVerticesSize()) ) {
+                v.bridgeEdgeAdded.await();
+            }
+            System.out.println(i);
             v.lock.unlock();
+
         }
         Global.printResult();
         //System.out.println(bridgeList);
