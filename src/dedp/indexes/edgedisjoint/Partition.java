@@ -591,7 +591,7 @@ public class Partition
 		//now we have to manually compute it
 		SPResult directedResult = Dijkstra.shortestDistance(this, u.vertexId, v.vertexId);
 		Global.Dij_exec();
-		result= (int)directedResult.Distance;
+		result= directedResult.Distance;
 		//todo: distance oracle computation thread
 		DistanceOracleThread t = new DistanceOracleThread();
 		t.setCC(cc);

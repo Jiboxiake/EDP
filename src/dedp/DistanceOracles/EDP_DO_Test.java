@@ -1,5 +1,6 @@
 package dedp.DistanceOracles;
 
+import dedp.algorithms.hybridtraversal.DOTraversal;
 import dedp.algorithms.hybridtraversal.HybridTraversal;
 import dedp.exceptions.DuplicateEntryException;
 import dedp.exceptions.ObjectNotFoundException;
@@ -173,14 +174,15 @@ public class EDP_DO_Test {
         }
         int i =0;
        // ExecutorService pool = Executors.newFixedThreadPool(5);
-        while(i<6){
+        while(i<1){
             i++;
             int from = ThreadLocalRandom.current().nextInt(1, 271450/300 + 1);
             int to = ThreadLocalRandom.current().nextInt(271450/5*4 + 1, 271450+1);
             EDP_DO_Test_Thread th = new EDP_DO_Test_Thread();
            // th.setParameter(i,from, to, list, t.index);
            // pool.execute(th);
-           SPResult r=HybridTraversal.shortestDistanceWithEdgeDisjointDistanceOracle(t.index, from, to, list);
+           //SPResult r=HybridTraversal.shortestDistanceWithEdgeDisjointDistanceOracle(t.index, from, to, list);
+            SPResult r= DOTraversal.shortestDistanceWithDO(t.index, from, to, list);
             System.out.println("Shortest distance = " + r.Distance);
         }
      /*   pool.shutdown();
