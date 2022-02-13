@@ -95,26 +95,88 @@ public class BridgeThreadTest {
 
     }
 
-    public void test1() throws ObjectNotFoundException, InterruptedException {
+    public void test1() throws Exception {
         Partition p = index.partitions[1];
         //p.conditionPrintCCs(100);
         ConnectedComponent cc = p.ConnectedComponents.getConnectedComponent(0);
         Random generator = new Random();
         Object[] values = cc.vertices.values().toArray();
         cc.print();
+        ArrayList<PartitionVertex> list = new ArrayList<>();
         for(int i=0;i<20;i++) {
             Object randomValue = values[generator.nextInt(values.length)];
             PartitionVertex v = (PartitionVertex) randomValue;
+            list.add(v);
             ArrayList<PartitionEdge> bridgeList = new ArrayList<>();
             cc.checkBridgeDO(v, bridgeList);
             v.lock.lock();
             //todo: check synchronization here
-            while (v.numOfBridgeEdgesComputed <cc.bridgeVertices.size()||(v.isBridge()&&v.numOfBridgeEdgesComputed+1<cc.bridgeVerticesSize()) ) {
+            while (v.numOfBridgeEdgesComputed <cc.bridgeVertices.size()) {
+                if(v.isBridge()&&v.numOfBridgeEdgesComputed+1==cc.bridgeVerticesSize()){
+                    break;
+                }
                 v.bridgeEdgeAdded.await();
             }
             System.out.println(i);
+            //System.out.println(v.numOfBridgeEdgesComputed);
+            //System.out.println((v.numOfBridgeEdgesComputed <cc.bridgeVertices.size()&&!(v.isBridge()&&v.numOfBridgeEdgesComputed+1<cc.bridgeVerticesSize())));
+            if(v.numOfBridgeEdgesComputed<cc.bridgeVerticesSize()-10){
+                System.out.println(v.numOfBridgeEdgesComputed+" "+ cc.bridgeVertices.size());
+                System.out.println((v.isBridge()&&v.numOfBridgeEdgesComputed+1<cc.bridgeVerticesSize()));
+                System.out.println("");
+            }
+            if(v.isBridge()){
+                if(bridgeList.size()!=cc.bridgeVerticesSize()-1){
+                    throw new Exception("error happend at "+i);
+                }
+            }else{
+                if(bridgeList.size()!=cc.bridgeVerticesSize()){
+                    throw new Exception("error happend at "+i);
+                }
+            }
             v.lock.unlock();
 
+        }
+        for(int i=0; i<list.size();i++){
+            list.get(i).thread.join();
+        }
+        list.clear();
+        for(int i=0;i<20;i++) {
+            Object randomValue = values[generator.nextInt(values.length)];
+            PartitionVertex v = (PartitionVertex) randomValue;
+            list.add(v);
+            ArrayList<PartitionEdge> bridgeList = new ArrayList<>();
+            cc.checkBridgeDO(v, bridgeList);
+            v.lock.lock();
+            //todo: check synchronization here
+            while (v.numOfBridgeEdgesComputed <cc.bridgeVertices.size()) {
+                if(v.isBridge()&&v.numOfBridgeEdgesComputed+1==cc.bridgeVerticesSize()){
+                    break;
+                }
+                v.bridgeEdgeAdded.await();
+            }
+            System.out.println(i);
+            //System.out.println(v.numOfBridgeEdgesComputed);
+            //System.out.println((v.numOfBridgeEdgesComputed <cc.bridgeVertices.size()&&!(v.isBridge()&&v.numOfBridgeEdgesComputed+1<cc.bridgeVerticesSize())));
+            if(v.numOfBridgeEdgesComputed<cc.bridgeVerticesSize()-10){
+                System.out.println(v.numOfBridgeEdgesComputed+" "+ cc.bridgeVertices.size());
+                System.out.println((v.isBridge()&&v.numOfBridgeEdgesComputed+1<cc.bridgeVerticesSize()));
+                System.out.println("");
+            }
+            if(v.isBridge()){
+                if(bridgeList.size()!=cc.bridgeVerticesSize()-1){
+                    throw new Exception("error happend at "+i);
+                }
+            }else{
+                if(bridgeList.size()!=cc.bridgeVerticesSize()){
+                    throw new Exception("error happend at "+i);
+                }
+            }
+            v.lock.unlock();
+
+        }
+        for(int i=0; i<list.size();i++){
+            list.get(i).thread.join();
         }
         Global.printResult();
         //System.out.println(bridgeList);

@@ -5,13 +5,11 @@ import dedp.indexes.edgedisjoint.ConnectedComponent;
 import dedp.indexes.edgedisjoint.PartitionEdge;
 import dedp.indexes.edgedisjoint.PartitionVertex;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.PriorityQueue;
+import java.util.*;
 
 public class BridgeEdgeDOThread extends Thread{
     private PartitionVertex source;
+    //todo: change destination
     private HashMap<Integer, PartitionVertex> destinations;
     private ConnectedComponent cc;
     private ArrayList<PartitionEdge> bridgeEdgeList;
@@ -34,7 +32,6 @@ public class BridgeEdgeDOThread extends Thread{
             //System.out.println(en);
             //add new entry to the DO and list
             if(destinations.containsKey(en.vertex.getId())){
-                destinations.remove(en.vertex.getId());
                 //System.out.println("found bridge vertex "+en.vertex.getId());
                 //System.out.println(bridgeEdgeList.size());
                 PartitionEdge e = new PartitionEdge();
@@ -43,7 +40,7 @@ public class BridgeEdgeDOThread extends Thread{
                 e.setWeight(en.distance);
                 bridgeEdgeList.add(e);
                 Collections.sort(bridgeEdgeList);
-                source.lock.lock();
+           /*     source.lock.lock();
                 source.numOfBridgeEdgesComputed++;
                 source.lock.unlock();
                 try {
@@ -54,14 +51,14 @@ public class BridgeEdgeDOThread extends Thread{
                     }
                 } catch (ObjectNotFoundException a) {
                     a.printStackTrace();
-                }
+                }*/
             }
             //check if the first maxGuarantee many bridge edges are computed
             //todo:check if this is correct
-            if(bridgeEdgeList.size()>maxGuarantee&&bridgeEdgeList.get(maxGuarantee).getWeight()<en.distance){
+            while(bridgeEdgeList.size()>maxGuarantee&&bridgeEdgeList.get(maxGuarantee).getWeight()<en.distance){
                     maxGuarantee++;
                     source.lock.lock();
-                    //source.numOfBridgeEdgesComputed=maxGuarantee;
+                    source.numOfBridgeEdgesComputed=maxGuarantee;
                     //todo: signal waiting thread
                     source.bridgeEdgeAdded.signalAll();
                     source.lock.unlock();
@@ -85,11 +82,24 @@ public class BridgeEdgeDOThread extends Thread{
             if(bridgeEdgeList.size()==cc.bridgeVerticesSize()||(source.isBridge()&&bridgeEdgeList.size()==cc.bridgeVertices.size()-1)){
                 source.lock.lock();
                 source.bridgeEdgeAdded.signalAll();
+                source.numOfBridgeEdgesComputed=bridgeEdgeList.size();
                 source.allBridgeEdgesComputed=true;
                 source.underBridgeComputation=false;
                 source.lock.unlock();
-                //System.out.println("exit");
-                //Collections.sort(bridgeEdgeList);
+                //handle DO
+                for(Map.Entry<Integer, PartitionVertex>set: destinations.entrySet()){
+                    int toID = set.getKey();
+                    VertexQueueEntry toEn=distMap.get(toID);
+                    try {
+                        float check=cc.lookUp(source, set.getValue());
+                        if(check<0){
+                            cc.addDOEntry(source, set.getValue(), toEn.distance);
+                            Global.addBridge_do_count();
+                        }
+                    } catch (ObjectNotFoundException a) {
+                        a.printStackTrace();
+                    }
+                }
                 //maybe null the list reference before we return?
                 this.bridgeEdgeList=null;
                 return;

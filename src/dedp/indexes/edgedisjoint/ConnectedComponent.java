@@ -145,9 +145,10 @@ public class ConnectedComponent {
         //if DO doesn't contain everything, we must start computation
         if(!got){
             //source.lock.lock();
-            source.numOfBridgeEdgesComputed=bridgeList.size();
+            //source.numOfBridgeEdgesComputed=bridgeList.size();
             source.thread=new BridgeEdgeDOThread();
             source.underBridgeComputation=true;
+            source.numOfBridgeEdgesComputed=0;
             source.thread.setParameters(this,source,potentialBridgeDestinations,bridgeList,0);
             source.thread.start();
             //System.out.println("execution starts");
