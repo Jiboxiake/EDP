@@ -1,6 +1,10 @@
 package dedp.structures;
 
-public class SPResult 
+import dedp.DistanceOracles.BridgeDOThread;
+
+import java.util.ArrayList;
+
+public class SPResult
 {
 	public float Distance;
 	public long NumberOfExploredEdges = 0;
@@ -8,4 +12,5 @@ public class SPResult
 	public long NumberOfHybridEdgesExplored = 0;
 	public long TotalProcessingTime = 0;
 	public int PathLength = 0;
+	public ArrayList<BridgeDOThread>list;
 }

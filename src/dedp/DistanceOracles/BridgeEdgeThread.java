@@ -7,7 +7,7 @@ import dedp.indexes.edgedisjoint.PartitionVertex;
 
 import java.util.*;
 
-public class BridgeEdgeDOThread extends Thread{
+public class BridgeEdgeThread extends Thread{
     private PartitionVertex source;
     //todo: change destination
     private HashMap<Integer, PartitionVertex> destinations;
@@ -87,7 +87,7 @@ public class BridgeEdgeDOThread extends Thread{
                 source.underBridgeComputation=false;
                 source.lock.unlock();
                 //handle DO
-                for(Map.Entry<Integer, PartitionVertex>set: destinations.entrySet()){
+              /* for(Map.Entry<Integer, PartitionVertex>set: destinations.entrySet()){
                     int toID = set.getKey();
                     VertexQueueEntry toEn=distMap.get(toID);
                     try {
@@ -99,13 +99,13 @@ public class BridgeEdgeDOThread extends Thread{
                     } catch (ObjectNotFoundException a) {
                         a.printStackTrace();
                     }
-                }
+                }*/
                 //maybe null the list reference before we return?
                 this.bridgeEdgeList=null;
                 return;
             }
         }
-        System.err.println("error");
+        System.err.println("error at "+source.getId());
     }
 
     public ArrayList<PartitionEdge>getBridgeEdgeList(){

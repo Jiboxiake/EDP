@@ -108,7 +108,10 @@ public class BridgeThreadTest {
             PartitionVertex v = (PartitionVertex) randomValue;
             list.add(v);
             ArrayList<PartitionEdge> bridgeList = new ArrayList<>();
-            cc.checkBridgeDO(v, bridgeList);
+            boolean b=cc.checkBridgeDO(v, bridgeList);
+            if(b){
+                System.out.println(i+ "got checked");
+            }
             v.lock.lock();
             //todo: check synchronization here
             while (v.numOfBridgeEdgesComputed <cc.bridgeVertices.size()) {
@@ -146,7 +149,10 @@ public class BridgeThreadTest {
             PartitionVertex v = (PartitionVertex) randomValue;
             list.add(v);
             ArrayList<PartitionEdge> bridgeList = new ArrayList<>();
-            cc.checkBridgeDO(v, bridgeList);
+            boolean b = cc.checkBridgeDO(v, bridgeList);
+            if(b){
+                System.out.println(i+ " got checked");
+            }
             v.lock.lock();
             //todo: check synchronization here
             while (v.numOfBridgeEdgesComputed <cc.bridgeVertices.size()) {
@@ -176,6 +182,7 @@ public class BridgeThreadTest {
 
         }
         for(int i=0; i<list.size();i++){
+            if(list.get(i).thread!=null)
             list.get(i).thread.join();
         }
         Global.printResult();

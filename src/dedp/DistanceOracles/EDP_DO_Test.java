@@ -174,7 +174,7 @@ public class EDP_DO_Test {
         }
         int i =0;
        // ExecutorService pool = Executors.newFixedThreadPool(5);
-        while(i<1){
+        while(i<5){
             i++;
             int from = ThreadLocalRandom.current().nextInt(1, 271450/300 + 1);
             int to = ThreadLocalRandom.current().nextInt(271450/5*4 + 1, 271450+1);
@@ -184,6 +184,9 @@ public class EDP_DO_Test {
            //SPResult r=HybridTraversal.shortestDistanceWithEdgeDisjointDistanceOracle(t.index, from, to, list);
             SPResult r= DOTraversal.shortestDistanceWithDO(t.index, from, to, list);
             System.out.println("Shortest distance = " + r.Distance);
+            for(int j=0; i<r.list.size();i++){
+                r.list.get(j).join();
+            }
         }
      /*   pool.shutdown();
         while(!pool.isTerminated()){

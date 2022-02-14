@@ -11,7 +11,14 @@ public class SearchKey {
     public SearchKey(MortonCode m1, MortonCode m2, int level){
         key=new BitSet(128);
         this.level=level;
-        interleave(m1,m2);
+        if(m1.compareTo(m2)>0) {
+            interleave(m1, m2);
+        }else if (m1.compareTo(m2)<0){
+            interleave(m2,m1);
+        }else{
+            //System.out.println("error at "+m1.morton);
+            interleave(m1, m2);
+        }
 
     }
 

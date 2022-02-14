@@ -9,10 +9,7 @@ import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Random;
 
-import dedp.DistanceOracles.BridgeEdgeDOThread;
-import dedp.DistanceOracles.DOQueueEntry;
-import dedp.DistanceOracles.Global;
-import dedp.DistanceOracles.HybridDOEDPIndex;
+import dedp.DistanceOracles.*;
 import dedp.common.Constants;
 import dedp.common.Helper;
 import dedp.exceptions.ObjectNotFoundException;
@@ -296,6 +293,17 @@ public class DOTraversal {
 
             }
         }
+        ArrayList<BridgeDOThread> list=new ArrayList<>();
+        for(Map.Entry<Integer, HashMap<Integer, ArrayList<PartitionEdge>>>set:partitionVertexBridgeEdges.entrySet()){
+            int partitionID = set.getKey();
+            Partition partition = index.getPartition(partitionID);
+            HashMap<Integer, ArrayList<PartitionEdge>> bridgeList = set.getValue();
+            BridgeDOThread thread = new BridgeDOThread();
+            list.add(thread);
+            thread.setParameters(partition,bridgeList);
+            thread.start();
+        }
+        result.list=list;
         //todo: garbage collection thread(empty all vertices' bridge lists if no one else is using it).
         return result;
     }

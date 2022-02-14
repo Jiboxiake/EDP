@@ -66,11 +66,7 @@ public class MortonCode implements Comparable<MortonCode> {
 
     @Override
     public int compareTo(MortonCode o) {
-        if(o.morton==this.morton)
-            return 0;
-        else if(o.morton>this.morton)
-            return 1;
-        return -1;
+        return Long.compare(this.morton, o.morton);
     }
     //TODO: check correctness
     @Override

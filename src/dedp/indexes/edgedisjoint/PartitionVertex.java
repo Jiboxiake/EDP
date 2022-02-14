@@ -8,7 +8,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import dedp.DistanceOracles.BridgeEdgeDOThread;
+import dedp.DistanceOracles.BridgeEdgeThread;
 import dedp.DistanceOracles.MortonCode;
 import dedp.structures.Edge;
 import dedp.structures.Vertex;
@@ -137,7 +137,7 @@ public class PartitionVertex
 	public int latitude;
 	public MortonCode mc;
 	public boolean underBridgeComputation=false;
-	public BridgeEdgeDOThread thread;
+	public BridgeEdgeThread thread;
 	/*
 	protected int getToBridgeEdgeId()
 	{

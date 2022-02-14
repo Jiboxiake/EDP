@@ -89,6 +89,46 @@ public class ConnectedComponent {
 
         }
     }
+    //for optimized and parallel DO insertion, no lock
+   public DOEntry getEntry(PartitionVertex u, PartitionVertex v, float distance) throws ObjectNotFoundException {
+        DOEntry entry = new DOEntry(null, distance);
+       try {
+           if (!tree.contain(u)) {
+               throw new ObjectNotFoundException("vertex: " + u.getId() + " not exist in connected component " + ID + " in partition " + partition.Label);
+           }
+           if (!tree.contain(v)) {
+               throw new ObjectNotFoundException("vertex: " + v.getId() + " not exist in connected component " + ID + " in partition " + partition.Label);
+           }
+           QuadTree forU = tree, forV = tree;
+           while (true) {
+               forU = forU.containingBlock(u);
+               forV = forV.containingBlock(v);
+               assert (forU.getLevel() == forV.getLevel());
+               if (DistanceOracle.isWellSeparated(distance, forU, forV, u, v, vertices)||(forU.reachMaxLevel()&&forV.reachMaxLevel())) {
+                   SearchKey key = new SearchKey(forU.getMC(), forV.getMC(), forU.getLevel());
+                   entry.key=key;
+                   Global.addWSP();
+                   return entry;
+               }
+               Global.addNotWellSeparated();
+           }
+       }
+       finally{
+
+       }
+
+   }
+    //try to insert as efficiently as possible
+   public void addEntryList(ArrayList<DOEntry> entryList){
+       writeLock.lock();
+        for(int i=0; i<entryList.size();i++){
+            DOEntry entry = entryList.get(i);
+            DO.remove(entry.key);
+            DO.put(entry.key, entry.distance);
+        }
+       writeLock.unlock();
+   }
+
 
     public void addBridgeEntry(int from, PartitionEdge e){
         this.bridgeWriteLock.lock();
@@ -146,7 +186,7 @@ public class ConnectedComponent {
         if(!got){
             //source.lock.lock();
             //source.numOfBridgeEdgesComputed=bridgeList.size();
-            source.thread=new BridgeEdgeDOThread();
+            source.thread=new BridgeEdgeThread();
             source.underBridgeComputation=true;
             source.numOfBridgeEdgesComputed=0;
             source.thread.setParameters(this,source,potentialBridgeDestinations,bridgeList,0);
@@ -173,18 +213,18 @@ public class ConnectedComponent {
         try {
             SearchKey key = new SearchKey(u.mc, v.mc);
             //todo: only for undirected graph
-            SearchKey reverseKey = new SearchKey(v.mc,u.mc);
+           // SearchKey reverseKey = new SearchKey(v.mc,u.mc);
             for (int i = 0; i < 33; i++) {
                 if (DO.containsKey(key)) {
                     assert (DO.get(key) > 0);
                     Global.DO_hit();
                     return DO.get(key);
-                }else if(DO.containsKey(reverseKey)){
+                }/*else if(DO.containsKey(reverseKey)){
                     Global.DO_hit();
                     return DO.get(reverseKey);
-                }
+                }*/
                 key.shift();
-                reverseKey.shift();
+                //reverseKey.shift();
             }
         }finally{
             readLock.unlock();
