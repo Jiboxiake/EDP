@@ -81,9 +81,9 @@ public class BridgeEdgeThread extends Thread{
             //if we have fully computed distance to all bridge vertices, we
             if(bridgeEdgeList.size()==cc.bridgeVerticesSize()||(source.isBridge()&&bridgeEdgeList.size()==cc.bridgeVertices.size()-1)){
                 source.lock.lock();
-                source.bridgeEdgeAdded.signalAll();
                 source.numOfBridgeEdgesComputed=bridgeEdgeList.size();
                 source.allBridgeEdgesComputed=true;
+                source.bridgeEdgeAdded.signalAll();
                 source.underBridgeComputation=false;
                 source.lock.unlock();
                 //handle DO

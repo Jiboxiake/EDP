@@ -26,6 +26,13 @@ public class BridgeDOThread extends Thread{
             } catch (ObjectNotFoundException e) {
                 e.printStackTrace();
             }
+            while(!source.allBridgeEdgesComputed){
+                try {
+                    source.bridgeEdgeAdded.await();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
             ArrayList<DOEntry> DOList=null;
             if(!ccToDOs.containsKey(source.ComponentId)){
                 DOList=new ArrayList<>();

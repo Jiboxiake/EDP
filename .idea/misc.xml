@@ -1,6 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_17" default="true" project-jdk-name="17" project-jdk-type="JavaSDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_8" default="true" project-jdk-name="1.8" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/classes" />
+  </component>
+  <component name="UnattendedHostPersistenceState">
+    <option name="openedFilesInfos">
+      <list>
+        <OpenedFileInfo>
+          <option name="caretOffset" value="985" />
+          <option name="fileUrl" value="file://$PROJECT_DIR$/src/dedp/DistanceOracles/Global.java" />
+        </OpenedFileInfo>
+        <OpenedFileInfo>
+          <option name="caretOffset" value="14629" />
+          <option name="fileUrl" value="file://$PROJECT_DIR$/src/dedp/algorithms/hybridtraversal/DOTraversal.java" />
+        </OpenedFileInfo>
+        <OpenedFileInfo>
+          <option name="caretOffset" value="1086" />
+          <option name="fileUrl" value="file://$PROJECT_DIR$/src/dedp/DistanceOracles/BridgeDOThread.java" />
+        </OpenedFileInfo>
+        <OpenedFileInfo>
+          <option name="caretOffset" value="4976" />
+          <option name="fileUrl" value="file://$PROJECT_DIR$/src/dedp/indexes/edgedisjoint/ConnectedComponent.java" />
+        </OpenedFileInfo>
+        <OpenedFileInfo>
+          <option name="caretOffset" value="3574" />
+          <option name="fileUrl" value="file://$PROJECT_DIR$/src/dedp/DistanceOracles/BridgeEdgeThread.java" />
+        </OpenedFileInfo>
+        <OpenedFileInfo>
+          <option name="caretOffset" value="7078" />
+          <option name="fileUrl" value="file://$PROJECT_DIR$/src/dedp/DistanceOracles/EDP_DO_Test.java" />
+        </OpenedFileInfo>
+      </list>
+    </option>
   </component>
 </project>

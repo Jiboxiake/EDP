@@ -108,6 +108,7 @@ public class ConnectedComponent {
                    SearchKey key = new SearchKey(forU.getMC(), forV.getMC(), forU.getLevel());
                    entry.key=key;
                    Global.addWSP();
+                   Global.addBridge_do_count();
                    return entry;
                }
                Global.addNotWellSeparated();
