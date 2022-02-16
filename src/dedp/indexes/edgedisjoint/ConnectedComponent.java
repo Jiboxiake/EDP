@@ -52,6 +52,14 @@ public class ConnectedComponent {
         System.out.println("This has bridge vertices "+bridgeVertices.size()+" vertices");
     }
 
+    public PartitionVertex getVertex(int vertexID) throws ObjectNotFoundException {
+        if(vertices.containsKey(vertexID)){
+            return vertices.get(vertexID);
+        }else{
+            throw new ObjectNotFoundException("Vertex "+vertexID+" not found");
+        }
+    }
+
     //todo: destroy DO and bridge edge thread when updating the CC
     public void insert(PartitionVertex v){
         vertices.put(v.getId(), v);
@@ -119,6 +127,44 @@ public class ConnectedComponent {
        }
 
    }
+
+   public SearchKey getSearchKey(PartitionVertex u, PartitionVertex v, float distance) throws ObjectNotFoundException {
+       try {
+           if (!tree.contain(u)) {
+               throw new ObjectNotFoundException("vertex: " + u.getId() + " not exist in connected component " + ID + " in partition " + partition.Label);
+           }
+           if (!tree.contain(v)) {
+               throw new ObjectNotFoundException("vertex: " + v.getId() + " not exist in connected component " + ID + " in partition " + partition.Label);
+           }
+           QuadTree forU = tree, forV = tree;
+           while (true) {
+               forU = forU.containingBlock(u);
+               forV = forV.containingBlock(v);
+               assert (forU.getLevel() == forV.getLevel());
+               if (DistanceOracle.isWellSeparated(distance, forU, forV, u, v, vertices)||(forU.reachMaxLevel()&&forV.reachMaxLevel())) {
+                   SearchKey key = new SearchKey(forU.getMC(), forV.getMC(), forU.getLevel());
+                   Global.addWSP();
+                   Global.addBridge_do_count();
+                   return key;
+               }
+               Global.addNotWellSeparated();
+           }
+       }
+       finally{
+
+       }
+   }
+
+   //for inserting a partial distance oracle
+    public void addDO(HashMap<SearchKey, Float> DO){
+        this.writeLock.lock();
+        for(Map.Entry<SearchKey,Float>set:DO.entrySet()){
+            DO.remove(set.getKey());
+            DO.put(set.getKey(),set.getValue());
+        }
+        this.writeLock.unlock();
+    }
+
     //try to insert as efficiently as possible
    public void addEntryList(ArrayList<DOEntry> entryList){
        writeLock.lock();
@@ -217,7 +263,9 @@ public class ConnectedComponent {
            // SearchKey reverseKey = new SearchKey(v.mc,u.mc);
             for (int i = 0; i < 33; i++) {
                 if (DO.containsKey(key)) {
-                    assert (DO.get(key) > 0);
+                    if(DO.get(key)<0){
+                    throw new RuntimeException("wrong DO entry got inserted\n");
+                    }
                     Global.DO_hit();
                     return DO.get(key);
                 }/*else if(DO.containsKey(reverseKey)){
@@ -227,7 +275,10 @@ public class ConnectedComponent {
                 key.shift();
                 //reverseKey.shift();
             }
-        }finally{
+        }catch(RuntimeException e){
+            e.printStackTrace();
+        }
+        finally{
             readLock.unlock();
         }
 

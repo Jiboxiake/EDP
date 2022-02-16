@@ -293,15 +293,38 @@ public class DOTraversal {
 
             }
         }
+        //todo: maybe let a thread to handle this
         ArrayList<BridgeDOThread> list=new ArrayList<>();
         for(Map.Entry<Integer, HashMap<Integer, ArrayList<PartitionEdge>>>set:partitionVertexBridgeEdges.entrySet()){
+            //for this partition
             int partitionID = set.getKey();
             Partition partition = index.getPartition(partitionID);
-            HashMap<Integer, ArrayList<PartitionEdge>> bridgeList = set.getValue();
-            BridgeDOThread thread = new BridgeDOThread();
-            list.add(thread);
-            thread.setParameters(partition,bridgeList);
-            thread.start();
+            HashMap<Integer, ArrayList<PartitionEdge>> bridgeMap = set.getValue();
+            HashMap<Integer, HashMap<Integer, ArrayList<PartitionEdge>>>ccToBridgeEdges = new HashMap<>();
+            //for every vertex of this partition
+            for(Map.Entry<Integer, ArrayList<PartitionEdge>>sset:bridgeMap.entrySet()){
+                PartitionVertex vertex = partition.getVertex(sset.getKey());
+                //find its cc ID
+                int ccID = vertex.ComponentId;
+                //insert into a hash map corresponding to this cc.
+                if(!ccToBridgeEdges.containsKey(ccID)){
+                    HashMap<Integer,ArrayList<PartitionEdge>> ccMap = new HashMap<>();
+                    ccMap.put(vertex.getId(),sset.getValue());
+                    ccToBridgeEdges.put(ccID, ccMap);
+                }else{
+                    HashMap<Integer,ArrayList<PartitionEdge>> ccMap = ccToBridgeEdges.get(ccID);
+                    ccMap.put(vertex.getId(),sset.getValue());
+                }
+            }
+            for(Map.Entry<Integer, HashMap<Integer, ArrayList<PartitionEdge>>>ccSet:ccToBridgeEdges.entrySet()){
+                int ccID = ccSet.getKey();
+                ConnectedComponent cc = partition.ConnectedComponents.getConnectedComponent(ccID);
+                BridgeDOThread thread = new BridgeDOThread();
+                thread.setParameters(cc, ccSet.getValue());
+                list.add(thread);
+                thread.start();
+            }
+           //for each cc
         }
         result.list=list;
         //todo: garbage collection thread(empty all vertices' bridge lists if no one else is using it).

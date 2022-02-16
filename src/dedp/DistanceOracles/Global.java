@@ -9,6 +9,7 @@ public class Global {
     private static int WSP_found;
     private static int num_vertices;
     private static int bridge_do_count;
+    private static int DO_hit_during_bridge_computation;
 
 
     public synchronized static void DO_hit(){
@@ -35,6 +36,7 @@ public class Global {
     public synchronized static void addBridge_do_count(){
         bridge_do_count++;
     }
+    public synchronized  static void addDO_hit_during_bridge_computation(){DO_hit_during_bridge_computation++;}
 
     public static void printResult(){
         System.out.println("number of DO hit is: "+DO_Count);
@@ -45,5 +47,6 @@ public class Global {
         System.out.println("number of failed WSP is: "+failed_WSP);
         System.out.println("number of WSP found is: "+WSP_found);
         System.out.println("number of DO creation for bridge edges is "+bridge_do_count);
+        System.out.println("number of bridge partial DO hit is "+DO_hit_during_bridge_computation);
     }
 }
