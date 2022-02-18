@@ -156,9 +156,9 @@ public class ConnectedComponent {
    }
 
    //for inserting a partial distance oracle
-    public void addDO(HashMap<SearchKey, Float> DO){
+    public void addDO(HashMap<SearchKey, Float> partialDO){
         this.writeLock.lock();
-        for(Map.Entry<SearchKey,Float>set:DO.entrySet()){
+        for(Map.Entry<SearchKey,Float>set:partialDO.entrySet()){
             DO.remove(set.getKey());
             DO.put(set.getKey(),set.getValue());
         }
@@ -211,9 +211,10 @@ public class ConnectedComponent {
         }
         HashMap<Integer, PartitionVertex> potentialBridgeDestinations = new HashMap<>();
         boolean got=true;
+        this.readLock.lock();
         for(Map.Entry<Integer, PartitionVertex>set:bridgeVertices.entrySet()){
             if(source.getId()!=set.getKey()){
-          float result= this.lookUp(source, set.getValue());
+          float result= this.noLockLookUp(source, set.getValue());
           if(result<0) {
               potentialBridgeDestinations.put(set.getKey(), set.getValue());
               got = false;
@@ -227,6 +228,7 @@ public class ConnectedComponent {
           }
             }
         }
+        this.readLock.unlock();
         Collections.sort(bridgeList);
 
         //if DO doesn't contain everything, we must start computation
@@ -283,7 +285,31 @@ public class ConnectedComponent {
         }
 
             return -1;
+    }
 
+    public float noLockLookUp(PartitionVertex u, PartitionVertex v){
+        try {
+            SearchKey key = new SearchKey(u.mc, v.mc);
+            //todo: only for undirected graph
+            // SearchKey reverseKey = new SearchKey(v.mc,u.mc);
+            for (int i = 0; i < 33; i++) {
+                if (DO.containsKey(key)) {
+                    if(DO.get(key)<0){
+                        throw new RuntimeException("wrong DO entry got inserted\n");
+                    }
+                    Global.DO_hit();
+                    return DO.get(key);
+                }/*else if(DO.containsKey(reverseKey)){
+                    Global.DO_hit();
+                    return DO.get(reverseKey);
+                }*/
+                key.shift();
+                //reverseKey.shift();
+            }
+        }catch(RuntimeException e){
+            e.printStackTrace();
+        }
 
+        return -1;
     }
 }
