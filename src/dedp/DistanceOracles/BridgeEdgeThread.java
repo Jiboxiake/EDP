@@ -27,6 +27,7 @@ public class BridgeEdgeThread extends Thread{
         HashMap <Integer, VertexQueueEntry> distMap = new HashMap<>();
         distMap.put(source.getId(), entry);
         q.add(entry);
+        HashMap<SearchKey, Float> partialDO = new HashMap<>();
         while(!q.isEmpty()){
             VertexQueueEntry en = q.poll();
             //System.out.println(en);
@@ -87,25 +88,46 @@ public class BridgeEdgeThread extends Thread{
                 source.underBridgeComputation=false;
                 source.lock.unlock();
                 //handle DO
-              /* for(Map.Entry<Integer, PartitionVertex>set: destinations.entrySet()){
-                    int toID = set.getKey();
-                    VertexQueueEntry toEn=distMap.get(toID);
-                    try {
-                        float check=cc.lookUp(source, set.getValue());
-                        if(check<0){
-                            cc.addDOEntry(source, set.getValue(), toEn.distance);
-                            Global.addBridge_do_count();
-                        }
-                    } catch (ObjectNotFoundException a) {
-                        a.printStackTrace();
-                    }
-                }*/
-                //maybe null the list reference before we return?
-                this.bridgeEdgeList=null;
-                return;
             }
         }
-        System.err.println("error at "+source.getId());
+        //distances from source to all vertices in this cc is computed.
+        for(int i=0;i<bridgeEdgeList.size();i++){
+            PartitionEdge pe = bridgeEdgeList.get(i);
+            PartitionVertex to = pe.getTo();
+            if(pe.getFrom().getId()!=source.getId()){
+                throw new RuntimeException("id not match");
+            }
+            SearchKey key = new SearchKey(source.mc, to.mc);
+            if(needInsertion(partialDO, key)){
+                try {
+                    key = cc.optimizedSearchKeyGeneration(distMap,source,to,pe.getWeight());
+                    partialDO.put(key,pe.getWeight());
+                } catch (ObjectNotFoundException e) {
+                    e.printStackTrace();
+                }
+            }else{
+                Global.addDO_hit_during_bridge_computation();
+            }
+        }
+        cc.addDO(partialDO);
+        this.bridgeEdgeList=null;
+    }
+
+
+
+
+    public boolean needInsertion(HashMap<SearchKey, Float> partialDO, SearchKey key) {
+        for (int i = 0; i < 33; i++) {
+            if (partialDO.containsKey(key)) {
+                if (partialDO.get(key) < 0) {
+                    throw new RuntimeException("wrong DO entry got inserted\n");
+                }
+                Global.DO_hit();
+                return false;
+            }
+            key.shift();
+        }
+        return true;
     }
 
     public ArrayList<PartitionEdge>getBridgeEdgeList(){

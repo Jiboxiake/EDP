@@ -1,6 +1,7 @@
 package dedp.DistanceOracles;
 
 import dedp.exceptions.ObjectNotFoundException;
+import dedp.indexes.edgedisjoint.ConnectedComponent;
 import dedp.indexes.edgedisjoint.PartitionEdge;
 import dedp.indexes.edgedisjoint.PartitionVertex;
 import dedp.structures.*;
@@ -14,6 +15,7 @@ import java.util.PriorityQueue;
 public class DistanceOracle {
     public static double e=0.25;
     public static double s=2.0/e;
+    public static int initialDpeth=2;
 
     public static void setParameter(double error){
         e=error;
@@ -74,8 +76,77 @@ public class DistanceOracle {
         return true;
     }
 
+    public static float getQuadTreeDiameter(PartitionVertex source, ConnectedComponent cc, QuadTree t) throws ObjectNotFoundException {
+        float maxDistance = t.getDiameter();
+        if(maxDistance>0){
+            return maxDistance;
+        }
+        PriorityQueue<DistanceFromSource> q = new PriorityQueue<DistanceFromSource>();
+        PartitionVertex u = null;
+        DistanceFromSource uDist = new DistanceFromSource();
+        uDist.VertexID = source.getId();
+        uDist.Distance = 0;
+        q.add(uDist);
+        Map<Long, DistanceFromSource> distMap = new HashMap<Long, DistanceFromSource>();
+        distMap.put((long)source.getId(), uDist);
+        DistanceFromSource toDist = null;
 
+        HashSet<Integer> allVer = t.copy();
+        while(!q.isEmpty())
+        {
+            uDist = q.poll();
+            //return until we traverse all vertices in this quadtree block.
+            if(allVer.contains(uDist.VertexID)){
+                //we only care about distances in this block
+                if(maxDistance<uDist.Distance){
+                    maxDistance=uDist.Distance;
+                }
+                allVer.remove(uDist.VertexID);
+                if(allVer.isEmpty()){
+                    t.setDiameter(maxDistance);
+                    return maxDistance;
+                }
+            }
+            u = cc.getVertex((int)uDist.VertexID);
+            for(PartitionEdge e: u.getOutEdges()){
+                PartitionVertex to = e.getTo();
+                toDist = distMap.get(to.getId());
+                if(toDist==null){
+                    toDist = new DistanceFromSource();
+                    toDist.VertexID = to.getId();
+                    toDist.Distance = uDist.Distance + e.getWeight();
+                    distMap.put(toDist.VertexID, toDist);
+                }
+                if(toDist.Distance > uDist.Distance + e.getWeight())
+                {
+                    toDist.Distance = uDist.Distance + e.getWeight();
+                    q.remove(toDist); //remove if it exists
+                    q.add(toDist);
+                }
+            }
+        }
+        throw new ObjectNotFoundException("quadtree block contains extra vertices");
+    }
 
+    public static float getQuadTreeDiameterWithDistMap(HashMap<Integer, VertexQueueEntry>disMap, QuadTree t){
+        float maxDistance = -1;
+        HashSet<Integer>vertices = t.copy();
+        for(Integer id:vertices){
+            if(disMap.get(id).distance>maxDistance){
+                maxDistance=disMap.get(id).distance;
+            }
+        }
+        t.setDiameter(maxDistance);
+        return maxDistance;
+    }
 
-
+    public static boolean isWellSeparatedOpti(float distance, QuadTree t1, QuadTree t2, PartitionVertex u, PartitionVertex v, HashMap<Integer, VertexQueueEntry>distMap, ConnectedComponent cc) throws ObjectNotFoundException {
+        float d1 = getQuadTreeDiameter(u,cc,t1);
+        float d2 = getQuadTreeDiameterWithDistMap(distMap,t2);
+        double adjusted_d= distance/s;
+        if(adjusted_d>d1&&adjusted_d>d2){
+            return true;
+        }
+        return false;
+    }
 }

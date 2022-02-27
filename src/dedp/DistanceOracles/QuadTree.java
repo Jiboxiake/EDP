@@ -16,6 +16,7 @@ public class QuadTree {
     private QuadTree SW;
     private QuadTree SE;
     private int level;
+    private float diameter;
     private MortonCode mc;
     private int top_bound;
     private int bottom_bound;
@@ -34,6 +35,8 @@ public class QuadTree {
         this.right_bound=right_bound;
         this.level=level;
         this.parent=parent;
+        //diameter not set yet
+        this.diameter=-1;
         setMorton();
         //this.vertices=vertices;
         this.vertices= new HashSet<Integer>(vertices.size());
@@ -87,7 +90,14 @@ public class QuadTree {
         return toReturn;
     }*/
 
-
+    public float getDiameter(){
+        return this.diameter;
+    }
+    public void setDiameter(float newDia){
+        if(newDia>this.diameter){
+            this.diameter=diameter;
+        }
+    }
     public HashSet<Integer> copy(){
         return new HashSet<>(vertices);
     }

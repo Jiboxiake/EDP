@@ -312,4 +312,46 @@ public class ConnectedComponent {
 
         return -1;
     }
+
+    public SearchKey optimizedSearchKeyGeneration(HashMap<Integer, VertexQueueEntry>distMap, PartitionVertex u, PartitionVertex v, float distance) throws ObjectNotFoundException {
+        //use distance map to update each quadtree block's diameter is curr>original.
+        //then we only have to check the diameter of the destination's quadtree block. We can also cache it.
+        //we can also start with an initial depth, like 2?
+        try {
+            if (!tree.contain(u)) {
+                throw new ObjectNotFoundException("vertex: " + u.getId() + " not exist in connected component " + ID + " in partition " + partition.Label);
+            }
+            if (!tree.contain(v)) {
+                throw new ObjectNotFoundException("vertex: " + v.getId() + " not exist in connected component " + ID + " in partition " + partition.Label);
+            }
+            //we start searching at an initial depth
+            QuadTree forU = tree, forV = tree;
+            for(int i=0;i<DistanceOracle.initialDpeth;i++){
+                forU = forU.containingBlock(u);
+                forV = forV.containingBlock(v);
+            }
+            while (true) {
+                forU = forU.containingBlock(u);
+                forV = forV.containingBlock(v);
+                assert (forU.getLevel() == forV.getLevel());
+               /* if (DistanceOracle.isWellSeparated(distance, forU, forV, u, v, vertices)||(forU.reachMaxLevel()&&forV.reachMaxLevel())) {
+                    SearchKey key = new SearchKey(forU.getMC(), forV.getMC(), forU.getLevel());
+                    Global.addWSP();
+                    Global.addBridge_do_count();
+                    return key;
+                }*/
+                if(DistanceOracle.isWellSeparatedOpti(distance,forU,forV,u,v,distMap,this)||(forU.reachMaxLevel()&&forV.reachMaxLevel())){
+                    SearchKey key = new SearchKey(forU.getMC(), forV.getMC(), forU.getLevel());
+                    Global.addWSP();
+                    Global.addBridge_do_count();
+                    return key;
+                }
+
+                Global.addNotWellSeparated();
+            }
+        }
+        finally{
+
+        }
+    }
 }
