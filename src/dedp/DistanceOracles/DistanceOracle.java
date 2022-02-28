@@ -116,6 +116,7 @@ public class DistanceOracle {
                     toDist.VertexID = to.getId();
                     toDist.Distance = uDist.Distance + e.getWeight();
                     distMap.put(toDist.VertexID, toDist);
+                    q.add(toDist);
                 }
                 if(toDist.Distance > uDist.Distance + e.getWeight())
                 {
