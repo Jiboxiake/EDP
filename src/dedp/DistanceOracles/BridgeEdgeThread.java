@@ -111,6 +111,7 @@ public class BridgeEdgeThread extends Thread{
         }
         cc.addDO(partialDO);
         this.bridgeEdgeList=null;
+        this.destinations=null;
     }
 
 

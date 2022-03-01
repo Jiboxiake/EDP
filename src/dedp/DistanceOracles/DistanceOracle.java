@@ -142,8 +142,8 @@ public class DistanceOracle {
     }
 
     public static boolean isWellSeparatedOpti(float distance, QuadTree t1, QuadTree t2, PartitionVertex u, PartitionVertex v, HashMap<Integer, VertexQueueEntry>distMap, ConnectedComponent cc) throws ObjectNotFoundException {
-        float d1 = getQuadTreeDiameter(u,cc,t1);
-        float d2 = getQuadTreeDiameterWithDistMap(distMap,t2);
+        float d1 = getQuadTreeDiameterWithDistMap(distMap,t1);
+        float d2 = getQuadTreeDiameter(v,cc,t2);
         double adjusted_d= distance/s;
         if(adjusted_d>d1&&adjusted_d>d2){
             return true;
