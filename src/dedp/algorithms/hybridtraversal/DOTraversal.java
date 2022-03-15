@@ -119,7 +119,6 @@ public class DOTraversal {
                         lblDist.Distance = uDist.Distance;
                         lblDist.PotentialDistance = uDist.Distance;
                         lblDist.OutEdgeIdToProcess = 0;
-                        lblDist.OutEdgeIdToProcess = 0;
                         q.remove(lblDist); //remove if it exists
                         q.add(lblDist);
                     }

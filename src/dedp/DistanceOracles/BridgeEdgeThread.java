@@ -90,8 +90,9 @@ public class BridgeEdgeThread extends Thread{
                 //handle DO
             }
         }
+        //now this part has bug
         //distances from source to all vertices in this cc is computed.
-        for(int i=0;i<bridgeEdgeList.size();i++){
+    /*    for(int i=0;i<bridgeEdgeList.size();i++){
             PartitionEdge pe = bridgeEdgeList.get(i);
             PartitionVertex to = pe.getTo();
             if(pe.getFrom().getId()!=source.getId()){
@@ -109,7 +110,7 @@ public class BridgeEdgeThread extends Thread{
                 Global.addDO_hit_during_bridge_computation();
             }
         }
-        cc.addDO(partialDO);
+        cc.addDO(partialDO);*/
         this.bridgeEdgeList=null;
         this.destinations=null;
     }

@@ -75,7 +75,8 @@ public class DistanceOracle {
         //traverse all vertices in the block and the max distance is still leq distance, we know they are well separated then
         return true;
     }
-
+    //maybe we still want 1 thread per cc so there will be less wasted work
+    //or dedicated DO computation thread, in a producer consumer model
     public static float getQuadTreeDiameter(PartitionVertex source, ConnectedComponent cc, QuadTree t) throws ObjectNotFoundException {
         float maxDistance = t.getDiameter();
         if(maxDistance>0){
