@@ -316,6 +316,7 @@ public class Partition
 	public PartitionVertex getVertex(int vertexId, boolean addIfNotFound, List<Integer> otherLabels, List<Integer> otherLabelsBakcward) throws ObjectNotFoundException
 	{
 		PartitionVertex vertex = null;
+
 		if(vertexes.containsKey(vertexId))
 		{
 			vertex = this.vertexes.get(vertexId);
@@ -324,10 +325,14 @@ public class Partition
 		{
 			vertex = new PartitionVertex();
 			vertex.setId(vertexId);
+			vertex.Label=this.Label;
 			vertex.setOtherHomes(otherLabels);
 			vertex.setOtherHomesBackward(otherLabelsBakcward);
 			this.vertexes.put(vertexId, vertex);
 		}
+		/*if(!vertexes.containsKey(vertexId)){
+			throw new ObjectNotFoundException("Vertex with id " + vertexId + " is not found in Partition " + this.Label + ".");
+		}*/
 		/*
 		 //I commented this line as the query processing algorithm calls this function with destination vertexes that may not exist
 		else
@@ -579,7 +584,7 @@ public class Partition
 	public float getEdgeWeightDO(int from, int to) throws Exception {
 		return getEdgeWeight(vertexes.get(from), vertexes.get(to));
 	}
-
+	//todo: optimize here
 	public float getEdgeWeight(PartitionVertex u, PartitionVertex v)throws Exception{
 		ConnectedComponent cc = this.ConnectedComponents.getConnectedComponent(u.ComponentId);
 		assert(u.ComponentId==v.ComponentId&&cc.vertices.containsKey(u.vertexId)&&cc.vertices.containsKey(v.vertexId));
@@ -592,11 +597,11 @@ public class Partition
 		SPResult directedResult = Dijkstra.shortestDistance(this, u.vertexId, v.vertexId);
 		Global.Dij_exec();
 		result= directedResult.Distance;
-		//todo: distance oracle computation thread
-		DistanceOracleThread t = new DistanceOracleThread();
+		//todo: distance oracle computation thread we can optimize it just as in bridge thread
+	/*	DistanceOracleThread t = new DistanceOracleThread();
 		t.setCC(cc);
 		t.setParameters(u, v, result);
-		t.start();
+		t.start();*/
 		return result;
 	}
 
@@ -772,7 +777,7 @@ public class Partition
 	public int Label;
 	public String DO_NAME;
 	
-	protected Map<Integer, PartitionVertex> vertexes = new HashMap<Integer, PartitionVertex>();
+	public Map<Integer, PartitionVertex> vertexes = new HashMap<Integer, PartitionVertex>();
 	public Map<Integer, PartitionEdge> edges = new HashMap<Integer, PartitionEdge>();
 	
 	

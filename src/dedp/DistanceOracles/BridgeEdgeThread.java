@@ -10,13 +10,14 @@ import java.util.*;
 public class BridgeEdgeThread extends Thread{
     private PartitionVertex source;
     //todo: change destination
-    private HashMap<Integer, PartitionVertex> destinations;
+    //private HashMap<Integer, PartitionVertex> destinations;
+    private HashSet<Integer> destinations;
     private ConnectedComponent cc;
-    private ArrayList<PartitionEdge> bridgeEdgeList;
+    private ArrayList<PartitionEdge> doBridgeEdgeList;
+    private ArrayList<PartitionEdge> computedBridgeEdgeList;
     private int maxGuarantee;
-
     //Compute until destination is empty
-    @Override
+   /* @Override
     public void run(){
 
         source.lock.lock();
@@ -41,18 +42,6 @@ public class BridgeEdgeThread extends Thread{
                 e.setWeight(en.distance);
                 bridgeEdgeList.add(e);
                 Collections.sort(bridgeEdgeList);
-           /*     source.lock.lock();
-                source.numOfBridgeEdgesComputed++;
-                source.lock.unlock();
-                try {
-                    float check=cc.lookUp(source, en.vertex);
-                    if(check<0){
-                        cc.addDOEntry(source, en.vertex, en.distance);
-                        Global.addBridge_do_count();
-                    }
-                } catch (ObjectNotFoundException a) {
-                    a.printStackTrace();
-                }*/
             }
             //check if the first maxGuarantee many bridge edges are computed
             //todo:check if this is correct
@@ -85,14 +74,14 @@ public class BridgeEdgeThread extends Thread{
                 source.numOfBridgeEdgesComputed=bridgeEdgeList.size();
                 source.allBridgeEdgesComputed=true;
                 source.bridgeEdgeAdded.signalAll();
-                source.underBridgeComputation=false;
+                //source.underBridgeComputation=false;
                 source.lock.unlock();
                 //handle DO
             }
         }
         //now this part has bug
         //distances from source to all vertices in this cc is computed.
-    /*    for(int i=0;i<bridgeEdgeList.size();i++){
+        for(int i=0;i<bridgeEdgeList.size();i++){
             PartitionEdge pe = bridgeEdgeList.get(i);
             PartitionVertex to = pe.getTo();
             if(pe.getFrom().getId()!=source.getId()){
@@ -110,9 +99,104 @@ public class BridgeEdgeThread extends Thread{
                 Global.addDO_hit_during_bridge_computation();
             }
         }
-        cc.addDO(partialDO);*/
+        cc.addDO(partialDO);
+        source.lock.lock();
+        source.underBridgeComputation=false;
         this.bridgeEdgeList=null;
         this.destinations=null;
+        source.lock.unlock();
+    }*/
+    @Override
+    public void run(){
+        int maxBridgeNum=-1;
+        if(source.isBridge()){
+            maxBridgeNum=cc.bridgeVerticesSize()-1;
+        }else{
+            maxBridgeNum=cc.bridgeVerticesSize();
+        }
+        if(maxBridgeNum==0){
+            source.allBridgeEdgesComputed=true;
+            return;
+        }
+        source.lock.lock();
+        source.underBridgeComputation=true;
+        source.lock.unlock();
+        VertexQueueEntry entry = new VertexQueueEntry(source,0);
+        PriorityQueue<VertexQueueEntry>q = new PriorityQueue<>();
+        HashMap <Integer, VertexQueueEntry> distMap = new HashMap<>();
+        distMap.put(source.getId(), entry);
+        q.add(entry);
+        boolean newEntryAdded=false;
+        HashMap<SearchKey, Float> partialDO = new HashMap<>();
+        while(!q.isEmpty()){
+            newEntryAdded=false;
+            VertexQueueEntry en = q.poll();
+            if(destinations.contains(en.vertex.getId())){
+                PartitionEdge e = new PartitionEdge();
+                e.setFrom(source);
+                e.setTo(en.vertex);
+                e.setWeight(en.distance);
+                e.setLabel(source.Label);
+                computedBridgeEdgeList.add(e);
+                newEntryAdded=true;
+            }
+            for(int i=maxGuarantee;i<doBridgeEdgeList.size();i++){
+                if(doBridgeEdgeList.get(i).getWeight()<=en.distance){
+                    newEntryAdded=true;
+                }else{
+                    maxGuarantee=i;
+                    break;
+                }
+            }
+            if(newEntryAdded){
+                source.lock.lock();
+                source.numOfBridgeEdgesComputed=maxGuarantee+computedBridgeEdgeList.size();
+                source.bridgeEdgeAdded.signalAll();
+                source.lock.unlock();
+            }
+            for(int i=0; i<en.vertex.outEdges.size();i++){
+                PartitionEdge e = en.vertex.outEdges.get(i);
+                PartitionVertex to = e.getTo();
+ /*               if(to.getId()==14218&&cc.partition.Label==0){
+                    System.out.println("current cc contains 14218 "+cc.vertices.containsKey(14218));
+                }*/
+                if(e.getLabel()!=source.Label){
+                    throw new RuntimeException("error with wrong label");
+                }
+                if(!cc.vertices.containsKey(to.getId())){
+                    try {
+                        throw new ObjectNotFoundException("vertex "+to.getId()+" not exist in cc");
+                    } catch (ObjectNotFoundException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+                VertexQueueEntry toEn = distMap.get(to.getId());
+                if(toEn==null){
+                    toEn=new VertexQueueEntry(to, en.distance+e.getWeight());
+                    distMap.put(to.getId(),toEn);
+                    q.add(toEn);
+                }else if(toEn.distance>e.getWeight()+en.distance){
+                    toEn.distance=e.getWeight()+en.distance;
+                    q.remove(toEn);
+                    q.add(toEn);
+                }
+            }
+            if(doBridgeEdgeList.size()+computedBridgeEdgeList.size()>=maxBridgeNum){
+                source.lock.lock();
+                source.numOfBridgeEdgesComputed=doBridgeEdgeList.size()+computedBridgeEdgeList.size();
+                source.allBridgeEdgesComputed=true;
+                source.bridgeEdgeAdded.signalAll();
+                source.lock.unlock();
+            }
+        }
+        //todo:now we are supposed to start computing DO, but let's skip for now.
+
+        source.lock.lock();
+        source.underBridgeComputation=false;
+        doBridgeEdgeList=null;
+        computedBridgeEdgeList=null;
+        source.lock.unlock();
+        return;
     }
 
 
@@ -133,13 +217,21 @@ public class BridgeEdgeThread extends Thread{
     }
 
     public ArrayList<PartitionEdge>getBridgeEdgeList(){
-        return this.bridgeEdgeList;
+        //return this.bridgeEdgeList;
+        return this.doBridgeEdgeList;
     }
-    public void setParameters(ConnectedComponent cc,PartitionVertex source,HashMap<Integer, PartitionVertex>destinations, ArrayList<PartitionEdge> bridgeEdgeList, int maxGuarantee){
-        this.bridgeEdgeList=bridgeEdgeList;
+    public void setParameters(ConnectedComponent cc,PartitionVertex source,HashSet<Integer> destinations, ArrayList<PartitionEdge> doBridgeEdgeList, ArrayList<PartitionEdge> computedBridgeEdgeList, int maxGuarantee){
+       // this.bridgeEdgeList=bridgeEdgeList;
+        this.doBridgeEdgeList=doBridgeEdgeList;
+        this.computedBridgeEdgeList= computedBridgeEdgeList;
         this.source=source;
         this.destinations=destinations;
         this.cc=cc;
         this.maxGuarantee=maxGuarantee;
+    }
+
+    public void copyList(ArrayList<PartitionEdge> doBridgeEdgeList, ArrayList<PartitionEdge> computedBridgeEdgeList){
+        doBridgeEdgeList=this.doBridgeEdgeList;
+        computedBridgeEdgeList=this.computedBridgeEdgeList;
     }
 }

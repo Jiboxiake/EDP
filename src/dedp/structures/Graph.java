@@ -164,7 +164,10 @@ public class Graph
 		edge.setTo(vTo);
 		edge.setWeight(weight);
 		edge.setLabel(label);
-		vFrom.addEdge(edge);
+		vFrom.outEdges.add(edge);
+		vTo.inEdges.add(edge);
+		Collections.sort(vFrom.outEdges);
+		Collections.sort(vTo.inEdges);
 		if(!LabelsIDs.contains(label))
 		{
 			LabelsIDs.add(label);
@@ -172,7 +175,17 @@ public class Graph
 		}
 		if(!isDirected)
 		{
-			vTo.addEdge(edge);
+			Edge edge1 = new Edge();
+			edge1.setID(edgeID);
+			edge1.setFrom(vTo);
+			edge1.setTo(vFrom);
+			edge1.setWeight(weight);
+			edge1.setLabel(label);
+			vTo.outEdges.add(edge1);
+			vFrom.inEdges.add(edge1);
+			Collections.sort(vTo.outEdges);
+			Collections.sort(vFrom.inEdges);
+			//vTo.addEdge(edge);
 		}
 		this.edges.put(edgeID, edge);
 		return edge;

@@ -6,7 +6,7 @@ import dedp.indexes.edgedisjoint.PartitionVertex;
 
 import java.util.ArrayList;
 //do we want to handle everything including waiting and checking in this class?
-public class hybridBridgeEdgeList {
+public class HybridBridgeEdgeList {
     private ArrayList<PartitionEdge> DOList;
     private ArrayList<PartitionEdge> computedList;
     private PartitionVertex source;
@@ -14,20 +14,21 @@ public class hybridBridgeEdgeList {
     private int computedIndex=0;
     private int maxBridgeEdgeNum=0;
     private int edgeOrder=0;
-    public hybridBridgeEdgeList(PartitionVertex source, ConnectedComponent cc){
+    public HybridBridgeEdgeList(PartitionVertex source, ConnectedComponent cc){
         this.source=source;
         DOList=new ArrayList<>();
         computedList=new ArrayList<>();
         if(source.isBridge()){
-            maxBridgeEdgeNum = cc.bridgeVerticesSize()-1;
+            this.maxBridgeEdgeNum = cc.bridgeVerticesSize()-1;
         }else{
-            maxBridgeEdgeNum = cc.bridgeVerticesSize();
+            this.maxBridgeEdgeNum = cc.bridgeVerticesSize();
         }
     }
 
     public int getEdgeOrder(){
         return this.edgeOrder;
     }
+
 
     public PartitionEdge getEdge() throws InterruptedException {
         if(edgeOrder!=DOIndex+computedIndex){
@@ -44,11 +45,13 @@ public class hybridBridgeEdgeList {
                 result = DOList.get(DOIndex);
                 DOIndex++;
                 edgeOrder++;
+                source.lock.unlock();
                 return result;
             }else if (DOList.size()==DOIndex){
                 result = computedList.get(computedIndex);
                 computedIndex++;
                 edgeOrder++;
+                source.lock.unlock();
                 return result;
             }
             //now we get to decide which one to pick next
@@ -58,15 +61,22 @@ public class hybridBridgeEdgeList {
             if(e1.getWeight()>=e2.getWeight()){
                 DOIndex++;
                 edgeOrder++;
+                source.lock.unlock();
                 return e1;
             }else{
                 computedIndex++;
                 edgeOrder++;
+                source.lock.unlock();
                 return e2;
             }
         }
+        source.lock.unlock();
         return result;
     }
 
+    public void setParameters(ArrayList<PartitionEdge> DOList,ArrayList<PartitionEdge> computedList){
+        this.DOList=DOList;
+        this.computedList=computedList;
+    }
 
 }

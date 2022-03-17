@@ -34,7 +34,7 @@ public class DOTraversal {
         }
         Map<Integer, DOQueueEntry> distMap = null;
         Map<Integer, DOQueueEntry> lblDistMap = null;
-        HashMap<Integer, HashMap<Integer, ArrayList<PartitionEdge>>> partitionVertexBridgeEdges = new HashMap<>();
+        HashMap<Integer, HashMap<Integer, HybridBridgeEdgeList>> partitionVertexBridgeEdges = new HashMap<>();
         PartitionEdge e;
         DOQueueEntry lblDist = null;
         Partition currentPartition = null;
@@ -100,6 +100,9 @@ public class DOTraversal {
                 }
             }
             //if Traversal reaches a bridge vertex
+            if(u==null){
+                System.out.println(currentPartition.getVertex(uDist.VertexId));
+            }
             if (u.isBridge()) {
                 otherHomes = Helper.intersection(u.OtherHomes, labelIDs);
                 for (int otherHome : otherHomes) {
@@ -126,190 +129,103 @@ public class DOTraversal {
             }
             //Now we try to add the bridge edges
             //first we check if this is the first time we meet this vertex
+            HashMap<Integer, HybridBridgeEdgeList> bridgePerPartition = null;
+            HybridBridgeEdgeList bridgeEdgeList=null;
             ConnectedComponent cc = currentPartition.ConnectedComponents.getConnectedComponent(u.ComponentId);
-            if (uDist.first) {
-                if(uDist.OutEdgeIdToProcess!=0){
-                    throw new Exception("Error: uDist out edge id is wrong");
+            if(!partitionVertexBridgeEdges.containsKey(u.Label)){
+                bridgePerPartition = new HashMap<>();
+                partitionVertexBridgeEdges.put(u.Label,bridgePerPartition);
+            }else{
+                bridgePerPartition=partitionVertexBridgeEdges.get(u.Label);
+            }
+            if(bridgePerPartition.containsKey(u.getId())){
+                bridgeEdgeList = bridgePerPartition.get(u.getId());
+            }else{
+                bridgeEdgeList = cc.getBridgeEdgeList(u);
+                bridgePerPartition.put(u.getId(), bridgeEdgeList);
+            }
+            int countOfBridgeEdges = 0;
+            for(int i=uDist.OutEdgeIdToProcess;;i++){
+                e=bridgeEdgeList.getEdge();
+                if(e==null){
+                    break;
                 }
-                uDist.setFirst();
-                HashMap<Integer, ArrayList<PartitionEdge>> partitionBridgeMap;
-                if (!partitionVertexBridgeEdges.containsKey(currentPartition.Label)) {
-                    partitionBridgeMap = new HashMap<>();
-                    partitionVertexBridgeEdges.put(currentPartition.Label, partitionBridgeMap);
-                } else {
-                    partitionBridgeMap = partitionVertexBridgeEdges.get(currentPartition.Label);
+                toVertex=e.getTo();
+                if(currentPartition.getVertex(toVertex.getId())==null){
+                    throw new ObjectNotFoundException("vertex "+toVertex.getId()+" is missing in partition "+currentPartition.Label+"\n");
                 }
-                u.lock.lock();
-                //if it is already under bridge computation and first time
-                if (u.underBridgeComputation) {
-                    //todo: lock here?
-                    //check lock/concurrency of bridge list, towards the end of computation
-                    ArrayList<PartitionEdge> bridgeList = u.thread.getBridgeEdgeList();
-                    partitionBridgeMap.put(u.getId(), bridgeList);
-                    int bridgeEdgeFound=0;
-                    for (int i = uDist.OutEdgeIdToProcess;i<cc.bridgeVerticesSize() ; i++) {
-
-                        if(bridgeEdgeFound!=0) {
-                            u.lock.lock();
-                        }
-                        if(u.isBridge()&&i==cc.bridgeVerticesSize()-1){
-                            u.lock.unlock();
-                            break;
-                        }
-                        //todo: check synchronization here
-                        while (u.numOfBridgeEdgesComputed <=i&&!u.allBridgeEdgesComputed ) {
-                            u.bridgeEdgeAdded.await();
-                        }
-                        if(u.numOfBridgeEdgesComputed<=i&&u.allBridgeEdgesComputed){
-                            u.lock.unlock();
-                            break;
-                        }
-                        u.lock.unlock();
-                        PartitionEdge edge = bridgeList.get(i);
-                        boolean continue_check = dealBridgeEdge(result,partitionToDistMap,labelIDs, index, destination, bestDistanceSoFar, currentPartition, uDist, distMap, q, bridgeEdgeFound,i, edge);
-                        if(!continue_check){
-                            break;
-                        }else{
-                            bridgeEdgeFound++;
-                        }
+                toVertexId = toVertex.getId();
+                if(countOfBridgeEdges == index.MaxToExplore /*&& (i < toBridgeEdgesSizeMinusOne)*/)
+                {
+                    if(toVertexId != destination)
+                    {
+                        uDist.OutEdgeIdToProcess = i;
+                        uDist.PotentialDistance = uDist.Distance + e.getWeight();
+                        q.add(uDist);
+                        break;
                     }
-                } else {//if u is not currently under bridge edge computation
-                    ArrayList<PartitionEdge>bridgeList = new ArrayList<>();
-                    //ConnectedComponent cc =currentPartition.ConnectedComponents.getConnectedComponent(u.ComponentId);
-                    //where to lock?
-                    //todo:dangerous
-                    cc.checkBridgeDO(u,bridgeList);
-                    //unlock?
-                    int bridgeEdgeFound=0;
-                    if(u.allBridgeEdgesComputed){
-                        u.lock.unlock();
-                        uDist.setDO();
-                        partitionBridgeMap.put(u.getId(), bridgeList);
-                        //just read from the bridgelist is enough
-                        for(int i=0;i<bridgeList.size() ;i++){
-                            if(bridgeList.size()==0){
-                                break;
-                            }
-                            e=bridgeList.get(i);
-                            boolean continue_search=dealBridgeEdge(result,partitionToDistMap, labelIDs,index,destination,bestDistanceSoFar,currentPartition,uDist,distMap,q,bridgeEdgeFound,i,e);
-                            if(!continue_search){
-                                break;
-                            }else{
-                                bridgeEdgeFound++;
-                            }
-                        }
-                    }else{
-                        //bridge edge computation is already started during the check process
-                        partitionBridgeMap.put(u.getId(), bridgeList);
-                        for(int i=0;i<cc.bridgeVerticesSize();i++){
-
-                            if(bridgeEdgeFound!=0) {
-                                u.lock.lock();
-                            } if(u.isBridge()&&i==cc.bridgeVerticesSize()-1){
-                                u.lock.unlock();
-                                break;
-                            }
-
-                            //todo: check synchronization here
-                            while (u.numOfBridgeEdgesComputed <i+1&&!u.allBridgeEdgesComputed ) {
-                                u.bridgeEdgeAdded.await();
-                            }
-                            if(u.numOfBridgeEdgesComputed <i+1&&u.allBridgeEdgesComputed){
-                                u.lock.unlock();
-                                break;
-                            }
-                            u.lock.unlock();
-                            PartitionEdge edge = bridgeList.get(i);
-                            boolean continue_check = dealBridgeEdge(result,partitionToDistMap,labelIDs, index, destination, bestDistanceSoFar, currentPartition, uDist, distMap, q, bridgeEdgeFound,i, edge);
-                            if(!continue_check){
-                                break;
-                            }else{
-                                bridgeEdgeFound++;
-                            }
-                        }
-                    }
-
                 }
-
-            } else {//we meet it again
-                if(uDist.getDO){
-                    HashMap<Integer, ArrayList<PartitionEdge>> partitionBridgeMap;
-                    if(!partitionVertexBridgeEdges.containsKey(currentPartition.Label)){
-                        throw new ObjectNotFoundException("bridge list map "+uDist.PartitionId+" not found");
+                toDist = distMap.get(toVertexId);
+                newDistance = uDist.Distance + e.getWeight();
+                //if going to bridge vertex is already more expensive than current explored path to dest, we ignore it
+                //or if the explored path to the bridge vertex is less expensive.
+                if(newDistance >= bestDistanceSoFar || (toDist != null && (toDist.Distance <= newDistance)))
+                {
+                    continue;
+                }//else, if the new distance is better
+                countOfBridgeEdges++;
+                result.NumberOfExploredEdges++;
+                otherHomes = Helper.intersection(toVertex.OtherHomes, labelIDs);
+                furtherExplore = false;
+                if(otherHomes.size() > 0)
+                {
+                    //update the distance to the toVertex if we have a shorter way
+                    if(toDist == null)
+                    {
+                        toDist = new DOQueueEntry(toVertexId);
+                        toDist.PartitionId = currentPartition.Label;
+                        toDist.Distance = newDistance;
+                        toDist.PotentialDistance = newDistance;
+                        q.add(toDist);
+                        distMap.put(toDist.VertexId, toDist);
                     }
-                    partitionBridgeMap = partitionVertexBridgeEdges.get(currentPartition.Label);
-                    if(!partitionBridgeMap.containsKey(uDist.VertexId)){
-                        throw new ObjectNotFoundException("bridge list "+uDist.VertexId+" not found");
+                    else if(toDist.Distance > newDistance)
+                    {
+                        toDist.Distance = newDistance;
+                        toDist.PotentialDistance = newDistance;
+                        q.remove(toDist); //remove if it exists
+                        q.add(toDist);
                     }
-                    ArrayList<PartitionEdge> bridgeList =partitionBridgeMap.get(uDist.VertexId);
-                    int bridgeEdgeFound=0;
-                    for(int i=uDist.OutEdgeIdToProcess;i<cc.bridgeVerticesSize();i++){
-                        if(u.isBridge()&&i==cc.bridgeVerticesSize()-1){
-                            break;
+                    furtherExplore = true;
+                }
+                if(furtherExplore)
+                {
+                    for(int otherHome : otherHomes)
+                    {
+                        //get the distance map of the other partition
+                        lblDistMap = partitionToDistMap.get(otherHome);
+                        lblDist = lblDistMap.get(toVertexId);
+                        if(lblDist == null)
+                        {
+                            lblDist = new DOQueueEntry(toVertexId);
+                            lblDist.PartitionId = otherHome;
+                            lblDist.Distance = newDistance;
+                            lblDist.PotentialDistance = newDistance;
+                            q.add(lblDist);
+                            lblDistMap.put(lblDist.VertexId, lblDist);
                         }
-                        e=bridgeList.get(i);
-                        boolean continue_search=dealBridgeEdge(result,partitionToDistMap, labelIDs,index,destination,bestDistanceSoFar,currentPartition,uDist,distMap,q,bridgeEdgeFound,i,e);
-                        if(!continue_search){
-                            break;
-                        }else{
-                            bridgeEdgeFound++;
-                        }
-                    }
-                }else{//now we have to regain the list and possibly wait
-                    HashMap<Integer, ArrayList<PartitionEdge>> partitionBridgeMap;
-                    if(!partitionVertexBridgeEdges.containsKey(currentPartition.Label)){
-                        throw new ObjectNotFoundException("bridge list map "+uDist.PartitionId+" not found");
-                    }
-                    partitionBridgeMap = partitionVertexBridgeEdges.get(currentPartition.Label);
-                    if(!partitionBridgeMap.containsKey(uDist.VertexId)){
-                        throw new ObjectNotFoundException("bridge list "+uDist.VertexId+" not found");
-                    }
-                    ArrayList<PartitionEdge> bridgeList =partitionBridgeMap.get(uDist.VertexId);
-                    int bridgeEdgeFound=0;
-                    for(int i=uDist.OutEdgeIdToProcess;i<cc.bridgeVerticesSize();i++){
-                        if(u.isBridge()&&i==cc.bridgeVerticesSize()-1){
-                            break;
-                        }
-                        u.lock.lock();
-                        //todo: check synchronization here
-                        while (u.numOfBridgeEdgesComputed <=i &&!u.allBridgeEdgesComputed) {
-                            u.bridgeEdgeAdded.await();
-                        }
-                        if(u.numOfBridgeEdgesComputed<=i&&u.allBridgeEdgesComputed){
-                            u.lock.unlock();
-                            break;
-                        }
-                        u.lock.unlock();
-                        PartitionEdge edge = bridgeList.get(i);
-                        boolean continue_check = dealBridgeEdge(result,partitionToDistMap,labelIDs, index, destination, bestDistanceSoFar, currentPartition, uDist, distMap, q, bridgeEdgeFound,i, edge);
-                        if(!continue_check){
-                            break;
-                        }else{
-                            bridgeEdgeFound++;
+                        else if(lblDist.Distance > newDistance)
+                        {
+                            lblDist.Distance = newDistance;
+                            lblDist.PotentialDistance = newDistance;
+                            q.remove(lblDist); //remove if it exists
+                            q.add(lblDist);
                         }
                     }
                 }
-
             }
         }
-        //todo: maybe let a thread to handle this
-        ArrayList<BridgeEdgeThread> list=new ArrayList<>();
-        for(Map.Entry<Integer, HashMap<Integer, ArrayList<PartitionEdge>>>set:partitionVertexBridgeEdges.entrySet()){
-            //for this partition
-            int partitionID = set.getKey();
-            Partition partition = index.getPartition(partitionID);
-            HashMap<Integer, ArrayList<PartitionEdge>> bridgeMap = set.getValue();
-            HashMap<Integer, HashMap<Integer, ArrayList<PartitionEdge>>>ccToBridgeEdges = new HashMap<>();
-            //for every vertex of this partition
-            for(Map.Entry<Integer, ArrayList<PartitionEdge>>sset:bridgeMap.entrySet()){
-                PartitionVertex vertex = partition.getVertex(sset.getKey());
-                if(vertex.thread!=null){
-                    list.add(vertex.thread);
-                }
-            }
-           //for each cc
-        }
-        result.list=list;
+
 
         //todo: garbage collection thread(empty all vertices' bridge lists if no one else is using it).
         return result;

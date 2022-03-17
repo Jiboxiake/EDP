@@ -174,7 +174,7 @@ public class EDP_DO_Test {
         }
         int i =0;
        // ExecutorService pool = Executors.newFixedThreadPool(5);
-        while(i<2){
+        while(i<4){
             i++;
             int from = ThreadLocalRandom.current().nextInt(1, 271450/300 + 1);
             int to = ThreadLocalRandom.current().nextInt(271450/5*4 + 1, 271450+1);

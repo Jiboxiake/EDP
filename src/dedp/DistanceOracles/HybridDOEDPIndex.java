@@ -19,6 +19,8 @@ public class HybridDOEDPIndex {
     public int MaxToExplore = 5;
     public boolean isDirected;
 
+
+
     public static HybridDOEDPIndex buildIndex(Graph graph, List<Integer> excludedPartitions, boolean isDirected) throws Exception
     {
        //HybridDOEDPIndex index = new HybridDOEDPIndex(graph.Labels.size());
@@ -33,6 +35,13 @@ public class HybridDOEDPIndex {
 			index.addEdge(e);
 		}
 		*/
+       /* if(!graph.containsVertex(14218)){
+            throw new ObjectNotFoundException("error vertex not found\n");
+        }*/
+        if(!index.partitions[0].vertexes.containsKey(14218)){
+           // throw new ObjectNotFoundException("error vertex not found\n");
+        }
+        test(index);
         ConnectedComponentsComputation connectedCompDiscoverer = null;
         for(Partition p : index.partitions)
         {
@@ -51,8 +60,22 @@ public class HybridDOEDPIndex {
         //long endTime = System.currentTimeMillis();
        // System.out.println("Time for building the index in minutes: " + (double)(endTime - startTime) / (double)60000 + ".");
         index.PlainGraph = graph;
+        test(index);
+        if(!index.partitions[0].vertexes.containsKey(14218)){
+           // throw new ObjectNotFoundException("error vertex not found\n");
+        }
         //index.ReversePlainGraph = Graph.reverseGraph(graph);
         return index;
+    }
+    public static void test(HybridDOEDPIndex index) throws ObjectNotFoundException {
+        for(int i=0; i<index.partitions.length;i++){
+            for(Map.Entry<Integer, PartitionEdge>set: index.partitions[i].edges.entrySet()){
+                PartitionEdge e = set.getValue();
+                if(!index.partitions[i].containsVertex(e.getFrom().getId())||!index.partitions[i].containsVertex(e.getTo().getId())){
+                    throw new ObjectNotFoundException("error vertex not found\n");
+                }
+            }
+        }
     }
 
     public void reset()
@@ -103,7 +126,7 @@ public class HybridDOEDPIndex {
             {
                 int label = e.getLabel();
                 Partition partition = this.partitions[label];
-                if(partition.edges.containsKey(e.getID()))
+                if(partition.edges.containsKey((int)e.getID()))
                 {
                     throw new DuplicateEntryException("Edge with id " + e.getID() + " is already exiting.");
                 }
@@ -222,72 +245,71 @@ public class HybridDOEDPIndex {
                 edge.setLabel(label);
                 vFrom.addEdge(edge);
                 partition.edges.put((int)newID, edge);
+               /* if(vFrom.getId()==14218 || vTo.getId()==14218){
+                    System.out.println(partition.vertexes.containsKey(14218)+" 14218 at partition "+partition.Label);
+                }else if(vFrom.getId()==14370 || vTo.getId()==14370){
+                    System.out.println(partition.vertexes.containsKey(14370)+" 14370 at partition "+partition.Label);
+                }*/
+            }
+        }else {
+
+            for (Edge e : edges) {
+                int label = e.getLabel();
+                Partition partition = this.partitions[label];
+                if (partition.edges.containsKey((int) e.getID())) {
+                    //System.out.println("error");
+                    throw new DuplicateEntryException("Edge with id " + e.getID() + " is already exiting.");
+                }
+                PartitionEdge edge = new PartitionEdge();
+                edge.setId((int) e.getID());
+                Vertex eFrom = e.getFrom();
+                Vertex eTo = e.getTo();
+                List<Integer> outEdgesLabels = new ArrayList<Integer>();
+                List<Integer> inEdgesLabels = new ArrayList<Integer>();
+                //update the in and out edges of the head of this edge
+                for (Edge outE : eFrom.getOutEdges()) {
+                    if (outE.getLabel() != label) {
+                        outEdgesLabels.add(outE.getLabel());
+                    }
+                }
+                for (Edge inE : eFrom.getInEdges()) {
+                    if (inE.getLabel() != label) {
+                        inEdgesLabels.add(inE.getLabel());
+                    }
+                }
+                //MSaber: to measure index time only
+                Collections.sort(outEdgesLabels);
+                Collections.sort(inEdgesLabels);
+                PartitionVertex vFrom = partition.getVertex((int) eFrom.getID(), true, outEdgesLabels, inEdgesLabels);
+                //set coordinates and Morton code
+                vFrom.setCoordinates(eFrom.latitude, eFrom.longitude);
+                outEdgesLabels.clear();
+                inEdgesLabels.clear();
+                //update the in and out edges of the tail of this edge
+                for (Edge outE : eTo.getOutEdges()) {
+                    if (outE.getLabel() != label) {
+                        outEdgesLabels.add(outE.getLabel());
+                    }
+                }
+                for (Edge inE : eTo.getInEdges()) {
+                    if (inE.getLabel() != label) {
+                        inEdgesLabels.add(inE.getLabel());
+                    }
+                }
+                //MSaber: to measure index time only
+                Collections.sort(outEdgesLabels);
+                Collections.sort(inEdgesLabels);
+                PartitionVertex vTo = partition.getVertex((int) eTo.getID(), true, outEdgesLabels, inEdgesLabels);
+                vTo.setCoordinates(eTo.latitude, eTo.longitude);
+                edge.setFrom(vFrom);
+                edge.setTo(vTo);
+                edge.setWeight(e.getWeight());
+                edge.setLabel(label);
+                vFrom.addEdge(edge);
+                partition.edges.put((int) e.getID(), edge);
             }
         }
-        for(Edge e : edges)
-        {
-            int label = e.getLabel();
-            Partition partition = this.partitions[label];
-            if(partition.edges.containsKey(e.getID()))
-            {
-                throw new DuplicateEntryException("Edge with id " + e.getID() + " is already exiting.");
-            }
-            PartitionEdge edge = new PartitionEdge();
-            edge.setId((int)e.getID());
-            Vertex eFrom = e.getFrom();
-            Vertex eTo = e.getTo();
-            List<Integer> outEdgesLabels = new ArrayList<Integer>();
-            List<Integer> inEdgesLabels = new ArrayList<Integer>();
-            //update the in and out edges of the head of this edge
-            for(Edge outE : eFrom.getOutEdges())
-            {
-                if(outE.getLabel() != label)
-                {
-                    outEdgesLabels.add(outE.getLabel());
-                }
-            }
-            for(Edge inE : eFrom.getInEdges())
-            {
-                if(inE.getLabel() != label)
-                {
-                    inEdgesLabels.add(inE.getLabel());
-                }
-            }
-            //MSaber: to measure index time only
-            Collections.sort(outEdgesLabels);
-            Collections.sort(inEdgesLabels);
-            PartitionVertex vFrom = partition.getVertex((int)eFrom.getID(), true, outEdgesLabels, inEdgesLabels);
-            //set coordinates and Morton code
-            vFrom.setCoordinates(eFrom.latitude, eFrom.longitude);
-            outEdgesLabels.clear();
-            inEdgesLabels.clear();
-            //update the in and out edges of the tail of this edge
-            for(Edge outE : eTo.getOutEdges())
-            {
-                if(outE.getLabel() != label)
-                {
-                    outEdgesLabels.add(outE.getLabel());
-                }
-            }
-            for(Edge inE : eTo.getInEdges())
-            {
-                if(inE.getLabel() != label)
-                {
-                    inEdgesLabels.add(inE.getLabel());
-                }
-            }
-            //MSaber: to measure index time only
-            Collections.sort(outEdgesLabels);
-            Collections.sort(inEdgesLabels);
-            PartitionVertex vTo = partition.getVertex((int)eTo.getID(), true, outEdgesLabels, inEdgesLabels);
-            vTo.setCoordinates(eTo.latitude, eTo.longitude);
-            edge.setFrom(vFrom);
-            edge.setTo(vTo);
-            edge.setWeight(e.getWeight());
-            edge.setLabel(label);
-            vFrom.addEdge(edge);
-            partition.edges.put((int)e.getID(), edge);
-        }
+
     }
 
 

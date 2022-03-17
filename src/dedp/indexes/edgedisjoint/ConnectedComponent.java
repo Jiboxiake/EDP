@@ -209,14 +209,15 @@ public class ConnectedComponent {
         if(!vertices.containsKey(source.getId())){
             throw new ObjectNotFoundException("vertex "+source.getId()+" not found in CC "+this.ID);
         }
-        HashMap<Integer, PartitionVertex> potentialBridgeDestinations = new HashMap<>();
+        //HashMap<Integer, PartitionVertex> potentialBridgeDestinations = new HashMap<>();
+        HashSet<Integer> potentialBridgeDestinations = new HashSet<>();
         boolean got=true;
         this.readLock.lock();
         for(Map.Entry<Integer, PartitionVertex>set:bridgeVertices.entrySet()){
             if(source.getId()!=set.getKey()){
           float result= this.noLockLookUp(source, set.getValue());
           if(result<0) {
-              potentialBridgeDestinations.put(set.getKey(), set.getValue());
+              potentialBridgeDestinations.add(set.getKey());
               got = false;
           }else{
               PartitionEdge e = new PartitionEdge();
@@ -238,7 +239,7 @@ public class ConnectedComponent {
             source.thread=new BridgeEdgeThread();
             source.underBridgeComputation=true;
             source.numOfBridgeEdgesComputed=0;
-            source.thread.setParameters(this,source,potentialBridgeDestinations,bridgeList,0);
+            //source.thread.setParameters(this,source,potentialBridgeDestinations,bridgeList,0);
             source.thread.start();
             //System.out.println("execution starts");
            // source.lock.unlock();
@@ -354,4 +355,59 @@ public class ConnectedComponent {
 
         }
     }
+
+    /*
+    in this method, we either found a hybrid bridge edge list under computation, start a computation or return a full list without needing a computation
+     */
+    public HybridBridgeEdgeList getBridgeEdgeList(PartitionVertex source){
+        ArrayList<PartitionEdge> doList=null;
+        ArrayList<PartitionEdge> computedList=null;
+        HybridBridgeEdgeList bridgeList = new HybridBridgeEdgeList(source, this);
+        source.lock.lock();
+        //todo: work on this part for my bridge edge thread
+        if(source.underBridgeComputation){
+            source.thread.copyList(doList,computedList);
+            bridgeList.setParameters(doList,computedList);
+            source.lock.unlock();
+            return bridgeList;
+        }else{
+            doList = new ArrayList<>();
+            computedList = new ArrayList<>();
+            boolean got = true;
+            this.readLock.lock();
+            HashSet<Integer> potentialBridgeDestinations = new HashSet<>();
+            for(Map.Entry<Integer, PartitionVertex>set:bridgeVertices.entrySet()){
+                if(source.getId()!=set.getKey()){
+                    float result= this.noLockLookUp(source, set.getValue());
+                    if(result<0) {
+                        potentialBridgeDestinations.add(set.getKey());
+                        got = false;
+                    }else{
+                        PartitionEdge e = new PartitionEdge();
+                        e.setFrom(source);
+                        e.setTo(set.getValue());
+                        e.setWeight(result);
+                        e.setLabel(this.partition.Label);
+                        doList.add(e);
+                        //bridgeList.add(e);
+                    }
+                }
+            }
+            this.readLock.unlock();
+            Collections.sort(doList);
+            if(!got){
+                source.thread=new BridgeEdgeThread();
+                source.underBridgeComputation=true;
+                source.numOfBridgeEdgesComputed=0;
+                source.thread.setParameters(this, source, potentialBridgeDestinations, doList, computedList, 0);
+                source.thread.start();
+            }else{
+                source.allBridgeEdgesComputed=true;
+            }
+            bridgeList.setParameters(doList,computedList);
+            source.lock.unlock();
+            return bridgeList;
+        }
+    }
+
 }
