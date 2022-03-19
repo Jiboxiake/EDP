@@ -45,6 +45,12 @@ public class ConnectedComponent {
         //load balancing and initialize DO threads
         this.numDOBridgeThreads = vertices.size()/DistanceOracle.balancer;
         this.numDODirectThreads = numDOBridgeThreads/4;
+        if(this.numDOBridgeThreads==0){
+            this.numDOBridgeThreads=1;
+        }
+        if( this.numDODirectThreads==0){
+            this.numDODirectThreads=1;
+        }
         DOBridgeThreads = new DistanceOracleBridgeThread[this.numDOBridgeThreads];
         for(int i=0; i<this.numDOBridgeThreads;i++){
             DOBridgeThreads[i]= new DistanceOracleBridgeThread();

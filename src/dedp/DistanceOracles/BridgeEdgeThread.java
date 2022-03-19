@@ -189,8 +189,8 @@ public class BridgeEdgeThread extends Thread{
                 source.lock.unlock();
             }
         }
-        //todo:now we are supposed to start computing DO, but let's skip for now.
-
+        DOBridgeBufferEntry doEntry = new DOBridgeBufferEntry(source, computedBridgeEdgeList,distMap);
+        cc.sendBridgeDOWork(doEntry);
         source.lock.lock();
         source.underBridgeComputation=false;
         doBridgeEdgeList=null;
