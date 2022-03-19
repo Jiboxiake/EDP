@@ -20,9 +20,13 @@ public class ConnectedComponent {
     public HashMap<Integer, PartitionEdge> edges;
     public HashMap<SearchKey, Float> DO;
     protected HashMap<Integer, BridgeEdgesEntry> vertexToBridgeEdges; //forward
-   // private LRU cache;
+    // private LRU cache;
     //public int timeStamp;
     public QuadTree tree;
+    public DistanceOracleBridgeThread[] DOBridgeThreads;
+    public DistanceOracleDirectThread[] DODirectThreads;
+    public int numDOBridgeThreads;
+    public int numDODirectThreads;
     //the lock for read and write of distance oracle
     private final ReadWriteLock readWriteLock
             = new ReentrantReadWriteLock();
@@ -38,10 +42,25 @@ public class ConnectedComponent {
         this.vertices=vertices;
         this.edges=edges;
         this.ID=id;
+        //load balancing and initialize DO threads
+        this.numDOBridgeThreads = vertices.size()/DistanceOracle.balancer;
+        this.numDODirectThreads = numDOBridgeThreads/4;
+        DOBridgeThreads = new DistanceOracleBridgeThread[this.numDOBridgeThreads];
+        for(int i=0; i<this.numDOBridgeThreads;i++){
+            DOBridgeThreads[i]= new DistanceOracleBridgeThread();
+            DOBridgeThreads[i].setCC(this);
+            DOBridgeThreads[i].start();
+        }
+        DODirectThreads = new DistanceOracleDirectThread[numDODirectThreads];
+        for(int i=0; i<this.numDODirectThreads; i++){
+            DODirectThreads[i] = new DistanceOracleDirectThread();
+            DODirectThreads[i].setParameter(this);
+            DODirectThreads[i].start();
+        }
         //this.cache=new LRU(5);
         this.partition=partition;
         tree=new QuadTree(this.vertices);
-       // this.timeStamp=timeStamp;
+        // this.timeStamp=timeStamp;
         DO=new HashMap<>();
     }
 
@@ -98,64 +117,64 @@ public class ConnectedComponent {
         }
     }
     //for optimized and parallel DO insertion, no lock
-   public DOEntry getEntry(PartitionVertex u, PartitionVertex v, float distance) throws ObjectNotFoundException {
+    public DOEntry getEntry(PartitionVertex u, PartitionVertex v, float distance) throws ObjectNotFoundException {
         DOEntry entry = new DOEntry(null, distance);
-       try {
-           if (!tree.contain(u)) {
-               throw new ObjectNotFoundException("vertex: " + u.getId() + " not exist in connected component " + ID + " in partition " + partition.Label);
-           }
-           if (!tree.contain(v)) {
-               throw new ObjectNotFoundException("vertex: " + v.getId() + " not exist in connected component " + ID + " in partition " + partition.Label);
-           }
-           QuadTree forU = tree, forV = tree;
-           while (true) {
-               forU = forU.containingBlock(u);
-               forV = forV.containingBlock(v);
-               assert (forU.getLevel() == forV.getLevel());
-               if (DistanceOracle.isWellSeparated(distance, forU, forV, u, v, vertices)||(forU.reachMaxLevel()&&forV.reachMaxLevel())) {
-                   SearchKey key = new SearchKey(forU.getMC(), forV.getMC(), forU.getLevel());
-                   entry.key=key;
-                   Global.addWSP();
-                   Global.addBridge_do_count();
-                   return entry;
-               }
-               Global.addNotWellSeparated();
-           }
-       }
-       finally{
+        try {
+            if (!tree.contain(u)) {
+                throw new ObjectNotFoundException("vertex: " + u.getId() + " not exist in connected component " + ID + " in partition " + partition.Label);
+            }
+            if (!tree.contain(v)) {
+                throw new ObjectNotFoundException("vertex: " + v.getId() + " not exist in connected component " + ID + " in partition " + partition.Label);
+            }
+            QuadTree forU = tree, forV = tree;
+            while (true) {
+                forU = forU.containingBlock(u);
+                forV = forV.containingBlock(v);
+                assert (forU.getLevel() == forV.getLevel());
+                if (DistanceOracle.isWellSeparated(distance, forU, forV, u, v, vertices)||(forU.reachMaxLevel()&&forV.reachMaxLevel())) {
+                    SearchKey key = new SearchKey(forU.getMC(), forV.getMC(), forU.getLevel());
+                    entry.key=key;
+                    Global.addWSP();
+                    Global.addBridge_do_count();
+                    return entry;
+                }
+                Global.addNotWellSeparated();
+            }
+        }
+        finally{
 
-       }
+        }
 
-   }
+    }
 
-   public SearchKey getSearchKey(PartitionVertex u, PartitionVertex v, float distance) throws ObjectNotFoundException {
-       try {
-           if (!tree.contain(u)) {
-               throw new ObjectNotFoundException("vertex: " + u.getId() + " not exist in connected component " + ID + " in partition " + partition.Label);
-           }
-           if (!tree.contain(v)) {
-               throw new ObjectNotFoundException("vertex: " + v.getId() + " not exist in connected component " + ID + " in partition " + partition.Label);
-           }
-           QuadTree forU = tree, forV = tree;
-           while (true) {
-               forU = forU.containingBlock(u);
-               forV = forV.containingBlock(v);
-               assert (forU.getLevel() == forV.getLevel());
-               if (DistanceOracle.isWellSeparated(distance, forU, forV, u, v, vertices)||(forU.reachMaxLevel()&&forV.reachMaxLevel())) {
-                   SearchKey key = new SearchKey(forU.getMC(), forV.getMC(), forU.getLevel());
-                   Global.addWSP();
-                   Global.addBridge_do_count();
-                   return key;
-               }
-               Global.addNotWellSeparated();
-           }
-       }
-       finally{
+    public SearchKey getSearchKey(PartitionVertex u, PartitionVertex v, float distance) throws ObjectNotFoundException {
+        try {
+            if (!tree.contain(u)) {
+                throw new ObjectNotFoundException("vertex: " + u.getId() + " not exist in connected component " + ID + " in partition " + partition.Label);
+            }
+            if (!tree.contain(v)) {
+                throw new ObjectNotFoundException("vertex: " + v.getId() + " not exist in connected component " + ID + " in partition " + partition.Label);
+            }
+            QuadTree forU = tree, forV = tree;
+            while (true) {
+                forU = forU.containingBlock(u);
+                forV = forV.containingBlock(v);
+                assert (forU.getLevel() == forV.getLevel());
+                if (DistanceOracle.isWellSeparated(distance, forU, forV, u, v, vertices)||(forU.reachMaxLevel()&&forV.reachMaxLevel())) {
+                    SearchKey key = new SearchKey(forU.getMC(), forV.getMC(), forU.getLevel());
+                    Global.addWSP();
+                    Global.addBridge_do_count();
+                    return key;
+                }
+                Global.addNotWellSeparated();
+            }
+        }
+        finally{
 
-       }
-   }
+        }
+    }
 
-   //for inserting a partial distance oracle
+    //for inserting a partial distance oracle
     public void addDO(HashMap<SearchKey, Float> partialDO){
         this.writeLock.lock();
         for(Map.Entry<SearchKey,Float>set:partialDO.entrySet()){
@@ -166,15 +185,15 @@ public class ConnectedComponent {
     }
 
     //try to insert as efficiently as possible
-   public void addEntryList(ArrayList<DOEntry> entryList){
-       writeLock.lock();
+    public void addEntryList(ArrayList<DOEntry> entryList){
+        writeLock.lock();
         for(int i=0; i<entryList.size();i++){
             DOEntry entry = entryList.get(i);
             DO.remove(entry.key);
             DO.put(entry.key, entry.distance);
         }
-       writeLock.unlock();
-   }
+        writeLock.unlock();
+    }
 
 
     public void addBridgeEntry(int from, PartitionEdge e){
@@ -215,18 +234,18 @@ public class ConnectedComponent {
         this.readLock.lock();
         for(Map.Entry<Integer, PartitionVertex>set:bridgeVertices.entrySet()){
             if(source.getId()!=set.getKey()){
-          float result= this.noLockLookUp(source, set.getValue());
-          if(result<0) {
-              potentialBridgeDestinations.add(set.getKey());
-              got = false;
-          }else{
-              PartitionEdge e = new PartitionEdge();
-              e.setFrom(source);
-              e.setTo(set.getValue());
-              e.setWeight(result);
-              e.setLabel(this.partition.Label);
-              bridgeList.add(e);
-          }
+                float result= this.noLockLookUp(source, set.getValue());
+                if(result<0) {
+                    potentialBridgeDestinations.add(set.getKey());
+                    got = false;
+                }else{
+                    PartitionEdge e = new PartitionEdge();
+                    e.setFrom(source);
+                    e.setTo(set.getValue());
+                    e.setWeight(result);
+                    e.setLabel(this.partition.Label);
+                    bridgeList.add(e);
+                }
             }
         }
         this.readLock.unlock();
@@ -242,12 +261,12 @@ public class ConnectedComponent {
             //source.thread.setParameters(this,source,potentialBridgeDestinations,bridgeList,0);
             source.thread.start();
             //System.out.println("execution starts");
-           // source.lock.unlock();
+            // source.lock.unlock();
         }else{
-          //  source.lock.lock();
+            //  source.lock.lock();
             source.allBridgeEdgesComputed=true;
             source.numOfBridgeEdgesComputed=bridgeList.size();
-          //  source.lock.unlock();
+            //  source.lock.unlock();
         }
         //Collections.sort(bridgeList);
         return got;
@@ -263,11 +282,11 @@ public class ConnectedComponent {
         try {
             SearchKey key = new SearchKey(u.mc, v.mc);
             //todo: only for undirected graph
-           // SearchKey reverseKey = new SearchKey(v.mc,u.mc);
+            // SearchKey reverseKey = new SearchKey(v.mc,u.mc);
             for (int i = 0; i < 33; i++) {
                 if (DO.containsKey(key)) {
                     if(DO.get(key)<0){
-                    throw new RuntimeException("wrong DO entry got inserted\n");
+                        throw new RuntimeException("wrong DO entry got inserted\n");
                     }
                     Global.DO_hit();
                     return DO.get(key);
@@ -285,7 +304,7 @@ public class ConnectedComponent {
             readLock.unlock();
         }
 
-            return -1;
+        return -1;
     }
 
     public float noLockLookUp(PartitionVertex u, PartitionVertex v){
@@ -408,6 +427,16 @@ public class ConnectedComponent {
             source.lock.unlock();
             return bridgeList;
         }
+    }
+
+    public void sendBridgeDOWork(DOBridgeBufferEntry entry){
+        PartitionVertex source = entry.source;
+        int id = source.LocalId%numDOBridgeThreads;
+        DistanceOracleBridgeThread thread = DOBridgeThreads[id];
+        thread.lock.lock();
+        thread.q.add(entry);
+        thread.doEntryAdded.signal();
+        thread.lock.unlock();
     }
 
 }

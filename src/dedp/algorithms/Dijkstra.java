@@ -188,7 +188,7 @@ public class Dijkstra
 		uDist.Distance = 0;
 		uDist.PathLength = 0;
 		q.add(uDist);
-		Map<Long, DistanceFromSource> distMap = new HashMap<Long, DistanceFromSource>();
+		HashMap<Long, DistanceFromSource> distMap = new HashMap<Long, DistanceFromSource>();
 		distMap.put((long)source, uDist);
 		DistanceFromSource toDist = null;
 		while(!q.isEmpty())
@@ -227,6 +227,7 @@ public class Dijkstra
 				}
 			}
 		}
+		result.distMap=distMap;
 		return result;
 	}
 	
