@@ -194,6 +194,7 @@ public class BridgeEdgeThread extends Thread{
         source.lock.lock();
         source.underBridgeComputation=false;
         doBridgeEdgeList=null;
+        distMap=null;
         computedBridgeEdgeList=null;
         source.lock.unlock();
         return;

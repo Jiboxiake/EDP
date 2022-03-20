@@ -55,12 +55,16 @@ public class ConnectedComponent {
         for(int i=0; i<this.numDOBridgeThreads;i++){
             DOBridgeThreads[i]= new DistanceOracleBridgeThread();
             DOBridgeThreads[i].setCC(this);
+            Global.add_total_do_threads();
+            int c = Global.total_do_threads;
             DOBridgeThreads[i].start();
         }
         DODirectThreads = new DistanceOracleDirectThread[numDODirectThreads];
         for(int i=0; i<this.numDODirectThreads; i++){
             DODirectThreads[i] = new DistanceOracleDirectThread();
             DODirectThreads[i].setParameter(this);
+            Global.add_total_do_threads();
+            int c = Global.total_do_threads;
             DODirectThreads[i].start();
         }
         //this.cache=new LRU(5);

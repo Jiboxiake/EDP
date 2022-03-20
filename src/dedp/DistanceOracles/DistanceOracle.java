@@ -16,7 +16,7 @@ public class DistanceOracle {
     public static double e=0.25;
     public static double s=2.0/e;
     public static int initialDpeth=2;
-    public static int balancer = 8000;
+    public static int balancer = 10000;
 
     public static void setParameter(double error){
         e=error;

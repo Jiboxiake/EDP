@@ -10,6 +10,7 @@ public class Global {
     private static int num_vertices;
     private static int bridge_do_count;
     private static int DO_hit_during_bridge_computation;
+    public static int total_do_threads;
 
 
     public synchronized static void DO_hit(){
@@ -37,6 +38,7 @@ public class Global {
         bridge_do_count++;
     }
     public synchronized  static void addDO_hit_during_bridge_computation(){DO_hit_during_bridge_computation++;}
+    public synchronized static void add_total_do_threads(){total_do_threads++;}
 
     public static void printResult(){
         System.out.println("number of DO hit is: "+DO_Count);

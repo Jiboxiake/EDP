@@ -52,6 +52,9 @@ public class DistanceOracleBridgeThread extends Thread {
             }
             cc.addDO(partialDO);
             partialDO.clear();
+            bridgeEdgeList=null;
+            distanceMap=null;
+            entry=null;
         }
     }
 
