@@ -172,6 +172,7 @@ public class EDP_DO_Test {
         for(int i=0; i<t.g.LabelsIDs.size()/4;i++){
             list.add(i);
         }
+        System.out.println("total number of do threads are "+Global.total_do_threads);
         int i =0;
        // ExecutorService pool = Executors.newFixedThreadPool(5);
         while(i<4){

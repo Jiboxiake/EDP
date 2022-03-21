@@ -27,6 +27,7 @@ public class ConnectedComponent {
     public DistanceOracleDirectThread[] DODirectThreads;
     public int numDOBridgeThreads;
     public int numDODirectThreads;
+    public boolean hasBridgeWorker;
     //the lock for read and write of distance oracle
     private final ReadWriteLock readWriteLock
             = new ReentrantReadWriteLock();
@@ -46,27 +47,35 @@ public class ConnectedComponent {
         this.numDOBridgeThreads = vertices.size()/DistanceOracle.balancer;
         this.numDODirectThreads = numDOBridgeThreads/4;
         if(this.numDOBridgeThreads==0){
+            hasBridgeWorker=false;
+        }
+        else{
+            hasBridgeWorker=true;
+        }
+        /*if(this.numDOBridgeThreads==0){
             this.numDOBridgeThreads=1;
         }
         if( this.numDODirectThreads==0){
             this.numDODirectThreads=1;
+        }*/
+        if(hasBridgeWorker) {
+            DOBridgeThreads = new DistanceOracleBridgeThread[this.numDOBridgeThreads];
+            for (int i = 0; i < this.numDOBridgeThreads; i++) {
+                DOBridgeThreads[i] = new DistanceOracleBridgeThread();
+                DOBridgeThreads[i].setCC(this);
+                Global.add_total_do_threads();
+                int c = Global.total_do_threads;
+                DOBridgeThreads[i].start();
+            }
         }
-        DOBridgeThreads = new DistanceOracleBridgeThread[this.numDOBridgeThreads];
-        for(int i=0; i<this.numDOBridgeThreads;i++){
-            DOBridgeThreads[i]= new DistanceOracleBridgeThread();
-            DOBridgeThreads[i].setCC(this);
-            Global.add_total_do_threads();
-            int c = Global.total_do_threads;
-            DOBridgeThreads[i].start();
-        }
-        DODirectThreads = new DistanceOracleDirectThread[numDODirectThreads];
+      /*  DODirectThreads = new DistanceOracleDirectThread[numDODirectThreads];
         for(int i=0; i<this.numDODirectThreads; i++){
             DODirectThreads[i] = new DistanceOracleDirectThread();
             DODirectThreads[i].setParameter(this);
             Global.add_total_do_threads();
             int c = Global.total_do_threads;
             DODirectThreads[i].start();
-        }
+        }*/
         //this.cache=new LRU(5);
         this.partition=partition;
         tree=new QuadTree(this.vertices);
@@ -439,7 +448,10 @@ public class ConnectedComponent {
         }
     }
 
-    public void sendBridgeDOWork(DOBridgeBufferEntry entry){
+    public boolean sendBridgeDOWork(DOBridgeBufferEntry entry){
+        if(!hasBridgeWorker){
+            return false;
+        }
         PartitionVertex source = entry.source;
         int id = source.LocalId%numDOBridgeThreads;
         DistanceOracleBridgeThread thread = DOBridgeThreads[id];
@@ -447,6 +459,7 @@ public class ConnectedComponent {
         thread.q.add(entry);
         thread.doEntryAdded.signal();
         thread.lock.unlock();
+        return true;
     }
 
 }

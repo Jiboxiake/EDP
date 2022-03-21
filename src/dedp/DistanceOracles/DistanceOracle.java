@@ -16,7 +16,7 @@ public class DistanceOracle {
     public static double e=0.25;
     public static double s=2.0/e;
     public static int initialDpeth=2;
-    public static int balancer = 10000;
+    public static int balancer = 2000;
 
     public static void setParameter(double error){
         e=error;
@@ -98,26 +98,30 @@ public class DistanceOracle {
         {
             uDist = q.poll();
             //return until we traverse all vertices in this quadtree block.
-            if(allVer.contains(uDist.VertexID)){
+            if(allVer.contains((int)uDist.VertexID)){
                 //we only care about distances in this block
                 if(maxDistance<uDist.Distance){
                     maxDistance=uDist.Distance;
                 }
-                allVer.remove(uDist.VertexID);
+                allVer.remove((int)uDist.VertexID);
                 if(allVer.isEmpty()){
                     t.setDiameter(maxDistance);
+                    //for debug
+                   // System.out.println("found diameter");
+                    q=null;
+                    distMap=null;
                     return maxDistance;
                 }
             }
             u = cc.getVertex((int)uDist.VertexID);
             for(PartitionEdge e: u.getOutEdges()){
                 PartitionVertex to = e.getTo();
-                toDist = distMap.get(to.getId());
+                toDist = distMap.get((long)to.getId());
                 if(toDist==null){
                     toDist = new DistanceFromSource();
                     toDist.VertexID = to.getId();
                     toDist.Distance = uDist.Distance + e.getWeight();
-                    distMap.put(toDist.VertexID, toDist);
+                    distMap.put((long)toDist.VertexID, toDist);
                     q.add(toDist);
                 }
                 if(toDist.Distance > uDist.Distance + e.getWeight())

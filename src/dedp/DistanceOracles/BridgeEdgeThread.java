@@ -190,7 +190,24 @@ public class BridgeEdgeThread extends Thread{
             }
         }
         DOBridgeBufferEntry doEntry = new DOBridgeBufferEntry(source, computedBridgeEdgeList,distMap);
-        cc.sendBridgeDOWork(doEntry);
+        if(!cc.sendBridgeDOWork(doEntry)){
+            //do it yourself
+            for(int i=0; i<computedBridgeEdgeList.size();i++){
+                PartitionEdge pe = computedBridgeEdgeList.get(i);
+                PartitionVertex destination = pe.getTo();
+                SearchKey key = new SearchKey(source.mc, destination.mc);
+                if(needInsertion(partialDO,key)){
+                    try {
+                        key = cc.optimizedSearchKeyGeneration(distMap,source,destination,pe.getWeight());
+                    } catch (ObjectNotFoundException e) {
+                        e.printStackTrace();
+                    }
+                    partialDO.put(key,pe.getWeight());
+                }
+            }
+            cc.addDO(partialDO);
+        }
+        partialDO.clear();
         source.lock.lock();
         source.underBridgeComputation=false;
         doBridgeEdgeList=null;
