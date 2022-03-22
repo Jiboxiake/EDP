@@ -44,6 +44,8 @@ public class ConnectedComponent {
         this.edges=edges;
         this.ID=id;
         //load balancing and initialize DO threads
+        Global.total_partition_vertex+=this.vertices.size();
+        Global.total_partition_edge+=this.edges.size();
         this.numDOBridgeThreads = vertices.size()/DistanceOracle.balancer;
         this.numDODirectThreads = numDOBridgeThreads/4;
         if(this.numDOBridgeThreads==0){

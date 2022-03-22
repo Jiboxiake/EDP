@@ -55,15 +55,13 @@ public class HybridDOEDPIndex {
            // p.loadSavedIndex();
             connectedCompDiscoverer = new ConnectedComponentsComputation();
             connectedCompDiscoverer.buildSCC(p);//construct connected components of this partition
+            //p.vertexes.clear();
             //p.updateToBridgeEdges();
         }
         //long endTime = System.currentTimeMillis();
        // System.out.println("Time for building the index in minutes: " + (double)(endTime - startTime) / (double)60000 + ".");
         index.PlainGraph = graph;
         test(index);
-        if(!index.partitions[0].vertexes.containsKey(14218)){
-           // throw new ObjectNotFoundException("error vertex not found\n");
-        }
         //index.ReversePlainGraph = Graph.reverseGraph(graph);
         return index;
     }

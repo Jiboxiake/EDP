@@ -173,9 +173,11 @@ public class EDP_DO_Test {
             list.add(i);
         }
         System.out.println("total number of do threads are "+Global.total_do_threads);
+        System.out.println("total partition vertex number is "+Global.total_partition_vertex);
+        System.out.println("total partition edge number is "+Global.total_partition_edge);
         int i =0;
        // ExecutorService pool = Executors.newFixedThreadPool(5);
-        while(i<4){
+        while(i<10){
             i++;
             int from = ThreadLocalRandom.current().nextInt(1, 271450/300 + 1);
             int to = ThreadLocalRandom.current().nextInt(271450/5*4 + 1, 271450+1);

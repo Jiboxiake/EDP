@@ -11,6 +11,8 @@ public class Global {
     private static int bridge_do_count;
     private static int DO_hit_during_bridge_computation;
     public static int total_do_threads;
+    public static int total_partition_vertex=0;
+    public static int total_partition_edge=0;
 
 
     public synchronized static void DO_hit(){

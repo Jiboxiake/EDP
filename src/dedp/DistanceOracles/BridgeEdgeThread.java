@@ -207,12 +207,12 @@ public class BridgeEdgeThread extends Thread{
             }
             cc.addDO(partialDO);
         }
-        partialDO.clear();
+        partialDO=null;
         source.lock.lock();
         source.underBridgeComputation=false;
-        doBridgeEdgeList=null;
+       // doBridgeEdgeList=null;
         distMap=null;
-        computedBridgeEdgeList=null;
+       // computedBridgeEdgeList=null;
         source.lock.unlock();
         return;
     }

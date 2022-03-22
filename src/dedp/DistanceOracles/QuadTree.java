@@ -47,7 +47,10 @@ public class QuadTree {
         horizontal = (top_bound-bottom_bound)/2+bottom_bound;
         vertical = (right_bound-left_bound)/2+left_bound;
         for(Map.Entry<Integer, PartitionVertex> set: vertices.entrySet()){
-            this.vertices.add(set.getKey());
+            //we only store at the max depth
+            if(level==max_depth) {
+                this.vertices.add(set.getKey());
+            }
             PartitionVertex v = set.getValue();
             //check boundaries against what we set
             int quadrant = classifier(top_bound, horizontal, bottom_bound, left_bound, vertical, right_bound, v);
@@ -76,7 +79,8 @@ public class QuadTree {
     }
 
     public boolean contain(PartitionVertex v){
-        return vertices.contains(v.getId());
+        //return vertices.contains(v.getId());
+        return (v.latitude>=bottom_bound&&v.latitude<=top_bound&&v.longitude>=left_bound&&v.longitude<=right_bound);
     }
 
     public int getLevel(){
@@ -101,13 +105,34 @@ public class QuadTree {
     public HashSet<Integer> copy(){
         return new HashSet<>(vertices);
     }
+    public void copy(HashSet<Integer> verSet){
+        //base case
+        if(this.level==max_depth){
+            for(int e:vertices){
+                verSet.add(e);
+            }
+        }else{
+            if(NW!=null){
+                NW.copy(verSet);
+            }
+            if(NE!=null){
+                NE.copy(verSet);
+            }
+            if(SE!=null){
+                SE.copy(verSet);
+            }
+            if(SW!=null){
+                SW.copy(verSet);
+            }
+        }
+    }
 
     public MortonCode getMC(){
         return mc;
     }
 
     public QuadTree containingBlock(PartitionVertex v){
-        assert(!vertices.isEmpty());
+    /*    assert(!vertices.isEmpty());
         if(NW!=null){
             if(NW.contain(v)){
                 return NW;
@@ -129,7 +154,18 @@ public class QuadTree {
             }
         }
         assert(false);
-        return null;
+        return null;*/
+        int quadrant = classifier(top_bound, horizontal, bottom_bound, left_bound, vertical, right_bound, v);
+        if(quadrant==1){
+            return NW;
+        }else if(quadrant==2){
+            return NE;
+        }else if(quadrant==3){
+            return SW;
+        }else{
+            assert(quadrant==4);
+            return SE;
+        }
     }
 
     public boolean reachMaxLevel(){

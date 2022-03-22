@@ -39,7 +39,8 @@ public class DistanceOracle {
     //todo: may need to change VertexID type to int
     public static boolean approximate_comparison(double distance, QuadTree t, PartitionVertex u, HashMap<Integer, PartitionVertex> vertices)throws ObjectNotFoundException{
         //QuadTree copy = t.copy();
-        HashSet<Integer> copy = t.copy();
+        HashSet<Integer> copy = new HashSet<>();
+        t.copy(copy);
         PriorityQueue<DistanceFromSource> pq = new PriorityQueue<>();
         DistanceFromSource uDist = new DistanceFromSource();
         uDist.VertexID=u.getId();
@@ -93,7 +94,8 @@ public class DistanceOracle {
         distMap.put((long)source.getId(), uDist);
         DistanceFromSource toDist = null;
 
-        HashSet<Integer> allVer = t.copy();
+        HashSet<Integer> allVer = new HashSet<>();
+        t.copy(allVer);
         while(!q.isEmpty())
         {
             uDist = q.poll();
@@ -137,7 +139,8 @@ public class DistanceOracle {
 
     public static float getQuadTreeDiameterWithDistMap(HashMap<Integer, VertexQueueEntry>disMap, QuadTree t){
         float maxDistance = -1;
-        HashSet<Integer>vertices = t.copy();
+        HashSet<Integer>vertices = new HashSet<>();
+        t.copy(vertices);
         for(Integer id:vertices){
             if(disMap.get(id).distance>maxDistance){
                 maxDistance=disMap.get(id).distance;
