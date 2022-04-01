@@ -133,6 +133,9 @@ public class PartitionConnectedComponents
 			ConnectedComponent cc = new ConnectedComponent(i, partition, verticesToCC.get(i),edgesToCC.get(i), bridgeVerticesToCC.get(i));
 			connectedComponents.put(i, cc);
 		}
+		this.verticesToCC=null;
+		this.bridgeVerticesToCC=null;
+		this.edgesToCC=null;
 	}
 
 	public boolean inSameComponent(PartitionVertex v1, PartitionVertex v2)

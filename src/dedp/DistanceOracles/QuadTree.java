@@ -16,19 +16,21 @@ public class QuadTree {
     private QuadTree SW;
     private QuadTree SE;
     private int level;
+    int size;
     private float diameter;
     private MortonCode mc;
-    private int top_bound;
-    private int bottom_bound;
-    private int left_bound;
-    private int right_bound;
-    private int vertical;
-    private int horizontal;
+    private float top_bound;
+    private float bottom_bound;
+    private float left_bound;
+    private float right_bound;
+    private float vertical;
+    private float horizontal;
     //todo: set reference to the original Node in EDP.
    // private HashMap <Integer, PartitionVertex> vertices;
     private HashSet<Integer> vertices;
 
-    public QuadTree(int top_bound, int bottom_bound, int left_bound, int right_bound, QuadTree parent, int level, HashMap <Integer, PartitionVertex> vertices){
+    public QuadTree(float top_bound, float bottom_bound, float left_bound, float right_bound, QuadTree parent, int level, HashMap <Integer, PartitionVertex> vertices){
+        this.size = vertices.size();
         this.top_bound=top_bound;
         this.bottom_bound=bottom_bound;
         this.left_bound=left_bound;
@@ -44,12 +46,14 @@ public class QuadTree {
         HashMap <Integer, PartitionVertex> TR=new HashMap<>();
         HashMap <Integer, PartitionVertex> BL=new HashMap<>();
         HashMap <Integer, PartitionVertex> BR=new HashMap<>();
-        horizontal = (top_bound-bottom_bound)/2+bottom_bound;
-        vertical = (right_bound-left_bound)/2+left_bound;
+        horizontal = (top_bound-bottom_bound)/(float)2+bottom_bound;
+        vertical = (right_bound-left_bound)/(float)2+left_bound;
         for(Map.Entry<Integer, PartitionVertex> set: vertices.entrySet()){
             //we only store at the max depth
             if(level==max_depth) {
                 this.vertices.add(set.getKey());
+            }else{
+                this.vertices=null;
             }
             PartitionVertex v = set.getValue();
             //check boundaries against what we set
@@ -67,15 +71,18 @@ public class QuadTree {
         }
 
         if(level<max_depth && vertices.size()>0){
-            NW=new QuadTree(top_bound,horizontal+1,left_bound, vertical, this, level+1, TL);
-            NE=new QuadTree(top_bound, horizontal+1, vertical+1, right_bound, this, level+1, TR);
+            NW=new QuadTree(top_bound,horizontal+(float)0.000001,left_bound, vertical, this, level+1, TL);
+            NE=new QuadTree(top_bound, horizontal+(float)0.000001, vertical+(float)0.000001, right_bound, this, level+1, TR);
             SW=new QuadTree(horizontal, bottom_bound, left_bound, vertical, this, level+1, BL);
-            SE=new QuadTree(horizontal, bottom_bound, vertical+1, right_bound, this, level+1, BR);
+            SE=new QuadTree(horizontal, bottom_bound, vertical+(float)0.000001, right_bound, this, level+1, BR);
         }
     }
 
+
     public QuadTree( HashMap <Integer, PartitionVertex> vertices){
-        this(Parser.normalizeLat(Parser.max_lat), Parser.normalizeLat(Parser.min_lat), Parser.normalizeLon(Parser.min_long), Parser.normalizeLon(Parser.max_long), null,0,vertices);
+        //this(Parser.normalizeLat(Parser.max_lat), Parser.normalizeLat(Parser.min_lat), Parser.normalizeLon(Parser.min_long), Parser.normalizeLon(Parser.max_long), null,0,vertices);
+        this(Parser.max_lat, Parser.min_lat, Parser.min_long, Parser.max_long, null,0,vertices);
+
     }
 
     public boolean contain(PartitionVertex v){
@@ -99,16 +106,16 @@ public class QuadTree {
     }
     public void setDiameter(float newDia){
         if(newDia>this.diameter){
-            this.diameter=diameter;
+            this.diameter=newDia;
         }
     }
-    public HashSet<Integer> copy(){
+    /*public HashSet<Integer> copy(){
         return new HashSet<>(vertices);
-    }
+    }*/
     public void copy(HashSet<Integer> verSet){
         //base case
         if(this.level==max_depth){
-            for(int e:vertices){
+            for(Integer e:vertices){
                 verSet.add(e);
             }
         }else{
@@ -207,9 +214,9 @@ public class QuadTree {
         return vertices.isEmpty();
     }
 
-    private int classifier (int top, int hor, int bot, int left, int ver, int right, PartitionVertex v){
-        int x = v.longitude;
-        int y = v.latitude;
+    private int classifier (float top, float hor, float bot, float left, float ver, float right, PartitionVertex v){
+        float x = v.longitude;
+        float y = v.latitude;
         assert(x<=top&&x>=bot);
         assert(y>=left&&y<=right);
         boolean isTop = y>(hor+1);
@@ -304,7 +311,7 @@ public class QuadTree {
     }
 
     private void setMorton(){
-        mc=new MortonCode(bottom_bound, left_bound, level, false);
+        mc=new MortonCode(Parser.normalizeLat(bottom_bound), Parser.normalizeLon(left_bound), level, false);
 
     }
     public void info(){
@@ -327,7 +334,7 @@ public class QuadTree {
     }
 
     public boolean testMorton(){
-        MortonCode toCompare=new MortonCode(top_bound, right_bound, level, false);
+        MortonCode toCompare=new MortonCode(Parser.normalizeLat(top_bound), Parser.normalizeLon(right_bound), level, false);
        // MortonCode notEqual= new MortonCode(top_bound+1, right_bound+1, level, false);
         boolean result=mc.equals(toCompare);
         if(result==false){

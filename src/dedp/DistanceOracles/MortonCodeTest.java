@@ -44,7 +44,7 @@ public class MortonCodeTest {
         Double maxLat = 90.0;
         Double minLon=-180.0;
         Double maxLon=180.0;
-        for(int i=0; i<100000; i++){
+   /*     for(int i=0; i<100000; i++){
             double latitude = (Math.random() * ((maxLat - minLat) + 1)) + minLat;   // This Will Create A Random Number Inbetween Your Min And Max.
             double latRound = Math.round(latitude * 100.0) / 100.0;
             double longitude =  (Math.random() * ((maxLon - minLon) + 1)) + minLon;
@@ -58,6 +58,6 @@ public class MortonCodeTest {
         }
         QuadTree t = new QuadTree(Parser.normalizeLat(90.0), Parser.normalizeLat(-90.0), Parser.normalizeLon(-180.0), Parser.normalizeLon(180.0), null,0, nodes);
        // t.info();
-        System.out.println(t.testMorton2());
+        System.out.println(t.testMorton2());*/
     }
 }

@@ -39,8 +39,8 @@ public class BridgeThreadTest {
                 int id =Integer.parseInt(fields[0]);
                 int rawLongitude = Integer.parseInt(fields[1]);
                 int rawLatitude = Integer.parseInt(fields[2]);
-                double latitude = ((double)rawLatitude)/1000000.0;
-                double longitude = ((double)rawLongitude)/1000000.0;
+                float latitude = ((float)rawLatitude)/1000000;
+                float longitude = ((float)rawLongitude)/1000000;
                 Vertex v = new Vertex();
                 v.setID(id);
                 //todo: change parser

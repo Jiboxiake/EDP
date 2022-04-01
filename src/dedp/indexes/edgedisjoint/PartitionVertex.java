@@ -10,6 +10,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import dedp.DistanceOracles.BridgeEdgeThread;
 import dedp.DistanceOracles.MortonCode;
+import dedp.DistanceOracles.Parser;
 import dedp.structures.Edge;
 import dedp.structures.Vertex;
 
@@ -93,7 +94,7 @@ public class PartitionVertex
 		Collections.sort(this.outEdges);
 	}
 
-	public void setCoordinates(int latitude, int longitude){
+	public void setCoordinates(float latitude, float longitude){
 		this.latitude=latitude;
 		this.longitude=longitude;
 		this.morton();
@@ -102,7 +103,7 @@ public class PartitionVertex
 	public MortonCode morton(){
 
 		if(mc==null)
-		this.mc=new MortonCode(latitude, longitude, 0, true);
+		this.mc=new MortonCode(Parser.normalizeLat(latitude), Parser.normalizeLon(longitude), 0, true);
 		return mc;
 	}
 	
@@ -133,8 +134,8 @@ public class PartitionVertex
 	//the coming section is specific to the dynamic part
 	public int LocalId = -1;
 	public int ComponentId = -1;
-	public int longitude;
-	public int latitude;
+	public float longitude;
+	public float latitude;
 	public MortonCode mc;
 	public boolean underBridgeComputation=false;
 	public BridgeEdgeThread thread;

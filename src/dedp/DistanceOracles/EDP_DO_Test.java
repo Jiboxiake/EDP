@@ -35,20 +35,22 @@ public class EDP_DO_Test {
                 int id =Integer.parseInt(fields[0]);
                 int rawLongitude = Integer.parseInt(fields[1]);
                 int rawLatitude = Integer.parseInt(fields[2]);
-                double latitude = ((double)rawLatitude)/1000000.0;
-                double longitude = ((double)rawLongitude)/1000000.0;
+                float latitude = ((float)rawLatitude)/1000000;
+                float longitude = ((float)rawLongitude)/1000000;
                 Vertex v = new Vertex();
-                v.setID(id);
+                v.setID((long)id);
                 //todo: change parser
-                v.setCoordinates(Parser.normalizeLat(latitude), Parser.normalizeLon(longitude));
+                v.setCoordinates(latitude, longitude);
+                Parser.feedLat(latitude);
+                Parser.feedLon(longitude);
                 g.addVertex(v);
                 if(id==271449){
                     break;
                 }
             }
             boolean flag = false;
-            int key=0;
-            int fromID=-1, toID=-1;
+            long key=1;
+            long fromID=-1, toID=-1;
             float weight;
             int label;
             boolean isDirected=false;
@@ -59,8 +61,8 @@ public class EDP_DO_Test {
                 }
                 if(!flag){
                     flag=true;
-                    fromID=Integer.parseInt(fields[0]);
-                    toID=Integer.parseInt(fields[1]);
+                    fromID=Long.parseLong(fields[0]);
+                    toID=Long.parseLong(fields[1]);
                 }else{
                     flag=false;
                     weight = Float.parseFloat(fields[1]);
@@ -108,12 +110,12 @@ public class EDP_DO_Test {
             int id =Integer.parseInt(fields[0]);
             int rawLongitude = Integer.parseInt(fields[1]);
             int rawLatitude = Integer.parseInt(fields[2]);
-            double latitude = ((double)rawLatitude)/1000000.0;
-            double longitude = ((double)rawLongitude)/1000000.0;
+            float latitude = ((float)rawLatitude)/1000000;
+            float longitude = ((float)rawLongitude)/1000000;
             Vertex v = new Vertex();
             v.setID(id);
             //todo: change parser
-            v.setCoordinates(Parser.normalizeLat(latitude), Parser.normalizeLon(longitude));
+            v.setCoordinates(latitude, longitude);
             g.addVertex(v);
         }
         f =new File(pathName2);

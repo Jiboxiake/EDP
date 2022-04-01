@@ -375,12 +375,12 @@ public class ConnectedComponent {
                 forU = forU.containingBlock(u);
                 forV = forV.containingBlock(v);
                 assert (forU.getLevel() == forV.getLevel());
-               /* if (DistanceOracle.isWellSeparated(distance, forU, forV, u, v, vertices)||(forU.reachMaxLevel()&&forV.reachMaxLevel())) {
+                if (DistanceOracle.isWellSeparated(distance, forU, forV, u, v, vertices)||(forU.reachMaxLevel()&&forV.reachMaxLevel())) {
                     SearchKey key = new SearchKey(forU.getMC(), forV.getMC(), forU.getLevel());
                     Global.addWSP();
                     Global.addBridge_do_count();
                     return key;
-                }*/
+                }
                 if(DistanceOracle.isWellSeparatedOpti(distance,forU,forV,u,v,distMap,this)||(forU.reachMaxLevel()&&forV.reachMaxLevel())){
                     SearchKey key = new SearchKey(forU.getMC(), forV.getMC(), forU.getLevel());
                     Global.addWSP();

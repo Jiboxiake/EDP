@@ -98,8 +98,8 @@ public class DistanceOracleTest {
                 int id =Integer.parseInt(fields[1]);
                 int rawLongitude = Integer.parseInt(fields[2]);
                 int rawLatitude = Integer.parseInt(fields[3]);
-                double latitude = ((double)rawLatitude)/1000000.0;
-                double longitude = ((double)rawLongitude)/1000000.0;
+                float latitude = ((float)rawLatitude)/1000000;
+                float longitude = ((float)rawLongitude)/1000000;
                 PartitionVertex v = new PartitionVertex();
                 v.setId(id);
                 v.setCoordinates(Parser.normalizeLat(latitude), Parser.normalizeLon(longitude));

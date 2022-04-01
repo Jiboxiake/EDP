@@ -38,11 +38,9 @@ public class HybridDOEDPIndex {
        /* if(!graph.containsVertex(14218)){
             throw new ObjectNotFoundException("error vertex not found\n");
         }*/
-        if(!index.partitions[0].vertexes.containsKey(14218)){
-           // throw new ObjectNotFoundException("error vertex not found\n");
-        }
         test(index);
         ConnectedComponentsComputation connectedCompDiscoverer = null;
+        int counter=0;
         for(Partition p : index.partitions)
         {
             if(excludedPartitions != null && excludedPartitions.contains(p.Label))
@@ -55,8 +53,16 @@ public class HybridDOEDPIndex {
            // p.loadSavedIndex();
             connectedCompDiscoverer = new ConnectedComponentsComputation();
             connectedCompDiscoverer.buildSCC(p);//construct connected components of this partition
+            connectedCompDiscoverer = null;
             //p.vertexes.clear();
             //p.updateToBridgeEdges();
+       /*     if(counter==0){
+                QuadTree t=index.partitions[0].ConnectedComponents.getConnectedComponent(1).tree;
+                HashSet<Integer> testSet = new HashSet<>();
+                t.copy(testSet);
+                int c = testSet.size();
+            }
+            counter++;*/
         }
         //long endTime = System.currentTimeMillis();
        // System.out.println("Time for building the index in minutes: " + (double)(endTime - startTime) / (double)60000 + ".");
@@ -183,10 +189,11 @@ public class HybridDOEDPIndex {
                 edge.setLabel(label);
                 vFrom.addEdge(edge);
                 partition.edges.put((int)e.getID(), edge);
+                //Global.total_partition_edge++;
 
                 //now we put the reverse edge
                 long newID = -1*e.getID();
-                if(partition.edges.containsKey(newID))
+                if(partition.edges.containsKey((int)newID))
                 {
                     throw new DuplicateEntryException("Edge with id " +newID + " is already exiting.");
                 }
@@ -243,6 +250,7 @@ public class HybridDOEDPIndex {
                 edge.setLabel(label);
                 vFrom.addEdge(edge);
                 partition.edges.put((int)newID, edge);
+                //Global.total_partition_edge++;
                /* if(vFrom.getId()==14218 || vTo.getId()==14218){
                     System.out.println(partition.vertexes.containsKey(14218)+" 14218 at partition "+partition.Label);
                 }else if(vFrom.getId()==14370 || vTo.getId()==14370){
