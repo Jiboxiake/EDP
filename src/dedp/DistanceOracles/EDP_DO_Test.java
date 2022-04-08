@@ -1,5 +1,7 @@
 package dedp.DistanceOracles;
 
+import dedp.DistanceOracles.Analytical.ConnectedComponentAnalyzer;
+import dedp.DistanceOracles.Precomputation.EDP_DO_Precomputation;
 import dedp.algorithms.hybridtraversal.DOTraversal;
 import dedp.algorithms.hybridtraversal.HybridTraversal;
 import dedp.exceptions.DuplicateEntryException;
@@ -18,7 +20,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class EDP_DO_Test {
     private Graph g;
     private HybridDOEDPIndex index;
-    public void loadGraph() throws Exception {
+    public void loadGraph(int bound) throws Exception {
         g=new Graph();
 
         String pathName = "./Graph_Source/ID.tmp";
@@ -43,7 +45,9 @@ public class EDP_DO_Test {
                 v.setCoordinates(latitude, longitude);
                 Parser.feedLat(latitude);
                 Parser.feedLon(longitude);
-                g.addVertex(v);
+                if(id<bound){
+                    g.addVertex(v);
+                }
                 if(id==271449){
                     break;
                 }
@@ -69,7 +73,9 @@ public class EDP_DO_Test {
                     EdgeLabelProcessor.insert(Integer.parseInt(fields[2]));
                     label = EdgeLabelProcessor.translate(Integer.parseInt(fields[2]));
                     //todo: for test set all labels to 1
-                    g.addEdge(key, fromID, toID, weight, label, isDirected, false);
+                    if(fromID<bound&&toID<bound){
+                        g.addEdge(key, fromID, toID, weight, label, isDirected, false);
+                    }
                     key++;
                 }
 
@@ -169,7 +175,7 @@ public class EDP_DO_Test {
     //todo: check garbage collection, implement LRU regarding bridge edges
     public static void main(String[] args) throws Exception {
         EDP_DO_Test t = new EDP_DO_Test();
-        t.loadGraph();
+        t.loadGraph(300000);//set a bound on how many vertices we want
         ArrayList<Integer>list = new ArrayList<>();
         for(int i=0; i<t.g.LabelsIDs.size()/4;i++){
             list.add(i);
@@ -177,28 +183,20 @@ public class EDP_DO_Test {
         System.out.println("total number of do threads are "+Global.total_do_threads);
         System.out.println("total partition vertex number is "+Global.total_partition_vertex);
         System.out.println("total partition edge number is "+Global.total_partition_edge);
+        int j = EdgeLabelProcessor.EDPLabelToRawLabel.get(1);
+       // ConnectedComponentAnalyzer.print(30);
         int i =0;
+        EDP_DO_Precomputation pre = new EDP_DO_Precomputation(t.index);
+        pre.start_preprocessing();
        // ExecutorService pool = Executors.newFixedThreadPool(5);
-        while(i<10){
+    /*    while(i<10){
             i++;
             int from = ThreadLocalRandom.current().nextInt(1, 271450/300 + 1);
             int to = ThreadLocalRandom.current().nextInt(271450/5*4 + 1, 271450+1);
             EDP_DO_Test_Thread th = new EDP_DO_Test_Thread();
-           // th.setParameter(i,from, to, list, t.index);
-           // pool.execute(th);
-           //SPResult r=HybridTraversal.shortestDistanceWithEdgeDisjointDistanceOracle(t.index, from, to, list);
             SPResult r= DOTraversal.shortestDistanceWithDO(t.index, from, to, list);
             System.out.println("Shortest distance = " + r.Distance);
-           /* for(int j=0; j<r.list.size();j++){
-                r.list.get(j).join();
-            }*/
-            System.out.println("query "+i+" finished");
-        }
-     /*   pool.shutdown();
-        while(!pool.isTerminated()){
-
-        }*/
+            Syst*/
         Global.printResult();
-        //t.test();
     }
 }

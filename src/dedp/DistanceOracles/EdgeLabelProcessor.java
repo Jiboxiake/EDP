@@ -6,6 +6,7 @@ import java.util.HashMap;
 
 public class EdgeLabelProcessor {
     public static HashMap<Integer, Integer> rawLabelToEDPLabel=new HashMap<>();
+    public static HashMap<Integer, Integer> EDPLabelToRawLabel=new HashMap<>();
     public static int key=0;
 
     public static void insert(int label){
@@ -13,6 +14,7 @@ public class EdgeLabelProcessor {
             return;
         }
         rawLabelToEDPLabel.put(label, key);
+        EDPLabelToRawLabel.put(key,label);
         key++;
     }
     public static int translate(int label) throws ObjectNotFoundException {

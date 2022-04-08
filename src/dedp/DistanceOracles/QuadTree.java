@@ -1,5 +1,7 @@
 package dedp.DistanceOracles;
 
+import dedp.DistanceOracles.Precomputation.DiameterResult;
+import dedp.DistanceOracles.Precomputation.PrecomputationResultDatabase;
 import dedp.exceptions.ObjectNotFoundException;
 import dedp.indexes.edgedisjoint.Partition;
 import dedp.indexes.edgedisjoint.PartitionVertex;
@@ -9,8 +11,11 @@ import java.util.HashSet;
 import java.util.Map;
 //todo: implement well-separated pairs
 public class QuadTree {
-    public static int max_depth=25;
+    public static int max_depth=20;
+    public static int nextID = 0;
+    public static final int initial_depth = 4;
     private QuadTree parent;
+    public int id;
     private QuadTree NW;
     private QuadTree NE;
     private QuadTree SW;
@@ -30,6 +35,7 @@ public class QuadTree {
     private HashSet<Integer> vertices;
 
     public QuadTree(float top_bound, float bottom_bound, float left_bound, float right_bound, QuadTree parent, int level, HashMap <Integer, PartitionVertex> vertices){
+        this.id = nextID++;
         this.size = vertices.size();
         this.top_bound=top_bound;
         this.bottom_bound=bottom_bound;
@@ -75,6 +81,11 @@ public class QuadTree {
             NE=new QuadTree(top_bound, horizontal+(float)0.000001, vertical+(float)0.000001, right_bound, this, level+1, TR);
             SW=new QuadTree(horizontal, bottom_bound, left_bound, vertical, this, level+1, BL);
             SE=new QuadTree(horizontal, bottom_bound, vertical+(float)0.000001, right_bound, this, level+1, BR);
+        }else{
+            NW = null;
+            NE = null;
+            SW = null;
+            SE = null;
         }
     }
 
@@ -101,10 +112,10 @@ public class QuadTree {
         return toReturn;
     }*/
 
-    public float getDiameter(){
+    public synchronized float getDiameter(){
         return this.diameter;
     }
-    public void setDiameter(float newDia){
+    public synchronized void setDiameter(float newDia){
         if(newDia>this.diameter){
             this.diameter=newDia;
         }
@@ -412,4 +423,22 @@ public class QuadTree {
         return result;
     }
 
+    public void output(){
+        if(this.size==0){
+            return;
+        }
+        PrecomputationResultDatabase.insert(new DiameterResult(this.id, this.diameter));
+        if(NW!=null){
+            NW.output();
+        }
+        if(NE!=null){
+            NE.output();
+        }
+        if(SE!=null){
+            SE.output();
+        }
+        if(SW!=null){
+            SW.output();
+        }
+    }
 }

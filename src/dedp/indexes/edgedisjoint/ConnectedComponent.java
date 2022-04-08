@@ -1,6 +1,8 @@
 package dedp.indexes.edgedisjoint;
 
 import dedp.DistanceOracles.*;
+import dedp.DistanceOracles.Analytical.CCInfoCOntainer;
+import dedp.DistanceOracles.Analytical.ConnectedComponentAnalyzer;
 import dedp.exceptions.ObjectNotFoundException;
 
 import java.util.*;
@@ -60,7 +62,7 @@ public class ConnectedComponent {
         if( this.numDODirectThreads==0){
             this.numDODirectThreads=1;
         }*/
-        if(hasBridgeWorker) {
+    /*    if(hasBridgeWorker) {
             DOBridgeThreads = new DistanceOracleBridgeThread[this.numDOBridgeThreads];
             for (int i = 0; i < this.numDOBridgeThreads; i++) {
                 DOBridgeThreads[i] = new DistanceOracleBridgeThread();
@@ -69,7 +71,7 @@ public class ConnectedComponent {
                 int c = Global.total_do_threads;
                 DOBridgeThreads[i].start();
             }
-        }
+        }*/
       /*  DODirectThreads = new DistanceOracleDirectThread[numDODirectThreads];
         for(int i=0; i<this.numDODirectThreads; i++){
             DODirectThreads[i] = new DistanceOracleDirectThread();
@@ -83,6 +85,8 @@ public class ConnectedComponent {
         tree=new QuadTree(this.vertices);
         // this.timeStamp=timeStamp;
         DO=new HashMap<>();
+        CCInfoCOntainer o = new CCInfoCOntainer(this.ID, this.partition.Label,this.vertices.size(),this.edges.size());
+        ConnectedComponentAnalyzer.insert(o);
     }
 
     public void print(){
