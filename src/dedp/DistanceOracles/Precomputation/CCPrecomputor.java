@@ -16,7 +16,7 @@ public class CCPrecomputor {
     public CCPrecomputor(HybridDOEDPIndex index) {
         this.index = index;
         int total_ver = (int)index.PlainGraph.getVertexCount();
-        total_workers = 20;//can be customized to be dependent on total ver
+        total_workers = 60;//can be customized to be dependent on total ver
         workers = new DiameterComputationThread[total_workers];
         for(int i=0; i<total_workers; i++){
             workers[i]= new DiameterComputationThread();

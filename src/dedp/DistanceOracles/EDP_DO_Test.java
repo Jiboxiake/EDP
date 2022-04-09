@@ -1,7 +1,9 @@
 package dedp.DistanceOracles;
 
 import dedp.DistanceOracles.Analytical.ConnectedComponentAnalyzer;
+import dedp.DistanceOracles.Precomputation.DiameterLoader;
 import dedp.DistanceOracles.Precomputation.EDP_DO_Precomputation;
+import dedp.DistanceOracles.Precomputation.PrecomputationResultDatabase;
 import dedp.algorithms.hybridtraversal.DOTraversal;
 import dedp.algorithms.hybridtraversal.HybridTraversal;
 import dedp.exceptions.DuplicateEntryException;
@@ -80,6 +82,7 @@ public class EDP_DO_Test {
                 }
 
             }
+            reader.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -175,7 +178,7 @@ public class EDP_DO_Test {
     //todo: check garbage collection, implement LRU regarding bridge edges
     public static void main(String[] args) throws Exception {
         EDP_DO_Test t = new EDP_DO_Test();
-        t.loadGraph(10000);//set a bound on how many vertices we want
+        t.loadGraph(300000);//set a bound on how many vertices we want
         ArrayList<Integer>list = new ArrayList<>();
         for(int i=0; i<t.g.LabelsIDs.size()/4;i++){
             list.add(i);
@@ -187,8 +190,15 @@ public class EDP_DO_Test {
        // ConnectedComponentAnalyzer.print(30);
         int i =0;
         EDP_DO_Precomputation pre = new EDP_DO_Precomputation(t.index);
-        pre.start_preprocessing();
-       // ExecutorService pool = Executors.newFixedThreadPool(5);
+        File diameterFile = new File(PrecomputationResultDatabase.fileName);
+        if(diameterFile.exists()){
+            //System.out.println("esixts");
+            DiameterLoader loader = new DiameterLoader(t.index, diameterFile);
+            loader.load();
+            loader=null;
+        }else {
+            pre.start_preprocessing();
+        }
     /*    while(i<10){
             i++;
             int from = ThreadLocalRandom.current().nextInt(1, 271450/300 + 1);

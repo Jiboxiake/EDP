@@ -22,5 +22,6 @@ public class DiameterComputationThread extends Thread {
             entry.computation();
             iter.remove();
         }
+       // int b=0;
     }
 }
