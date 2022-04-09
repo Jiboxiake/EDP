@@ -178,7 +178,7 @@ public class EDP_DO_Test {
     //todo: check garbage collection, implement LRU regarding bridge edges
     public static void main(String[] args) throws Exception {
         EDP_DO_Test t = new EDP_DO_Test();
-        t.loadGraph(300000);//set a bound on how many vertices we want
+        t.loadGraph(20000);//set a bound on how many vertices we want
         ArrayList<Integer>list = new ArrayList<>();
         for(int i=0; i<t.g.LabelsIDs.size()/4;i++){
             list.add(i);

@@ -442,10 +442,12 @@ public class QuadTree {
     }
 
     public void output(){
-        if(this.size==0||this.diameter==-1){
+        if(this.size==0){
             return;
         }
-        PrecomputationResultDatabase.insert(new DiameterResult(this.id, this.diameter));
+        if(this.diameter!=-1) {
+            PrecomputationResultDatabase.insert(new DiameterResult(this.id, this.diameter));
+        }
         if(NW!=null){
             NW.output();
         }
