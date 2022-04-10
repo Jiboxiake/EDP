@@ -370,18 +370,18 @@ public class QuadTree {
     public void loadDiameter(HashMap<Integer, Float> diameterMap){
         if(diameterMap.containsKey(this.id)){
             this.diameter = diameterMap.get(id);
-            if(NW!=null){
-                NW.loadDiameter(diameterMap);
-            }
-            if(NE!=null){
-                NE.loadDiameter(diameterMap);
-            }
-            if(SW!=null){
-                SW.loadDiameter(diameterMap);
-            }
-            if(SE!=null){
-                SE.loadDiameter(diameterMap);
-            }
+        }
+        if(NW!=null){
+            NW.loadDiameter(diameterMap);
+        }
+        if(NE!=null){
+            NE.loadDiameter(diameterMap);
+        }
+        if(SW!=null){
+            SW.loadDiameter(diameterMap);
+        }
+        if(SE!=null){
+            SE.loadDiameter(diameterMap);
         }
     }
 

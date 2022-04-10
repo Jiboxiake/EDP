@@ -187,9 +187,10 @@ public class BridgeEdgeThread extends Thread{
                 source.allBridgeEdgesComputed=true;
                 source.bridgeEdgeAdded.signalAll();
                 source.lock.unlock();
+                break;
             }
         }
-        DOBridgeBufferEntry doEntry = new DOBridgeBufferEntry(source, computedBridgeEdgeList,distMap);
+     /*   DOBridgeBufferEntry doEntry = new DOBridgeBufferEntry(source, computedBridgeEdgeList,distMap);
         if(!cc.sendBridgeDOWork(doEntry)){
             //do it yourself
             for(int i=0; i<computedBridgeEdgeList.size();i++){
@@ -199,6 +200,24 @@ public class BridgeEdgeThread extends Thread{
                 if(needInsertion(partialDO,key)){
                     try {
                         key = cc.optimizedSearchKeyGeneration(distMap,source,destination,pe.getWeight());
+                    } catch (ObjectNotFoundException e) {
+                        e.printStackTrace();
+                    }
+                    partialDO.put(key,pe.getWeight());
+                }
+            }
+            cc.addDO(partialDO);
+        }*/
+        //always do it yourself
+        //just assume we ignore the source as it can be anywhere
+        if(source.isBridge()){
+            for(int i=0; i<computedBridgeEdgeList.size();i++){
+                PartitionEdge pe = computedBridgeEdgeList.get(i);
+                PartitionVertex destination = pe.getTo();
+                SearchKey key = new SearchKey(source.mc, destination.mc);
+                if(needInsertion(partialDO,key)){
+                    try {
+                        key = cc.optimizedSearchKeyGeneration(source, destination, pe.getWeight());
                     } catch (ObjectNotFoundException e) {
                         e.printStackTrace();
                     }

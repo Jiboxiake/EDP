@@ -28,6 +28,7 @@ public class DiameterLoader {
             }
             quadtreeDiameterMap.put(id, diameter);
         }
+        //System.out.println(quadtreeDiameterMap.containsKey(118032));
         reader.close();
         for(int i=0; i<index.getNumOfPartitions();i++){
             Partition p = index.partitions[i];

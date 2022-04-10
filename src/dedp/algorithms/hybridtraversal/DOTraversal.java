@@ -196,6 +196,7 @@ public class DOTraversal {
                         q.remove(toDist); //remove if it exists
                         q.add(toDist);
                     }
+                    Global.bridge_added();
                     furtherExplore = true;
                 }
                 if(furtherExplore)
@@ -213,6 +214,7 @@ public class DOTraversal {
                             lblDist.PotentialDistance = newDistance;
                             q.add(lblDist);
                             lblDistMap.put(lblDist.VertexId, lblDist);
+                            Global.bridge_vertices_added();
                         }
                         else if(lblDist.Distance > newDistance)
                         {

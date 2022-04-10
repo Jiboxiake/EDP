@@ -150,7 +150,7 @@ public class DistanceOracle {
         return maxDistance;
     }
 
-    public static boolean isWellSeparatedOpti(float distance, QuadTree t1, QuadTree t2, PartitionVertex u, PartitionVertex v, HashMap<Integer, VertexQueueEntry>distMap, ConnectedComponent cc) throws ObjectNotFoundException {
+    /*public static boolean isWellSeparatedOpti(float distance, QuadTree t1, QuadTree t2, PartitionVertex u, PartitionVertex v, HashMap<Integer, VertexQueueEntry>distMap, ConnectedComponent cc) throws ObjectNotFoundException {
         float d1 = getQuadTreeDiameterWithDistMap(distMap,t1);
         float d2 = getQuadTreeDiameter(v,cc,t2);
         double adjusted_d= distance/s;
@@ -158,5 +158,10 @@ public class DistanceOracle {
             return true;
         }
         return false;
+    }*/
+    public static boolean isWellSeparatedOpti(float distance,QuadTree t1, QuadTree t2, PartitionVertex u, PartitionVertex v){
+        
+        return ((distance/s>t1.getDiameter())&&(distance/s>t2.getDiameter()));
     }
+
 }

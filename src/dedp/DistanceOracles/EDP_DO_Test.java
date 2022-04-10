@@ -104,6 +104,10 @@ public class EDP_DO_Test {
 
     }
 
+    public void testQuadtree(){
+
+    }
+
     public void loadTest() throws Exception {
         g=new Graph();
         String pathName1 = "./Graph_Source/test.txt";
@@ -178,9 +182,9 @@ public class EDP_DO_Test {
     //todo: check garbage collection, implement LRU regarding bridge edges
     public static void main(String[] args) throws Exception {
         EDP_DO_Test t = new EDP_DO_Test();
-        t.loadGraph(20000);//set a bound on how many vertices we want
+        t.loadGraph(300000);//set a bound on how many vertices we want
         ArrayList<Integer>list = new ArrayList<>();
-        for(int i=0; i<t.g.LabelsIDs.size()/4;i++){
+        for(int i=0; i<t.g.LabelsIDs.size()/2;i++){
             list.add(i);
         }
         System.out.println("total number of do threads are "+Global.total_do_threads);
@@ -199,14 +203,18 @@ public class EDP_DO_Test {
         }else {
             pre.start_preprocessing();
         }
-    /*    while(i<10){
+        long startTime = System.nanoTime();
+        while(i<10) {
             i++;
-            int from = ThreadLocalRandom.current().nextInt(1, 271450/300 + 1);
-            int to = ThreadLocalRandom.current().nextInt(271450/5*4 + 1, 271450+1);
+            int from = ThreadLocalRandom.current().nextInt(0, 271450 + 1);
+            int to = ThreadLocalRandom.current().nextInt(0, 271450 + 1);
             EDP_DO_Test_Thread th = new EDP_DO_Test_Thread();
-            SPResult r= DOTraversal.shortestDistanceWithDO(t.index, from, to, list);
+            SPResult r = DOTraversal.shortestDistanceWithDO(t.index, from, to, list);
             System.out.println("Shortest distance = " + r.Distance);
-            Syst*/
+        }
+        long endTime   = System.nanoTime();
+        double totalTime = (double)(endTime - startTime)/1000000000;
+        System.out.println("Total time is "+totalTime+" seconds");
         Global.printResult();
     }
 }

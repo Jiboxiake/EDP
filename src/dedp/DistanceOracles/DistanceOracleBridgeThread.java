@@ -42,11 +42,11 @@ public class DistanceOracleBridgeThread extends Thread {
                 PartitionVertex destination = pe.getTo();
                 SearchKey key = new SearchKey(source.mc, destination.mc);
                 if(needInsertion(partialDO,key)){
-                    try {
+                  /*  try {
                         key = cc.optimizedSearchKeyGeneration(distanceMap,source,destination,pe.getWeight());
                     } catch (ObjectNotFoundException e) {
                         e.printStackTrace();
-                    }
+                    }*/
                     partialDO.put(key,pe.getWeight());
                 }
             }
