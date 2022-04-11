@@ -204,7 +204,7 @@ public class EDP_DO_Test {
             pre.start_preprocessing();
         }
         long startTime = System.nanoTime();
-        while(i<10) {
+        while(i<100) {
             i++;
             int from = ThreadLocalRandom.current().nextInt(0, 271450 + 1);
             int to = ThreadLocalRandom.current().nextInt(0, 271450 + 1);

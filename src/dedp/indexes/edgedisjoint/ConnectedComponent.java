@@ -430,6 +430,7 @@ public class ConnectedComponent {
                  // key.printBit();
                   Global.addWSP();
                   Global.addBridge_do_count();
+                  Global.addLevel(forU.getLevel());
                   return key;
               }
               forU = forU.containingBlock(u);

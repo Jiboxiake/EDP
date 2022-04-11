@@ -160,7 +160,12 @@ public class DistanceOracle {
         return false;
     }*/
     public static boolean isWellSeparatedOpti(float distance,QuadTree t1, QuadTree t2, PartitionVertex u, PartitionVertex v){
-        
+        if(t1.getDiameter()<0){
+            throw new RuntimeException("error, a quadtree block containing a bridge vertex has negative diameter "+t1.getDiameter());
+        }if(t2.getDiameter()<0){
+            throw new RuntimeException("error, a quadtree block containing a bridge vertex has negative diameter "+t2.getDiameter());
+        }
+
         return ((distance/s>t1.getDiameter())&&(distance/s>t2.getDiameter()));
     }
 

@@ -11,6 +11,7 @@ public class Global {
     private static int bridge_do_count;
     private static int DO_hit_during_bridge_computation;
     public static int total_do_threads;
+    public static int level_count[]= new int[33];
     public static int total_partition_vertex=0;
     public static int total_partition_edge=0;
 
@@ -41,6 +42,9 @@ public class Global {
     }
     public synchronized  static void addDO_hit_during_bridge_computation(){DO_hit_during_bridge_computation++;}
     public synchronized static void add_total_do_threads(){total_do_threads++;}
+    public synchronized  static void addLevel(int level){
+        level_count[level]++;
+    }
 
     public static void printResult(){
         System.out.println("number of DO hit is: "+DO_Count);
@@ -52,5 +56,8 @@ public class Global {
         System.out.println("number of WSP found is: "+WSP_found);
         System.out.println("number of DO creation for bridge edges is "+bridge_do_count);
         System.out.println("number of bridge partial DO hit is "+DO_hit_during_bridge_computation);
+        for(int i=0; i< level_count.length;i++){
+            System.out.println("DO generated "+level_count[i]+" DO keys at level "+i);
+        }
     }
 }
