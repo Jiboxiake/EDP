@@ -461,8 +461,17 @@ public class ConnectedComponent {
             doList = new ArrayList<>();
             computedList = new ArrayList<>();
             boolean got = true;
+            //if this cc has not bridge vertices, we just skip any work
+            if(this.bridgeVertices==null){
+                bridgeList.setParameters(doList,computedList);
+                source.underBridgeComputation =false;
+                source.allBridgeEdgesComputed=true;
+                source.numOfBridgeEdgesComputed = 0;
+                return bridgeList;
+            }
             this.readLock.lock();
             HashSet<Integer> potentialBridgeDestinations = new HashSet<>();
+            //there may be connected components with no bridge vertex
             for(Map.Entry<Integer, PartitionVertex>set:bridgeVertices.entrySet()){
                 if(source.getId()!=set.getKey()){
                     float result= this.noLockLookUp(source, set.getValue());
@@ -490,6 +499,7 @@ public class ConnectedComponent {
                 source.thread.start();
             }else{
                 source.allBridgeEdgesComputed=true;
+                source.numOfBridgeEdgesComputed = doList.size();
             }
             bridgeList.setParameters(doList,computedList);
             source.lock.unlock();
