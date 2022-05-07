@@ -4,6 +4,7 @@ import dedp.DistanceOracles.Analytical.ConnectedComponentAnalyzer;
 import dedp.DistanceOracles.Precomputation.DiameterLoader;
 import dedp.DistanceOracles.Precomputation.EDP_DO_Precomputation;
 import dedp.DistanceOracles.Precomputation.PrecomputationResultDatabase;
+import dedp.algorithms.Dijkstra;
 import dedp.algorithms.hybridtraversal.DOTraversal;
 import dedp.algorithms.hybridtraversal.HybridTraversal;
 import dedp.exceptions.DuplicateEntryException;
@@ -20,8 +21,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class EDP_DO_Test {
-    private Graph g;
-    private HybridDOEDPIndex index;
+    public Graph g;
+    public HybridDOEDPIndex index;
     public void loadGraph(int bound) throws Exception {
         g=new Graph();
 
@@ -182,7 +183,7 @@ public class EDP_DO_Test {
     //todo: check garbage collection, implement LRU regarding bridge edges
     public static void main(String[] args) throws Exception {
         EDP_DO_Test t = new EDP_DO_Test();
-        t.loadGraph(300000);//set a bound on how many vertices we want
+        t.loadGraph(30000);//set a bound on how many vertices we want
         ArrayList<Integer>list = new ArrayList<>();
         for(int i=0; i<t.g.LabelsIDs.size()/2;i++){
             list.add(i);
@@ -202,15 +203,24 @@ public class EDP_DO_Test {
             loader=null;
         }else {
             pre.start_preprocessing();
+            return;
         }
         long startTime = System.nanoTime();
         while(i<100) {
             i++;
             int from = ThreadLocalRandom.current().nextInt(0, 271450 + 1);
             int to = ThreadLocalRandom.current().nextInt(0, 271450 + 1);
+           // int from = ThreadLocalRandom.current().nextInt(0, 10000 + 1);
+           // int to = ThreadLocalRandom.current().nextInt(0, 10000 + 1);
             EDP_DO_Test_Thread th = new EDP_DO_Test_Thread();
             SPResult r = DOTraversal.shortestDistanceWithDO(t.index, from, to, list);
-            System.out.println("Shortest distance = " + r.Distance);
+            SPResult rr = Dijkstra.shortestDistance(t.g,from,to,list);
+            if(r.Distance==rr.Distance&&r.Distance==-1){
+                System.out.println("Source "+from+" destination "+to+" cannot reach each other");
+            }else{
+                System.out.println("Source is "+from+" destination is "+to+" Shortest distance = " + r.Distance);
+                System.out.println("Source is "+from+" destination is "+to+" Shortest distance = " + rr.Distance);
+            }
         }
         long endTime   = System.nanoTime();
         double totalTime = (double)(endTime - startTime)/1000000000;

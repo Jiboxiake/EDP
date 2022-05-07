@@ -446,6 +446,7 @@ public class ConnectedComponent {
     /*
     in this method, we either found a hybrid bridge edge list under computation, start a computation or return a full list without needing a computation
      */
+    //todo: check the correctness of my fix. Make sure they are correct
     public HybridBridgeEdgeList getBridgeEdgeList(PartitionVertex source){
         ArrayList<PartitionEdge> doList=null;
         ArrayList<PartitionEdge> computedList=null;
