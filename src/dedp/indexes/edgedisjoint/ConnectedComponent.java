@@ -454,7 +454,9 @@ public class ConnectedComponent {
         source.lock.lock();
         //todo: work on this part for my bridge edge thread
         if(source.underBridgeComputation){
-            source.thread.copyList(doList,computedList);
+            //source.thread.copyList(doList,computedList);
+            doList=source.thread.copyDOList();
+            computedList = source.thread.copyComputedList();
             bridgeList.setParameters(doList,computedList);
             source.lock.unlock();
             return bridgeList;

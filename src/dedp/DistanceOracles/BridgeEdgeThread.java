@@ -226,6 +226,11 @@ public class BridgeEdgeThread extends Thread{
             }
             cc.addDO(partialDO);
         }
+        try {
+            Thread.sleep(999999);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         partialDO=null;
         source.lock.lock();
         source.underBridgeComputation=false;
@@ -271,4 +276,13 @@ public class BridgeEdgeThread extends Thread{
         doBridgeEdgeList=this.doBridgeEdgeList;
         computedBridgeEdgeList=this.computedBridgeEdgeList;
     }
+
+    public ArrayList<PartitionEdge> copyDOList(){
+        return this.doBridgeEdgeList;
+    }
+
+    public ArrayList<PartitionEdge> copyComputedList(){
+        return this.computedBridgeEdgeList;
+    }
+   
 }

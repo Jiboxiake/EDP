@@ -183,7 +183,7 @@ public class EDP_DO_Test {
     //todo: check garbage collection, implement LRU regarding bridge edges
     public static void main(String[] args) throws Exception {
         EDP_DO_Test t = new EDP_DO_Test();
-        t.loadGraph(30000);//set a bound on how many vertices we want
+        t.loadGraph(300000);//set a bound on how many vertices we want
         ArrayList<Integer>list = new ArrayList<>();
         for(int i=0; i<t.g.LabelsIDs.size()/2;i++){
             list.add(i);
@@ -210,8 +210,8 @@ public class EDP_DO_Test {
             i++;
             int from = ThreadLocalRandom.current().nextInt(0, 271450 + 1);
             int to = ThreadLocalRandom.current().nextInt(0, 271450 + 1);
-           // int from = ThreadLocalRandom.current().nextInt(0, 10000 + 1);
-           // int to = ThreadLocalRandom.current().nextInt(0, 10000 + 1);
+            //int from = ThreadLocalRandom.current().nextInt(0, 30000 + 1);
+            //int to = ThreadLocalRandom.current().nextInt(0, 30000 + 1);
             EDP_DO_Test_Thread th = new EDP_DO_Test_Thread();
             SPResult r = DOTraversal.shortestDistanceWithDO(t.index, from, to, list);
             SPResult rr = Dijkstra.shortestDistance(t.g,from,to,list);
