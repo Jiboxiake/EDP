@@ -226,11 +226,11 @@ public class BridgeEdgeThread extends Thread{
             }
             cc.addDO(partialDO);
         }
-        try {
+       /* try {
             Thread.sleep(999999);
         } catch (InterruptedException e) {
             e.printStackTrace();
-        }
+        }*/
         partialDO=null;
         source.lock.lock();
         source.underBridgeComputation=false;

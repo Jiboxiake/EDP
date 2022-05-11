@@ -230,7 +230,7 @@ public class QuadTree {
         float y = v.latitude;
         assert(x<=top&&x>=bot);
         assert(y>=left&&y<=right);
-        boolean isTop = y>(hor+1);
+        boolean isTop = y>(hor+0.000001);
         boolean isLeft = x<=ver;
         if(isTop){
             if(isLeft)

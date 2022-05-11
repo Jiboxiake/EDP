@@ -418,7 +418,10 @@ public class ConnectedComponent {
           }
           while (true) {
 
-              assert (forU.getLevel() == forV.getLevel());
+              //assert (forU.getLevel() == forV.getLevel());
+              if(forU.getLevel() != forV.getLevel()){
+                  throw new RuntimeException("error, wrong levels between trees");
+              }
         /*      if (DistanceOracle.isWellSeparatedOpti(distance, forU, forV, u, v)||(forU.reachMaxLevel()&&forV.reachMaxLevel())) {
                   SearchKey key = new SearchKey(forU.getMC(), forV.getMC(), forU.getLevel());
                   Global.addWSP();

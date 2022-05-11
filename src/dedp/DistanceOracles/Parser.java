@@ -6,15 +6,19 @@ public class Parser {
     public static float max_long=-180;
     public static float min_long=180;
     public static int normalizeLat(float latitude){
-        assert(latitude>=min_lat&&latitude<=max_lat);
-        double z=(latitude-min_lat)/(max_lat-min_lat);
-        int result = (int)(1073741823.0*3.5*z);
+        //assert(latitude>=min_lat&&latitude<=max_lat);
+        float z=(latitude-min_lat)/(max_lat-min_lat);
+        double interM=(1073741824*z);
+        int result = (int)interM;//todo: try to change it by a multiple of 2
+        result <<=1;
         return result;
     }
     public static int normalizeLon(float longitude){
-        assert(longitude>=min_long&&longitude<=max_long);
-        double z=(longitude-min_long)/(max_long-min_long);
-        int result = (int)(1073741823.0*3.5*z);
+        //assert(longitude>=min_long&&longitude<=max_long);
+        float z=(longitude-min_long)/(max_long-min_long);
+        double interM=(1073741824*z);
+        int result = (int)interM;//todo: try to change it by a multiple of 2
+        result <<=1;
         return result;
     }
     public static void feedLat(float lat){

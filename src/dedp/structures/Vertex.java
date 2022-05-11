@@ -105,7 +105,7 @@ public class Vertex implements Comparable<Vertex>
 	protected long id;
 	public long ChWeight = 0;
 	public long ChOrder = 0;
-	public MortonCode mc;
+	//public MortonCode mc;
 	public float longitude;
 	public float latitude;
 	public LinkedList<Edge> outEdges = new LinkedList<Edge>();
