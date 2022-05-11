@@ -25,7 +25,14 @@ public class SearchKey {
     public SearchKey(MortonCode m1, MortonCode m2){
         key=new BitSet(128);
         this.level=32;
-        interleave(m1,m2);
+        if(m1.compareTo(m2)>0) {
+            interleave(m1, m2);
+        }else if (m1.compareTo(m2)<0){
+            interleave(m2,m1);
+        }else{
+            //System.out.println("error at "+m1.morton);
+            interleave(m1, m2);
+        }
 
     }
     //TODO: check correctness here
@@ -33,7 +40,7 @@ public class SearchKey {
         int turn=0;
         long m1copy = m1.morton;
         long m2copy = m2.morton;
-        int ignore = 127-4*level;
+   /*     int ignore = 127-4*level;
         for(int i=0; i<128; i++){
             assert(turn==i);
             boolean set = false;
@@ -53,6 +60,24 @@ public class SearchKey {
             if(set)
                 key.set(i);
             turn++;
+        }*/
+        for(int i=0; i<128; i++){
+            boolean set = false;
+            if(turn%2==0){
+                if((m1copy&1)==1){
+                    set=true;
+                }
+                m1copy>>=1;
+            }else{
+                if((m2copy&1)==1){
+                    set=true;
+                }
+                m2copy>>=1;
+            }
+            if(set){
+                key.set(i);
+            }
+            turn++;
         }
     }
     @Override
@@ -62,10 +87,11 @@ public class SearchKey {
     //todo: check if we need to have exact equal
     @Override
     public boolean equals(Object o){
-        BitSet k1 = (BitSet) (((SearchKey)o).key.clone());
+      /*  BitSet k1 = (BitSet) (((SearchKey)o).key.clone());
         BitSet k2 = (BitSet) (((SearchKey)o).key.clone());
         k1.and(key);
-        return (k1.equals(k2)||k1.equals(key));
+        return (k1.equals(k2)||k1.equals(key));*/
+        return (((SearchKey)o).key.equals(this.key));
     }
     public void shift(){
         int difference = 32-level;

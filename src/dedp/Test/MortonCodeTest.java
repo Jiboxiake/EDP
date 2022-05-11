@@ -33,10 +33,10 @@ public class MortonCodeTest {
     public static void main(String[] args) throws Exception {
         EDP_DO_Test t = new EDP_DO_Test();
         t.loadGraph(30000);
-        System.out.println(Parser.max_lat);
+      /*  System.out.println(Parser.max_lat);
         System.out.println(Parser.min_lat);
         System.out.println(Parser.max_long);
-        System.out.println(Parser.min_long);
+        System.out.println(Parser.min_long);*/
         //MortonCodeTest.testMorton();
         ConnectedComponent cc = t.index.partitions[1].ConnectedComponents.getConnectedComponent(3);
         QuadTree tree = t.index.partitions[1].ConnectedComponents.getConnectedComponent(3).tree;
@@ -50,6 +50,8 @@ public class MortonCodeTest {
             if(cc.vertices.containsKey(from)&&cc.vertices.containsKey(to)){
                 v1 = cc.vertices.get(from);
                 v2 = cc.vertices.get(to);
+                System.out.println("from is "+from);
+                System.out.println("to is "+to);
                 break;
             }
         }
@@ -74,11 +76,11 @@ public class MortonCodeTest {
         SearchKey toCompare = new SearchKey(v1.morton(),v2.morton());
         toCompare.printBit();
         System.out.println("v1's latitide is "+v1.latitude+" v1's longitude is "+v1.longitude);
-     /*   for(int i=0; i<32; i++){
+        for(int i=0; i<32; i++){
             if(key.equals(toCompare)){
-                System.out.println("got it at "+i);
+                System.out.println("got it at "+(32-i));
             }
             toCompare.shift();
-        }*/
+        }
     }
 }
