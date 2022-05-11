@@ -102,7 +102,7 @@ public class DistanceOracleTest {
                 float longitude = ((float)rawLongitude)/1000000;
                 PartitionVertex v = new PartitionVertex();
                 v.setId(id);
-                v.setCoordinates(Parser.normalizeLat(latitude), Parser.normalizeLon(longitude));
+                v.setCoordinates(Parser.normalizeLat(rawLatitude), Parser.normalizeLon(rawLongitude));
                 vers.put(id, v);
                 assert(id==i);
                 i++;

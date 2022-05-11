@@ -94,7 +94,7 @@ public class PartitionVertex
 		Collections.sort(this.outEdges);
 	}
 
-	public void setCoordinates(float latitude, float longitude){
+	public void setCoordinates(int latitude, int longitude){
 		this.latitude=latitude;
 		this.longitude=longitude;
 		this.morton();
@@ -134,8 +134,8 @@ public class PartitionVertex
 	//the coming section is specific to the dynamic part
 	public int LocalId = -1;
 	public int ComponentId = -1;
-	public float longitude;
-	public float latitude;
+	public int longitude;
+	public int latitude;
 	public MortonCode mc;
 	public boolean underBridgeComputation=false;
 	public BridgeEdgeThread thread;

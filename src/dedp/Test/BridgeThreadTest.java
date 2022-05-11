@@ -44,7 +44,7 @@ public class BridgeThreadTest {
                 Vertex v = new Vertex();
                 v.setID(id);
                 //todo: change parser
-                v.setCoordinates(Parser.normalizeLat(latitude), Parser.normalizeLon(longitude));
+                v.setCoordinates(Parser.normalizeLat(rawLatitude), Parser.normalizeLon(rawLongitude));
                 g.addVertex(v);
                 if(id==271449){
                     break;

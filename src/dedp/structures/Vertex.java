@@ -80,7 +80,7 @@ public class Vertex implements Comparable<Vertex>
 		Collections.sort(outEdges);
 	}
 
-	public void setCoordinates(float latitude, float longitude){
+	public void setCoordinates(int latitude, int longitude){
 		this.latitude=latitude;
 		this.longitude=longitude;
 		//mc=new MortonCode(latitude, longitude, 0, true);
@@ -106,8 +106,8 @@ public class Vertex implements Comparable<Vertex>
 	public long ChWeight = 0;
 	public long ChOrder = 0;
 	//public MortonCode mc;
-	public float longitude;
-	public float latitude;
+	public int longitude;
+	public int latitude;
 	public LinkedList<Edge> outEdges = new LinkedList<Edge>();
 	public LinkedList<Edge> inEdges = new LinkedList<Edge>();
 	

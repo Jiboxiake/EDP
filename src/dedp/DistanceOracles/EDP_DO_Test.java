@@ -45,10 +45,10 @@ public class EDP_DO_Test {
                 Vertex v = new Vertex();
                 v.setID((long)id);
                 //todo: change parser
-                //v.setCoordinates(rawLatitude,rawLongitude);
-                v.setCoordinates(latitude, longitude);
-                Parser.feedLat(latitude);
-                Parser.feedLon(longitude);
+                v.setCoordinates(rawLatitude,rawLongitude);
+                //v.setCoordinates(latitude, longitude);
+                Parser.feedLat(rawLatitude);
+                Parser.feedLon(rawLongitude);
                 if(id<bound){
                     g.addVertex(v);
                 }
@@ -130,7 +130,7 @@ public class EDP_DO_Test {
             Vertex v = new Vertex();
             v.setID(id);
             //todo: change parser
-            v.setCoordinates(latitude, longitude);
+            v.setCoordinates(rawLatitude, rawLongitude);
             g.addVertex(v);
         }
         f =new File(pathName2);
