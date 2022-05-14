@@ -214,6 +214,8 @@ public class EDP_DO_Test {
             //int to = ThreadLocalRandom.current().nextInt(0, 271450 + 1);
             int from = ThreadLocalRandom.current().nextInt(0, 30000 + 1);
             int to = ThreadLocalRandom.current().nextInt(0, 30000 + 1);
+            //int from = 18173;
+            //int to = 886;
             EDP_DO_Test_Thread th = new EDP_DO_Test_Thread();
             SPResult r = DOTraversal.shortestDistanceWithDO(t.index, from, to, list);
             SPResult rr = Dijkstra.shortestDistance(t.g,from,to,list);
@@ -225,6 +227,14 @@ public class EDP_DO_Test {
                 System.out.println("Dijkstra: Source is "+from+" destination is "+to+" Shortest distance = " + rr.Distance);
                 System.out.println("error is "+error+"%");
             }
+          /*  for(int z=0; z<Global.list.size();z++){
+                Global.list.get(z).join();
+            }*/
+            r = DOTraversal.shortestDistanceWithDO(t.index, from, to, list);
+            float error2 = Math.abs(100*(r.Distance-rr.Distance)/rr.Distance);
+            System.out.println("Second run EDP: Source is "+from+" destination is "+to+" Shortest distance = " + r.Distance);
+            System.out.println("error 2 is "+error2+"%");
+            //Global.printResult();
         }
         long endTime   = System.nanoTime();
         double totalTime = (double)(endTime - startTime)/1000000000;

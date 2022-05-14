@@ -33,7 +33,6 @@ public class SearchKey {
             //System.out.println("error at "+m1.morton);
             interleave(m1, m2);
         }
-
     }
     //TODO: check correctness here
     public void interleave(MortonCode m1, MortonCode m2){

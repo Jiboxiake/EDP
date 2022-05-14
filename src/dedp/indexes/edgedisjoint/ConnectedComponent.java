@@ -305,7 +305,7 @@ public class ConnectedComponent {
     public float lookUp(PartitionVertex u, PartitionVertex v){
         readLock.lock();
         try {
-            SearchKey key = new SearchKey(u.mc, v.mc);
+            SearchKey key = new SearchKey(u.morton(), v.morton());
             //todo: only for undirected graph
             // SearchKey reverseKey = new SearchKey(v.mc,u.mc);
             for (int i = 0; i < 33; i++) {
@@ -334,7 +334,22 @@ public class ConnectedComponent {
 
     public float noLockLookUp(PartitionVertex u, PartitionVertex v){
         try {
-            SearchKey key = new SearchKey(u.mc, v.mc);
+            SearchKey key = new SearchKey(u.morton(), v.morton());
+            if(Global.debug){
+                //key.printBit();
+                for(Map.Entry<SearchKey, Float>set:DO.entrySet()){
+                    key = new SearchKey(u.morton(), v.morton());
+                    for(int x=0; x<33;x++){
+                        if(key.equals(set.getKey())){
+                            break;
+                        }
+                        key.shift();
+                    }
+                    //set.getKey().printBit();
+                }
+
+            }
+            key = new SearchKey(u.morton(), v.morton());
             //todo: only for undirected graph
             // SearchKey reverseKey = new SearchKey(v.mc,u.mc);
             for (int i = 0; i < 33; i++) {
@@ -417,8 +432,6 @@ public class ConnectedComponent {
               forV = forV.containingBlock(v);
           }
           while (true) {
-
-              //assert (forU.getLevel() == forV.getLevel());
               if(forU.getLevel() != forV.getLevel()){
                   throw new RuntimeException("error, wrong levels between trees");
               }
@@ -501,6 +514,7 @@ public class ConnectedComponent {
                 source.thread=new BridgeEdgeThread();
                 source.underBridgeComputation=true;
                 source.numOfBridgeEdgesComputed=0;
+                Global.list.add(source.thread);
                 source.thread.setParameters(this, source, potentialBridgeDestinations, doList, computedList, 0);
                 source.thread.start();
             }else{

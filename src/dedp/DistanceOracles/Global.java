@@ -1,5 +1,7 @@
 package dedp.DistanceOracles;
 
+import java.util.ArrayList;
+
 public class Global {
     private static int DO_Count;
     private static int Dij_Count;
@@ -14,6 +16,8 @@ public class Global {
     public static int level_count[]= new int[33];
     public static int total_partition_vertex=0;
     public static int total_partition_edge=0;
+    public static ArrayList<BridgeEdgeThread> list = new ArrayList<>();
+    public static boolean debug = false;
 
 
     public synchronized static void DO_hit(){
@@ -57,7 +61,7 @@ public class Global {
         System.out.println("number of DO creation for bridge edges is "+bridge_do_count);
         System.out.println("number of bridge partial DO hit is "+DO_hit_during_bridge_computation);
         for(int i=0; i< level_count.length;i++){
-            System.out.println("DO generated "+level_count[i]+" DO keys at level "+i);
+           // System.out.println("DO generated "+level_count[i]+" DO keys at level "+i);
         }
     }
 }

@@ -41,6 +41,11 @@ public class DOTraversal {
         PartitionVertex u = null;
         PartitionVertex destVertex = null;
         PartitionVertex toVertex = null;
+        //for bridge edges
+        HashMap<Integer, HybridBridgeEdgeList> bridgePerPartition = null;
+        HybridBridgeEdgeList bridgeEdgeList=null;
+        ConnectedComponent cc =null;
+
         DOQueueEntry uDist = new DOQueueEntry(source);
         uDist.setPartitionId(index.PlainGraph.getVertex(source), labelIDs);
         if (uDist.PartitionId != DistFromSource.NoPartitionExistsId) {
@@ -129,9 +134,7 @@ public class DOTraversal {
             }
             //Now we try to add the bridge edges
             //first we check if this is the first time we meet this vertex
-            HashMap<Integer, HybridBridgeEdgeList> bridgePerPartition = null;
-            HybridBridgeEdgeList bridgeEdgeList=null;
-            ConnectedComponent cc = currentPartition.ConnectedComponents.getConnectedComponent(u.ComponentId);
+            cc = currentPartition.ConnectedComponents.getConnectedComponent(u.ComponentId);
             if(!partitionVertexBridgeEdges.containsKey(u.Label)){
                 bridgePerPartition = new HashMap<>();
                 partitionVertexBridgeEdges.put(u.Label,bridgePerPartition);
@@ -169,7 +172,7 @@ public class DOTraversal {
                 newDistance = uDist.Distance + e.getWeight();
                 //if going to bridge vertex is already more expensive than current explored path to dest, we ignore it
                 //or if the explored path to the bridge vertex is less expensive.
-                if(newDistance >= bestDistanceSoFar || (toDist != null && (toDist.Distance <= newDistance)))
+                if(newDistance >= bestDistanceSoFar || (toDist != null && (toDist.Distance <= newDistance)))//this ensures we should never go back to the traversed vertices
                 {
                     continue;
                 }//else, if the new distance is better

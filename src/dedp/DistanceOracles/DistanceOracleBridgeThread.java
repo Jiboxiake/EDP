@@ -40,7 +40,7 @@ public class DistanceOracleBridgeThread extends Thread {
             for(int i=0;i<bridgeEdgeList.size();i++){
                 PartitionEdge pe = bridgeEdgeList.get(i);
                 PartitionVertex destination = pe.getTo();
-                SearchKey key = new SearchKey(source.mc, destination.mc);
+                SearchKey key = new SearchKey(source.morton(), destination.morton());
                 if(needInsertion(partialDO,key)){
                   /*  try {
                         key = cc.optimizedSearchKeyGeneration(distanceMap,source,destination,pe.getWeight());

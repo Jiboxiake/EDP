@@ -136,7 +136,7 @@ public class PartitionVertex
 	public int ComponentId = -1;
 	public int longitude;
 	public int latitude;
-	public MortonCode mc;
+	private MortonCode mc;
 	public boolean underBridgeComputation=false;
 	public BridgeEdgeThread thread;
 	/*

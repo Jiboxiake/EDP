@@ -44,19 +44,24 @@ public class MortonCodeTest {
         int to=-1;
         PartitionVertex v1=null;
         PartitionVertex v2=null;
+        Random generator = new Random();
         while(true){
-            from = ThreadLocalRandom.current().nextInt(0, 30000 + 1);
-            to = ThreadLocalRandom.current().nextInt(0, 30000 + 1);
-            if(cc.vertices.containsKey(from)&&cc.vertices.containsKey(to)){
+            //from = ThreadLocalRandom.current().nextInt(0, 30000 + 1);
+            //to = ThreadLocalRandom.current().nextInt(0, 30000 + 1);
+            from = 18173;
+            Object[] vecs = (cc.bridgeVertices.values().toArray());
+
+            if(cc.vertices.containsKey(from)){
                 v1 = cc.vertices.get(from);
-                v2 = cc.vertices.get(to);
+                //v2 = cc.vertices.get(to);
+                v2 = (PartitionVertex) vecs[generator.nextInt(vecs.length)];
                 System.out.println("from is "+from);
-                System.out.println("to is "+to);
+                System.out.println("to is "+v2.getId());
                 break;
             }
         }
         QuadTree forU=tree, forV = tree;
-        for(int i=0;i<7;i++){
+        for(int i=0;i<11;i++){
             forU = forU.containingBlock(v1);
             forV = forV.containingBlock(v2);
         }

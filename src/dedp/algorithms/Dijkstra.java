@@ -173,7 +173,7 @@ public class Dijkstra
 		return result;
 	}
 	
-	
+	//seems correct here
 	public static SPResult shortestDistance(Partition partition, int source, int destination) throws ObjectNotFoundException
 	{
 		SPResult result = new SPResult();

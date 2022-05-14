@@ -56,7 +56,7 @@ public class DiameterQueryEntry {
             e.printStackTrace();
         }
         //ok now we have quadtree at all levels
-
+        //System.out.println("finished");
     }
 
     public void getQuadTreeDiameter() throws ObjectNotFoundException {

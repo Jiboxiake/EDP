@@ -121,6 +121,12 @@ public class BridgeEdgeThread extends Thread{
         source.lock.lock();
         source.underBridgeComputation=true;
         source.lock.unlock();
+        RuntimeQuadtreeDiameterThread diameterThread = null;
+        if(!source.isBridge()){
+            diameterThread = new RuntimeQuadtreeDiameterThread();
+            diameterThread.setParameters(source,cc);
+            diameterThread.start();;
+        }
         VertexQueueEntry entry = new VertexQueueEntry(source,0);
         PriorityQueue<VertexQueueEntry>q = new PriorityQueue<>();
         HashMap <Integer, VertexQueueEntry> distMap = new HashMap<>();
@@ -143,8 +149,8 @@ public class BridgeEdgeThread extends Thread{
             for(int i=maxGuarantee;i<doBridgeEdgeList.size();i++){
                 if(doBridgeEdgeList.get(i).getWeight()<=en.distance){
                     newEntryAdded=true;
+                    maxGuarantee++;
                 }else{
-                    maxGuarantee=i;
                     break;
                 }
             }
@@ -211,21 +217,28 @@ public class BridgeEdgeThread extends Thread{
         //always do it yourself
         //just assume we ignore the source as it can be anywhere
         if(source.isBridge()){
-            for(int i=0; i<computedBridgeEdgeList.size();i++){
-                PartitionEdge pe = computedBridgeEdgeList.get(i);
-                PartitionVertex destination = pe.getTo();
-                SearchKey key = new SearchKey(source.mc, destination.mc);
-                if(needInsertion(partialDO,key)){
-                    try {
-                        key = cc.optimizedSearchKeyGeneration(source, destination, pe.getWeight());
-                    } catch (ObjectNotFoundException e) {
-                        e.printStackTrace();
-                    }
-                    partialDO.put(key,pe.getWeight());
-                }
+
+        }else{
+            try {
+                diameterThread.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
-            cc.addDO(partialDO);
         }
+        for(int i=0; i<computedBridgeEdgeList.size();i++){
+            PartitionEdge pe = computedBridgeEdgeList.get(i);
+            PartitionVertex destination = pe.getTo();
+            SearchKey key = new SearchKey(source.morton(), destination.morton());
+            if(needInsertion(partialDO,key)){
+                try {
+                    key = cc.optimizedSearchKeyGeneration(source, destination, pe.getWeight());
+                } catch (ObjectNotFoundException e) {
+                    e.printStackTrace();
+                }
+                partialDO.put(key,pe.getWeight());
+            }
+        }
+        cc.addDO(partialDO);
        /* try {
             Thread.sleep(999999);
         } catch (InterruptedException e) {
@@ -250,7 +263,7 @@ public class BridgeEdgeThread extends Thread{
                 if (partialDO.get(key) < 0) {
                     throw new RuntimeException("wrong DO entry got inserted\n");
                 }
-                Global.DO_hit();
+                //Global.DO_hit();
                 return false;
             }
             key.shift();

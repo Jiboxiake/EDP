@@ -35,7 +35,7 @@ public class BridgeDOThread extends Thread {
                 PartitionEdge e = vertexBridgeEntries.get(i);
                 //PartitionVertex source = e.getFrom();
                 PartitionVertex destination = e.getTo();
-                SearchKey key = new SearchKey(source.mc, destination.mc);
+                SearchKey key = new SearchKey(source.morton(), destination.morton());
                 if (needInsertion(partialDO, key)) {
                     try {
                         //todo: a potential optimization is to use a worker thread to compute this

@@ -10,12 +10,15 @@ import java.util.ArrayList;
 public class Dij_test {
     public static void main(String[] args) throws Exception {
         EDP_DO_Test t = new EDP_DO_Test();
-        t.loadGraph(10000);
+        t.loadGraph(300000);
         ArrayList<Integer> list = new ArrayList<>();
-        for(int i=0; i<t.g.LabelsIDs.size();i++){
+      /*  for(int i=0; i<t.g.LabelsIDs.size();i++){
             list.add(i);
-        }
-        SPResult result = BidirectionalDijkstra.shortestDistance(t.g,4188,697,list);
+        }*/
+        list.add(1);
+        SPResult result = BidirectionalDijkstra.shortestDistance(t.g,1380,52430,list);
+        SPResult r2 = Dijkstra.shortestDistance(t.index.partitions[1],1380,52430);//my dij is correct then
         System.out.println(result.Distance);
+        System.out.println(r2.Distance);
     }
 }
