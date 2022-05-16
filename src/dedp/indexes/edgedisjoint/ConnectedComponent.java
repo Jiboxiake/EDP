@@ -361,6 +361,8 @@ public class ConnectedComponent {
                   //  u.mc.printBit();
                   //  v.mc.printBit();
                     Global.DO_hit();
+                    //float result = DO.get(key);
+                    //System.out.println("got");
                     return DO.get(key);
                 }/*else if(DO.containsKey(reverseKey)){
                     Global.DO_hit();
@@ -443,6 +445,10 @@ public class ConnectedComponent {
               }*/
               if(DistanceOracle.isWellSeparatedOpti(distance,forU,forV,u,v)||(forU.reachMaxLevel()&&forV.reachMaxLevel())){
                   SearchKey key = new SearchKey(forU.getMC(), forV.getMC(), forU.getLevel());
+                /*  if(v.getId()==14262){
+                      forV.getMC().printBit();
+                      forV.getParent().getMC().printBit();
+                  }*/
                  // key.printBit();
                   Global.addWSP();
                   Global.addBridge_do_count();
@@ -514,7 +520,8 @@ public class ConnectedComponent {
                 source.thread=new BridgeEdgeThread();
                 source.underBridgeComputation=true;
                 source.numOfBridgeEdgesComputed=0;
-                Global.list.add(source.thread);
+                //Global.list.add(source.thread);
+                Global.addThread(source.thread);
                 source.thread.setParameters(this, source, potentialBridgeDestinations, doList, computedList, 0);
                 source.thread.start();
             }else{

@@ -7,15 +7,15 @@ public class Parser {
     public static int min_long=Integer.MAX_VALUE;
     public static int normalizeLat(int latitude){
         //assert(latitude>=min_lat&&latitude<=max_lat);
-        float z=((float)(latitude-min_lat)/(float)(max_lat-min_lat));
-        double interM=(1073741824*z);
+        double z=((double)(latitude-min_lat)/(double)(max_lat-min_lat));
+        double interM=(1073741824*2*z);
         int result = (int)interM;//todo: try to change it by a multiple of 2
         result <<=1;
         return result;
     }
     public static int normalizeLon(int longitude){
         //assert(longitude>=min_long&&longitude<=max_long);
-        float z=(float)(longitude-min_long)/(float)(max_long-min_long);
+        double z=(double)(longitude-min_long)/(double)(max_long-min_long);
         double interM=(1073741824*z);
         int result = (int)interM;//todo: try to change it by a multiple of 2
         result <<=1;

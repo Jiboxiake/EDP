@@ -22,6 +22,16 @@ public class SearchKey {
 
     }
 
+    public SearchKey(SearchKey copy){
+        this.level=copy.level;
+        this.key = new BitSet(128);
+        for(int i=0; i<127;i++){
+            if(copy.key.get(i)){
+                this.key.set(i);
+            }
+        }
+    }
+
     public SearchKey(MortonCode m1, MortonCode m2){
         key=new BitSet(128);
         this.level=32;
@@ -39,6 +49,7 @@ public class SearchKey {
         int turn=0;
         long m1copy = m1.morton;
         long m2copy = m2.morton;
+        int ignore = 127-4*level;
    /*     int ignore = 127-4*level;
         for(int i=0; i<128; i++){
             assert(turn==i);
@@ -66,15 +77,16 @@ public class SearchKey {
                 if((m1copy&1)==1){
                     set=true;
                 }
-                m1copy>>=1;
+                m1copy=m1copy>>1;
             }else{
                 if((m2copy&1)==1){
                     set=true;
                 }
-                m2copy>>=1;
+                m2copy=m2copy>>1;
             }
             if(set){
-                key.set(i);
+                //if(i>ignore)
+                    key.set(i);
             }
             turn++;
         }

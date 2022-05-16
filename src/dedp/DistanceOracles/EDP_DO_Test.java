@@ -207,9 +207,13 @@ public class EDP_DO_Test {
             pre.start_preprocessing();
             return;
         }
+        FileWriter myWriter = new FileWriter("result.txt");
         long startTime = System.nanoTime();
-        while(i<100) {
+        double total=0;
+        double max_err=-100;
+        while(i<1000) {
             i++;
+            String result="";
             //int from = ThreadLocalRandom.current().nextInt(0, 271450 + 1);
             //int to = ThreadLocalRandom.current().nextInt(0, 271450 + 1);
             int from = ThreadLocalRandom.current().nextInt(0, 30000 + 1);
@@ -220,25 +224,48 @@ public class EDP_DO_Test {
             SPResult r = DOTraversal.shortestDistanceWithDO(t.index, from, to, list);
             SPResult rr = Dijkstra.shortestDistance(t.g,from,to,list);
             if(r.Distance==rr.Distance&&r.Distance==-1){
-                System.out.println("Source "+from+" destination "+to+" cannot reach each other");
+                //System.out.println("Source "+from+" destination "+to+" cannot reach each other");
+                result+="Source "+from+" destination "+to+" cannot reach each other\n";
             }else{
                 float error = Math.abs(100*(r.Distance-rr.Distance)/rr.Distance);
-                System.out.println("EDP: Source is "+from+" destination is "+to+" Shortest distance = " + r.Distance);
-                System.out.println("Dijkstra: Source is "+from+" destination is "+to+" Shortest distance = " + rr.Distance);
-                System.out.println("error is "+error+"%");
+                if(error>max_err){
+                    max_err=error;
+                }
+                total+=error;
+                //System.out.println("EDP: Source is "+from+" destination is "+to+" Shortest distance = " + r.Distance);
+                result+="EDP: Source is "+from+" destination is "+to+" Shortest distance = " + r.Distance+"\n";
+                //System.out.println("Dijkstra: Source is "+from+" destination is "+to+" Shortest distance = " + rr.Distance);
+                result+="Dijkstra: Source is "+from+" destination is "+to+" Shortest distance = " + rr.Distance+"\n";
+                //System.out.println("error is "+error+"%");
+                result+="error is "+error+"%\n";
             }
-          /*  for(int z=0; z<Global.list.size();z++){
+            for(int z=0; z<Global.list.size();z++){
                 Global.list.get(z).join();
-            }*/
+            }
+            Global.list.clear();
             r = DOTraversal.shortestDistanceWithDO(t.index, from, to, list);
             float error2 = Math.abs(100*(r.Distance-rr.Distance)/rr.Distance);
-            System.out.println("Second run EDP: Source is "+from+" destination is "+to+" Shortest distance = " + r.Distance);
-            System.out.println("error 2 is "+error2+"%");
+            if(error2>max_err){
+                max_err=error2;
+            }
+            //System.out.println("Second run EDP: Source is "+from+" destination is "+to+" Shortest distance = " + r.Distance);
+            result+="Second run EDP: Source is "+from+" destination is "+to+" Shortest distance = " + r.Distance+"\n";
+            //System.out.println("error 2 is "+error2+"%");
+            result+="error 2 is "+error2+"%\n";
+            total+=error2;
+            myWriter.write(result);
             //Global.printResult();
         }
+        String stats="";
         long endTime   = System.nanoTime();
         double totalTime = (double)(endTime - startTime)/1000000000;
-        System.out.println("Total time is "+totalTime+" seconds");
+        double avg_error = total/2000;
+        stats+="avg error is "+avg_error+"%\n"+"max error is "+max_err+"%\n"+"Total time is "+totalTime+" seconds\n";
+        myWriter.write(stats);
+        myWriter.close();
+        //System.out.println("avg error is "+avg_error+"%");
+        //System.out.println("max error is "+max_err+"%");
+        //System.out.println("Total time is "+totalTime+" seconds");
         Global.printResult();
     }
 }

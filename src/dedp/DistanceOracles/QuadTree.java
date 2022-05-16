@@ -100,7 +100,9 @@ public class QuadTree {
         //return vertices.contains(v.getId());
         return (v.latitude>=bottom_bound&&v.latitude<=top_bound&&v.longitude>=left_bound&&v.longitude<=right_bound);
     }
-
+    public QuadTree getParent(){
+        return parent;
+    }
     public int getLevel(){
         return level;
     }
@@ -225,11 +227,14 @@ public class QuadTree {
         return vertices.isEmpty();
     }
 
-    private int classifier (float top, float hor, float bot, float left, float ver, float right, PartitionVertex v){
-        float x = v.longitude;
-        float y = v.latitude;
-        assert(x<=top&&x>=bot);
-        assert(y>=left&&y<=right);
+    private int classifier (int top, int hor, float bot, int left, int ver, int right, PartitionVertex v){
+        int x = v.longitude;
+        int y = v.latitude;
+        //assert(x<=top&&x>=bot);
+        //assert(y>=left&&y<=right);
+        if(x>right||x<left||y>top||y<bot){
+            throw new RuntimeException("error, out of bounds");
+        }
         boolean isTop = y>=(hor+1);
         boolean isLeft = x<=ver;
         if(isTop){

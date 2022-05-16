@@ -46,22 +46,23 @@ public class MortonCodeTest {
         PartitionVertex v2=null;
         Random generator = new Random();
         while(true){
-            //from = ThreadLocalRandom.current().nextInt(0, 30000 + 1);
-            //to = ThreadLocalRandom.current().nextInt(0, 30000 + 1);
-            from = 18173;
+            from = ThreadLocalRandom.current().nextInt(0, 30000 + 1);
+            to = ThreadLocalRandom.current().nextInt(0, 30000 + 1);
+            from = 14349;
+            to=14262;
             Object[] vecs = (cc.bridgeVertices.values().toArray());
 
-            if(cc.vertices.containsKey(from)){
+            if(cc.vertices.containsKey(from)&&cc.vertices.containsKey(to)){
                 v1 = cc.vertices.get(from);
-                //v2 = cc.vertices.get(to);
-                v2 = (PartitionVertex) vecs[generator.nextInt(vecs.length)];
+                v2 = cc.vertices.get(to);
+                //v2 = (PartitionVertex) vecs[generator.nextInt(vecs.length)];
                 System.out.println("from is "+from);
                 System.out.println("to is "+v2.getId());
                 break;
             }
         }
         QuadTree forU=tree, forV = tree;
-        for(int i=0;i<11;i++){
+        for(int i=0;i<12;i++){
             forU = forU.containingBlock(v1);
             forV = forV.containingBlock(v2);
         }
@@ -70,22 +71,22 @@ public class MortonCodeTest {
         forU.copy(set1);
         forV.copy(set2);
         //System.out.println(set1.contains(from));
-        //System.out.println(set2.contains(to));
+        //System.out.println(set2.contains(4901));
         forU.getMC().printBit();
         v1.morton().printBit();
         System.out.println();
         forV.getMC().printBit();
         v2.morton().printBit();
-        SearchKey key = new SearchKey(forU.getMC(), forV.getMC(), forU.getLevel());
+    /*    SearchKey key = new SearchKey(forU.getMC(), forV.getMC(), forU.getLevel());
         key.printBit();
         SearchKey toCompare = new SearchKey(v1.morton(),v2.morton());
         toCompare.printBit();
-        System.out.println("v1's latitide is "+v1.latitude+" v1's longitude is "+v1.longitude);
+        //System.out.println("v1's latitide is "+v1.latitude+" v1's longitude is "+v1.longitude);
         for(int i=0; i<32; i++){
             if(key.equals(toCompare)){
                 System.out.println("got it at "+(32-i));
             }
             toCompare.shift();
-        }
+        }*/
     }
 }

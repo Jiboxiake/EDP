@@ -228,6 +228,13 @@ public class BridgeEdgeThread extends Thread{
         for(int i=0; i<computedBridgeEdgeList.size();i++){
             PartitionEdge pe = computedBridgeEdgeList.get(i);
             PartitionVertex destination = pe.getTo();
+            //for debug
+           /* if(destination.getId()==14349){
+                Global.debug=true;
+            }*/
+            if(Math.abs(pe.getWeight()-10067.355)<1){
+                Global.debug=true;
+            }
             SearchKey key = new SearchKey(source.morton(), destination.morton());
             if(needInsertion(partialDO,key)){
                 try {
@@ -258,10 +265,18 @@ public class BridgeEdgeThread extends Thread{
 
 
     public boolean needInsertion(HashMap<SearchKey, Float> partialDO, SearchKey key) {
+        //for debug
+        SearchKey copy = new SearchKey(key);
         for (int i = 0; i < 33; i++) {
             if (partialDO.containsKey(key)) {
                 if (partialDO.get(key) < 0) {
                     throw new RuntimeException("wrong DO entry got inserted\n");
+                }
+                if(Global.debug){
+                    Global.debug=false;
+                    //copy.printBit();
+                    //key.printBit();
+                    //System.out.println("match");
                 }
                 //Global.DO_hit();
                 return false;

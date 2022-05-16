@@ -49,6 +49,9 @@ public class Global {
     public synchronized  static void addLevel(int level){
         level_count[level]++;
     }
+    public synchronized  static void addThread(BridgeEdgeThread t){
+        Global.list.add(t);
+    }
 
     public static void printResult(){
         System.out.println("number of DO hit is: "+DO_Count);
