@@ -48,8 +48,8 @@ public class MortonCodeTest {
         while(true){
             from = ThreadLocalRandom.current().nextInt(0, 30000 + 1);
             to = ThreadLocalRandom.current().nextInt(0, 30000 + 1);
-            from = 14349;
-            to=14262;
+            from = 18173;
+            to=11989;
             Object[] vecs = (cc.bridgeVertices.values().toArray());
 
             if(cc.vertices.containsKey(from)&&cc.vertices.containsKey(to)){
@@ -62,7 +62,7 @@ public class MortonCodeTest {
             }
         }
         QuadTree forU=tree, forV = tree;
-        for(int i=0;i<12;i++){
+        for(int i=0;i<15;i++){
             forU = forU.containingBlock(v1);
             forV = forV.containingBlock(v2);
         }

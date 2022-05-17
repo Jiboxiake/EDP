@@ -327,7 +327,7 @@ public class QuadTree {
     }
 
     private void setMorton(){
-        mc=new MortonCode(Parser.normalizeLat(bottom_bound), Parser.normalizeLon(left_bound), level, false);
+        mc=new MortonCode(Parser.normalizeLat(bottom_bound), Parser.normalizeLon(left_bound), level+1, false);
 
     }
     public void info(){

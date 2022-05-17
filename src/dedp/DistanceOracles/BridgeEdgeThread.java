@@ -229,9 +229,9 @@ public class BridgeEdgeThread extends Thread{
             PartitionEdge pe = computedBridgeEdgeList.get(i);
             PartitionVertex destination = pe.getTo();
             //for debug
-           /* if(destination.getId()==14349){
+            if(destination.getId()==11989){
                 Global.debug=true;
-            }*/
+            }
             if(Math.abs(pe.getWeight()-10067.355)<1){
                 Global.debug=true;
             }
@@ -239,6 +239,9 @@ public class BridgeEdgeThread extends Thread{
             if(needInsertion(partialDO,key)){
                 try {
                     key = cc.optimizedSearchKeyGeneration(source, destination, pe.getWeight());
+                    if(destination.getId()==11989){
+                        //key.printBit();
+                    }
                 } catch (ObjectNotFoundException e) {
                     e.printStackTrace();
                 }

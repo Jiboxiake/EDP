@@ -126,7 +126,7 @@ public class ConnectedComponent {
                 forV = forV.containingBlock(v);
                 assert (forU.getLevel() == forV.getLevel());
                 if (DistanceOracle.isWellSeparated(distance, forU, forV, u, v, vertices)||(forU.reachMaxLevel()&&forV.reachMaxLevel())) {
-                    SearchKey key = new SearchKey(forU.getMC(), forV.getMC(), forU.getLevel());
+                    SearchKey key = new SearchKey(forU.getMC(), forV.getMC(), forU.getLevel()+1);
                     writeLock.lock();
                     DO.remove(key);
                     DO.put(key, distance);
@@ -157,7 +157,7 @@ public class ConnectedComponent {
                 forV = forV.containingBlock(v);
                 assert (forU.getLevel() == forV.getLevel());
                 if (DistanceOracle.isWellSeparated(distance, forU, forV, u, v, vertices)||(forU.reachMaxLevel()&&forV.reachMaxLevel())) {
-                    SearchKey key = new SearchKey(forU.getMC(), forV.getMC(), forU.getLevel());
+                    SearchKey key = new SearchKey(forU.getMC(), forV.getMC(), forU.getLevel()+1);
                     entry.key=key;
                     Global.addWSP();
                     Global.addBridge_do_count();
@@ -186,7 +186,7 @@ public class ConnectedComponent {
                 forV = forV.containingBlock(v);
                 assert (forU.getLevel() == forV.getLevel());
                 if (DistanceOracle.isWellSeparated(distance, forU, forV, u, v, vertices)||(forU.reachMaxLevel()&&forV.reachMaxLevel())) {
-                    SearchKey key = new SearchKey(forU.getMC(), forV.getMC(), forU.getLevel());
+                    SearchKey key = new SearchKey(forU.getMC(), forV.getMC(), forU.getLevel()+1);
                     Global.addWSP();
                     Global.addBridge_do_count();
                     return key;
@@ -350,9 +350,10 @@ public class ConnectedComponent {
 
             }
             key = new SearchKey(u.morton(), v.morton());
+            //key.printBit();
             //todo: only for undirected graph
             // SearchKey reverseKey = new SearchKey(v.mc,u.mc);
-            for (int i = 0; i < 33; i++) {
+            for (int i = 0; i < 31; i++) {
                 if (DO.containsKey(key)) {
                     if(DO.get(key)<0){
                         throw new RuntimeException("wrong DO entry got inserted\n");
@@ -444,8 +445,8 @@ public class ConnectedComponent {
                   return key;
               }*/
               if(DistanceOracle.isWellSeparatedOpti(distance,forU,forV,u,v)||(forU.reachMaxLevel()&&forV.reachMaxLevel())){
-                  SearchKey key = new SearchKey(forU.getMC(), forV.getMC(), forU.getLevel());
-                /*  if(v.getId()==14262){
+                  SearchKey key = new SearchKey(forU.getMC(), forV.getMC(), forU.getLevel()+1);
+             /*     if(v.getId()==11989){
                       forV.getMC().printBit();
                       forV.getParent().getMC().printBit();
                   }*/
