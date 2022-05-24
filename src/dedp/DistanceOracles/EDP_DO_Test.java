@@ -94,6 +94,7 @@ public class EDP_DO_Test {
         } catch (ObjectNotFoundException e) {
             e.printStackTrace();
         }
+        Parser.mofidy1();
         g.printStats();
         index= HybridDOEDPIndex.buildIndex(g, null, false);
         index.isDirected=false;

@@ -120,6 +120,6 @@ public class SearchKey {
             s.append( key.get( i ) == true ? 1: 0 );
         }
 
-        System.out.println( s.reverse() );
+        System.out.println( s.reverse()+" level is "+this.level );
     }
 }

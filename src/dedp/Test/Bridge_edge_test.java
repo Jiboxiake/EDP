@@ -52,7 +52,7 @@ public class Bridge_edge_test {
         //SearchKey key = new SearchKey(source.morton(),destination.morton());
         for(int x=0; x<1000; x++){
             PartitionVertex destination =  (PartitionVertex) vecs[generator.nextInt(vecs.length)];
-            //PartitionVertex destination = cc.vertices.get(11989);
+            // PartitionVertex destination = cc.vertices.get(14373);
             float result = cc.noLockLookUp(source,destination);
             SPResult rr = Dijkstra.shortestDistance(t.g, source.getId(),destination.getId(),list);
             float error = Math.abs(rr.Distance-result)/rr.Distance*100;
@@ -60,12 +60,12 @@ public class Bridge_edge_test {
                 max_err=error;
             }
             total_err+=error;
-            if(error>10){
+            if(error>5){
                 System.out.println("error is "+error+"% "+destination.getId());//11989
             }
 
         }
-        System.out.println("avg error is "+total_err/1000+"%");
+        //System.out.println("avg error is "+total_err/1000+"%");
         System.out.println("max error is "+max_err+"%");
         //System.out.println(result);
     }

@@ -45,15 +45,21 @@ public class QuadTree {
         this.parent=parent;
         //diameter not set yet
         this.diameter=-1;
-        setMorton();
         //this.vertices=vertices;
         this.vertices= new HashSet<Integer>(vertices.size());
         HashMap <Integer, PartitionVertex> TL=new HashMap<>();
         HashMap <Integer, PartitionVertex> TR=new HashMap<>();
         HashMap <Integer, PartitionVertex> BL=new HashMap<>();
         HashMap <Integer, PartitionVertex> BR=new HashMap<>();
-        horizontal = (top_bound-bottom_bound)/2+bottom_bound;
-        vertical = (right_bound-left_bound)/2+left_bound;
+        this.horizontal = (top_bound-bottom_bound)/2+bottom_bound;
+        this.vertical = (right_bound-left_bound)/2+left_bound;
+        setMorton();
+   /*     if((this.right_bound-this.left_bound)%2==0){
+            this.vertical--;
+        }else{
+
+        }*/
+
         for(Map.Entry<Integer, PartitionVertex> set: vertices.entrySet()){
             //we only store at the max depth
             if(level==max_depth) {
@@ -63,7 +69,7 @@ public class QuadTree {
             }
             PartitionVertex v = set.getValue();
             //check boundaries against what we set
-            int quadrant = classifier(top_bound, horizontal, bottom_bound, left_bound, vertical, right_bound, v);
+            int quadrant = classifier( v);
             if(quadrant==1){
                 TL.put(set.getKey(),v);
             }else if(quadrant==2){
@@ -77,10 +83,10 @@ public class QuadTree {
         }
 
         if(level<max_depth && vertices.size()>0){
-            NW=new QuadTree(top_bound,horizontal+1,left_bound, vertical, this, level+1, TL);
-            NE=new QuadTree(top_bound, horizontal+1, vertical+1, right_bound, this, level+1, TR);
+            NW=new QuadTree(top_bound,horizontal,left_bound, vertical, this, level+1, TL);
+            NE=new QuadTree(top_bound, horizontal, vertical, right_bound, this, level+1, TR);
             SW=new QuadTree(horizontal, bottom_bound, left_bound, vertical, this, level+1, BL);
-            SE=new QuadTree(horizontal, bottom_bound, vertical+1, right_bound, this, level+1, BR);
+            SE=new QuadTree(horizontal, bottom_bound, vertical, right_bound, this, level+1, BR);
         }else{
             NW = null;
             NE = null;
@@ -175,7 +181,7 @@ public class QuadTree {
         }
         assert(false);
         return null;*/
-        int quadrant = classifier(top_bound, horizontal, bottom_bound, left_bound, vertical, right_bound, v);
+        int quadrant = classifier( v);
         if(quadrant==1){
             return NW;
         }else if(quadrant==2){
@@ -227,24 +233,47 @@ public class QuadTree {
         return vertices.isEmpty();
     }
 
-    private int classifier (int top, int hor, float bot, int left, int ver, int right, PartitionVertex v){
+    private int classifier (PartitionVertex v) {
         int x = v.longitude;
         int y = v.latitude;
         //assert(x<=top&&x>=bot);
         //assert(y>=left&&y<=right);
-        if(x>right||x<left||y>top||y<bot){
-            throw new RuntimeException("error, out of bounds");
-        }
-        boolean isTop = y>=(hor+1);
-        boolean isLeft = x<=ver;
+        boolean isTop;
+        boolean isRight;
+        /*   boolean isTop = y>=(hor+1);
+        boolean isRight = x>=ver+1;
         if(isTop){
-            if(isLeft)
-                return 1;
-            return 2;
+            if(isRight)
+                return 2;
+            return 1;
         }else{
-            if(isLeft)
-                return 3;
-            return 4;
+            if(isRight)
+                return 4;
+            return 3;
+        }*/
+        if (y < this.top_bound && y >= this.horizontal) {
+            isTop = true;
+        } else if (y < this.horizontal && y >= this.bottom_bound) {
+            isTop = false;
+        } else {
+            throw new RuntimeException("error, out of bounds again");
+        }
+        if (x >= this.left_bound && x < this.vertical) {
+            isRight = false;
+        } else if (x >= this.vertical && x < this.right_bound) {
+            isRight = true;
+        } else {
+            throw new RuntimeException("error, out of bounds again");
+        }
+        if (isTop) {
+            if (isRight)
+                return 2;
+            return 1;
+        } else {
+            if (isRight)
+                return 4;
+            return 3;
+
         }
     }
 
@@ -257,7 +286,7 @@ public class QuadTree {
                     SW=new QuadTree(horizontal, bottom_bound, left_bound, vertical, this, level+1, new HashMap <Integer, PartitionVertex>());
                     SE=new QuadTree(horizontal, bottom_bound, vertical+1, right_bound, this, level+1, new HashMap <Integer, PartitionVertex>());
             }*/
-            int quadrant = classifier(top_bound, horizontal, bottom_bound, left_bound, vertical, right_bound, v);
+            int quadrant = classifier( v);
             if(quadrant==1){
                 if(NW==null)
                     NW=new QuadTree(top_bound,horizontal+1,left_bound, vertical, this, level+1, new HashMap <Integer, PartitionVertex>());
@@ -284,7 +313,7 @@ public class QuadTree {
     public void delete(PartitionVertex v){
         this.vertices.remove(mc);
         if(level<max_depth) {
-            int quadrant = classifier(top_bound, horizontal, bottom_bound, left_bound, vertical, right_bound, v);
+            int quadrant = classifier( v);
             if(quadrant==1){
                 NW.delete(v);
                 if(NW.size()==0){
@@ -327,7 +356,7 @@ public class QuadTree {
     }
 
     private void setMorton(){
-        mc=new MortonCode(Parser.normalizeLat(bottom_bound), Parser.normalizeLon(left_bound), level+1, false);
+        mc=new MortonCode(Parser.normalizeLat(horizontal), Parser.normalizeLon(vertical), level, false);
 
     }
     public void info(){

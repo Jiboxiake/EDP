@@ -229,18 +229,18 @@ public class BridgeEdgeThread extends Thread{
             PartitionEdge pe = computedBridgeEdgeList.get(i);
             PartitionVertex destination = pe.getTo();
             //for debug
-            if(destination.getId()==11989){
+            if(destination.getId()==14373){
                 Global.debug=true;
             }
-            if(Math.abs(pe.getWeight()-10067.355)<1){
+            if(Math.abs(pe.getWeight()-4489.155)<1){
                 Global.debug=true;
             }
             SearchKey key = new SearchKey(source.morton(), destination.morton());
             if(needInsertion(partialDO,key)){
                 try {
                     key = cc.optimizedSearchKeyGeneration(source, destination, pe.getWeight());
-                    if(destination.getId()==11989){
-                        //key.printBit();
+                    if(destination.getId()==14373){
+                       // key.printBit();
                     }
                 } catch (ObjectNotFoundException e) {
                     e.printStackTrace();

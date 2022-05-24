@@ -10,7 +10,7 @@ public class Parser {
         double z=((double)(latitude-min_lat)/(double)(max_lat-min_lat));
         double interM=(1073741824*z);
         int result = (int)interM;//todo: try to change it by a multiple of 2
-        result <<=1;
+        result <<=2;
         return result;
     }
     public static int normalizeLon(int longitude){
@@ -18,7 +18,7 @@ public class Parser {
         double z=(double)(longitude-min_long)/(double)(max_long-min_long);
         double interM=(1073741824*z);
         int result = (int)interM;
-        result <<=1;
+        result <<=2;
         return result;
     }
     public static void feedLat(int lat){
@@ -36,5 +36,9 @@ public class Parser {
         if(lon>max_long){
             max_long=lon;
         }
+    }
+    public static void mofidy1(){
+        max_lat+=5;
+        max_long+=5;
     }
 }
