@@ -48,8 +48,8 @@ public class MortonCodeTest {
         while(true){
             from = ThreadLocalRandom.current().nextInt(0, 30000 + 1);
             to = ThreadLocalRandom.current().nextInt(0, 30000 + 1);
-            from = 12951;
-            to=14373;
+            from = 12964;
+            to=12951;
             Object[] vecs = (cc.bridgeVertices.values().toArray());
 
             if(cc.vertices.containsKey(from)&&cc.vertices.containsKey(to)){

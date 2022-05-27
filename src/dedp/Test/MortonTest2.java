@@ -17,10 +17,10 @@ public class MortonTest2 {
         key.printBit();*/
         EDP_DO_Test t = new EDP_DO_Test();
         t.loadGraph(30000);
-        int lat1 = Parser.normalizeLat(43575200);
-        int lon1 = Parser.normalizeLon(-116193552);
-        int lat2 = Parser.normalizeLat(43575627);
-        int lon2 = Parser.normalizeLon(-116193320);
+        int lat1 = Parser.normalizeLat(43617898);
+        int lon1 = Parser.normalizeLon(-116243260);
+        int lat2 = Parser.normalizeLat(43617889);
+        int lon2 = Parser.normalizeLon(-116243353);
         System.out.println(Integer.toBinaryString(lat1));
         System.out.println(Integer.toBinaryString(lat2));
         System.out.println(Integer.toBinaryString(lon1));

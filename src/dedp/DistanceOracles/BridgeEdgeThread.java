@@ -239,8 +239,8 @@ public class BridgeEdgeThread extends Thread{
             if(needInsertion(partialDO,key)){
                 try {
                     key = cc.optimizedSearchKeyGeneration(source, destination, pe.getWeight());
-                    if(destination.getId()==14373){
-                       // key.printBit();
+                    if(destination.getId()==6797){
+                        //key.printBit();
                     }
                 } catch (ObjectNotFoundException e) {
                     e.printStackTrace();

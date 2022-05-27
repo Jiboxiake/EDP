@@ -7,7 +7,10 @@ public class MortonCode implements Comparable<MortonCode> {
     public MortonCode (int lat, int lon, int level, boolean isNode){
         this.level=level;
         this.isNode=isNode;
+        //lat = (lat-37200000)*2;
+        //lon = lon+122600000;
         morton = interleave(lat, lon);
+        //morton<<=2;
         if(!isNode){
             int toRemove=64-2*level;
             morton= morton >> toRemove;

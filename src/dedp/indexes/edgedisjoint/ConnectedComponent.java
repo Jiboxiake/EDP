@@ -350,7 +350,7 @@ public class ConnectedComponent {
 
             }
             key = new SearchKey(u.morton(), v.morton());
-          //  key.printBit();
+            key.printBit();
             //todo: only for undirected graph
             // SearchKey reverseKey = new SearchKey(v.mc,u.mc);
             for (int i = 0; i < 31; i++) {
@@ -450,6 +450,7 @@ public class ConnectedComponent {
                       forV.getMC().printBit();
                       forV.getParent().getMC().printBit();
                       v.morton().printBit();
+                      key.printBit();
                   }
                  // key.printBit();
                   Global.addWSP();
