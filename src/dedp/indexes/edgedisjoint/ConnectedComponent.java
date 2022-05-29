@@ -126,7 +126,7 @@ public class ConnectedComponent {
                 forV = forV.containingBlock(v);
                 assert (forU.getLevel() == forV.getLevel());
                 if (DistanceOracle.isWellSeparated(distance, forU, forV, u, v, vertices)||(forU.reachMaxLevel()&&forV.reachMaxLevel())) {
-                    SearchKey key = new SearchKey(forU.getMC(), forV.getMC(), forU.getLevel());
+                    SearchKey key = new SearchKey(forU.getMC(), forV.getMC());
                     writeLock.lock();
                     DO.remove(key);
                     DO.put(key, distance);
@@ -157,7 +157,7 @@ public class ConnectedComponent {
                 forV = forV.containingBlock(v);
                 assert (forU.getLevel() == forV.getLevel());
                 if (DistanceOracle.isWellSeparated(distance, forU, forV, u, v, vertices)||(forU.reachMaxLevel()&&forV.reachMaxLevel())) {
-                    SearchKey key = new SearchKey(forU.getMC(), forV.getMC(), forU.getLevel());
+                    SearchKey key = new SearchKey(forU.getMC(), forV.getMC());
                     entry.key=key;
                     Global.addWSP();
                     Global.addBridge_do_count();
@@ -186,7 +186,7 @@ public class ConnectedComponent {
                 forV = forV.containingBlock(v);
                 assert (forU.getLevel() == forV.getLevel());
                 if (DistanceOracle.isWellSeparated(distance, forU, forV, u, v, vertices)||(forU.reachMaxLevel()&&forV.reachMaxLevel())) {
-                    SearchKey key = new SearchKey(forU.getMC(), forV.getMC(), forU.getLevel());
+                    SearchKey key = new SearchKey(forU.getMC(), forV.getMC());
                     Global.addWSP();
                     Global.addBridge_do_count();
                     return key;
@@ -334,26 +334,12 @@ public class ConnectedComponent {
 
     public float noLockLookUp(PartitionVertex u, PartitionVertex v){
         try {
-            SearchKey key = new SearchKey(u.morton(), v.morton());
-            if(Global.debug){
-                //key.printBit();
-                for(Map.Entry<SearchKey, Float>set:DO.entrySet()){
-                    key = new SearchKey(u.morton(), v.morton());
-                    for(int x=0; x<31;x++){
-                        if(key.equals(set.getKey())){
-                            break;
-                        }
-                        key.shift();
-                    }
-                    //set.getKey().printBit();
-                }
-
-            }
+            SearchKey key;
             key = new SearchKey(u.morton(), v.morton());
-            key.printBit();
+           // key.printBit();
             //todo: only for undirected graph
             // SearchKey reverseKey = new SearchKey(v.mc,u.mc);
-            for (int i = 0; i < 31; i++) {
+            for (int i = 0; i < MortonCode.max_depth; i++) {
                 if (DO.containsKey(key)) {
                     if(DO.get(key)<0){
                         throw new RuntimeException("wrong DO entry got inserted\n");
@@ -370,6 +356,7 @@ public class ConnectedComponent {
                     return DO.get(reverseKey);
                 }*/
                 key.shift();
+                //key.printBit();
                 //reverseKey.shift();
             }
         }catch(RuntimeException e){
@@ -445,13 +432,17 @@ public class ConnectedComponent {
                   return key;
               }*/
               if(DistanceOracle.isWellSeparatedOpti(distance,forU,forV,u,v)||(forU.reachMaxLevel()&&forV.reachMaxLevel())){
-                  SearchKey key = new SearchKey(forU.getMC(), forV.getMC(), forU.getLevel());
-                  if(v.getId()==11989){
+                  SearchKey key = new SearchKey(forU.getMC(), forV.getMC());
+                /*  if(v.getId()==6797){
                       forV.getMC().printBit();
                       forV.getParent().getMC().printBit();
                       v.morton().printBit();
+
+                      forU.getMC().printBit();
+                      forU.getParent().getMC().printBit();
+                      u.morton().printBit();
                       key.printBit();
-                  }
+                  }*/
                  // key.printBit();
                   Global.addWSP();
                   Global.addBridge_do_count();

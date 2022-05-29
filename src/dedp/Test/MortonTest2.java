@@ -25,8 +25,8 @@ public class MortonTest2 {
         System.out.println(Integer.toBinaryString(lat2));
         System.out.println(Integer.toBinaryString(lon1));
         System.out.println(Integer.toBinaryString(lon2));
-        MortonCode mc1 = new MortonCode(lat1,lon1,32,true);
-        MortonCode mc2 = new MortonCode(lat2,lon2,32,true);
+        MortonCode mc1 = new MortonCode(lat1,lon1,16);
+        MortonCode mc2 = new MortonCode(lat2,lon2,16);
      /*   SearchKey key1 = new SearchKey(mc1,mc2);
         key1.printBit();*/
 

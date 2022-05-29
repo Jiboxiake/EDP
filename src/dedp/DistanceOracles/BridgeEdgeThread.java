@@ -270,7 +270,7 @@ public class BridgeEdgeThread extends Thread{
     public boolean needInsertion(HashMap<SearchKey, Float> partialDO, SearchKey key) {
         //for debug
         SearchKey copy = new SearchKey(key);
-        for (int i = 0; i < 33; i++) {
+        for (int i = 0; i < MortonCode.max_depth; i++) {
             if (partialDO.containsKey(key)) {
                 if (partialDO.get(key) < 0) {
                     throw new RuntimeException("wrong DO entry got inserted\n");

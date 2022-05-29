@@ -11,7 +11,7 @@ import java.util.HashSet;
 import java.util.Map;
 //todo: implement well-separated pairs
 public class QuadTree {
-    public static int max_depth=20;
+    public static int max_depth=16;
     public static int nextID = 0;
     public static final int initial_depth = 4;
     private QuadTree parent;
@@ -32,7 +32,7 @@ public class QuadTree {
     private int horizontal;
     //todo: set reference to the original Node in EDP.
    // private HashMap <Integer, PartitionVertex> vertices;
-    private HashSet<Integer> vertices;
+    private HashMap <Integer, PartitionVertex> vertices;
 
     public QuadTree(int top_bound, int bottom_bound, int left_bound, int right_bound, QuadTree parent, int level, HashMap <Integer, PartitionVertex> vertices){
         this.id = nextID++;
@@ -46,14 +46,15 @@ public class QuadTree {
         //diameter not set yet
         this.diameter=-1;
         //this.vertices=vertices;
-        this.vertices= new HashSet<Integer>(vertices.size());
+        //this.vertices= new HashSet<Integer>(vertices.size());
+        this.vertices = new HashMap<>(vertices.size());
         HashMap <Integer, PartitionVertex> TL=new HashMap<>();
         HashMap <Integer, PartitionVertex> TR=new HashMap<>();
         HashMap <Integer, PartitionVertex> BL=new HashMap<>();
         HashMap <Integer, PartitionVertex> BR=new HashMap<>();
         this.horizontal = (top_bound-bottom_bound)/2+bottom_bound;
         this.vertical = (right_bound-left_bound)/2+left_bound;
-        setMorton();
+        //setMorton();
    /*     if((this.right_bound-this.left_bound)%2==0){
             this.vertical--;
         }else{
@@ -63,7 +64,7 @@ public class QuadTree {
         for(Map.Entry<Integer, PartitionVertex> set: vertices.entrySet()){
             //we only store at the max depth
             if(level==max_depth) {
-                this.vertices.add(set.getKey());
+                this.vertices.put(set.getKey(),set.getValue());
             }else{
                 this.vertices=null;
             }
@@ -93,12 +94,16 @@ public class QuadTree {
             SW = null;
             SE = null;
         }
+        if(this.level==initial_depth){
+            setMorton();
+            //testMorton();
+        }
     }
 
 
     public QuadTree( HashMap <Integer, PartitionVertex> vertices){
         //this(Parser.normalizeLat(Parser.max_lat), Parser.normalizeLat(Parser.min_lat), Parser.normalizeLon(Parser.min_long), Parser.normalizeLon(Parser.max_long), null,0,vertices);
-        this(Parser.max_lat, Parser.min_lat, Parser.min_long, Parser.max_long, null,0,vertices);
+        this(MortonCode.max, MortonCode.min, MortonCode.min, MortonCode.max, null,0,vertices);
 
     }
 
@@ -134,8 +139,8 @@ public class QuadTree {
     public void copy(HashSet<Integer> verSet){
         //base case
         if(this.level==max_depth){
-            for(Integer e:vertices){
-                verSet.add(e);
+            for(Map.Entry<Integer,PartitionVertex> e:vertices.entrySet()){
+                verSet.add(e.getKey());
             }
         }else{
             if(NW!=null){
@@ -204,7 +209,7 @@ public class QuadTree {
         }
     }*/
     public void remove(PartitionVertex v){
-        if(vertices.contains(v.getId())){
+        if(vertices.containsKey(v.getId())){
             this.vertices.remove(v.getId());
             if(NW!=null){
                 if(NW.contain(v)){
@@ -278,7 +283,7 @@ public class QuadTree {
     }
 
     public void insert(PartitionVertex v){
-        this.vertices.add(v.getId());
+        this.vertices.put(v.getId(),v);
         if(level<max_depth) {
            /* if(this.vertices.size()==1){
                     NW=new QuadTree(top_bound,horizontal+1,left_bound, vertical, this, level+1, new HashMap <Integer, PartitionVertex>());
@@ -347,16 +352,108 @@ public class QuadTree {
         return NW==null && NE==null && SW==null && SE==null;
     }
 
-    public HashSet<Integer> getVertices(){
+    /*public HashSet<Integer> getVertices(){
         return vertices;
-    }
+    }*/
 
     public static void setMax_depth(int max){
         max_depth=max;
     }
 
-    private void setMorton(){
-        mc=new MortonCode(Parser.normalizeLat(horizontal), Parser.normalizeLon(vertical), level, false);
+    private MortonCode setMorton(){
+        int morton =0;
+        int longest_common_prefix =32;
+        if(this.level==max_depth){
+            if(this.size>0){
+                for(Map.Entry<Integer,PartitionVertex>set:vertices.entrySet()) {
+                    for (Map.Entry<Integer, PartitionVertex> e : vertices.entrySet()) {
+                        int result = set.getValue().morton().code ^ e.getValue().morton().code;
+                        if (Integer.numberOfLeadingZeros(result) < longest_common_prefix) {
+                            longest_common_prefix = Integer.numberOfLeadingZeros(result);
+                        }
+                    }
+                    if(longest_common_prefix%2==1){
+                        longest_common_prefix--;
+                    }
+                    //we hope longest common prefix to be 32 here
+                    this.mc = new MortonCode(set.getValue().morton(),longest_common_prefix,this.level);
+                    return this.mc;
+                }
+            }
+            return null;
+        }else{
+            if(this.size>0){
+                int temResult = 0;
+                MortonCode mc1=null;
+                MortonCode mc2=null;
+                MortonCode mc3=null;
+                MortonCode mc4=null;
+                //ask children to do it
+                if(this.NW!=null){
+                    if(this.NW.size>0){
+                        mc1= this.NW.setMorton();
+                        temResult = mc1.code;
+                    }
+                }
+                if(this.NE!=null){
+                    if(this.NE.size>0){
+                        mc2= this.NE.setMorton();
+                        temResult=mc2.code;
+                    }
+                }
+                if(this.SW!=null){
+                    if(this.SW.size>0){
+                        mc3= this.SW.setMorton();
+                        temResult=mc3.code;
+                    }
+                }
+                if(this.SE!=null){
+                    if(this.SE.size>0){
+                        mc4=  this.SE.setMorton();
+                        temResult=mc4.code;
+                    }
+                }
+                if(mc1!=null){
+                    int result = temResult^mc1.code;
+                    if(Integer.numberOfLeadingZeros(result)<longest_common_prefix){
+                        longest_common_prefix = Integer.numberOfLeadingZeros(result);
+                    }
+                }
+                if(mc2!=null){
+                    int result = temResult^mc2.code;
+                    if(Integer.numberOfLeadingZeros(result)<longest_common_prefix){
+                        longest_common_prefix = Integer.numberOfLeadingZeros(result);
+                    }
+                }
+                if(mc3!=null){
+                    int result = temResult^mc3.code;
+                    if(Integer.numberOfLeadingZeros(result)<longest_common_prefix){
+                        longest_common_prefix = Integer.numberOfLeadingZeros(result);
+                    }
+                }
+                if(mc4!=null){
+                    int result = temResult^mc4.code;
+                    if(Integer.numberOfLeadingZeros(result)<longest_common_prefix){
+                        longest_common_prefix = Integer.numberOfLeadingZeros(result);
+                    }
+                }
+                if(longest_common_prefix%2==1){
+                    longest_common_prefix--;
+                }
+                if(longest_common_prefix!=32&&longest_common_prefix!=30){
+                    System.out.println("error in morton");
+                }
+                if(longest_common_prefix==32){
+                    longest_common_prefix=30;
+                }
+                temResult>>>=(32-longest_common_prefix);
+                this.mc = new MortonCode(temResult,this.level);
+                //theroratically, the longest common prefix should always be 30
+                return this.mc;
+            }
+            return null;
+        }
+        //mc=new MortonCode(horizontal,vertical,this.level);
 
     }
     public void info(){
@@ -378,28 +475,7 @@ public class QuadTree {
         return vertices.size();
     }
 
-    public boolean testMorton(){
-        MortonCode toCompare=new MortonCode(Parser.normalizeLat(top_bound), Parser.normalizeLon(right_bound), level, false);
-       // MortonCode notEqual= new MortonCode(top_bound+1, right_bound+1, level, false);
-        boolean result=mc.equals(toCompare);
-        if(result==false){
-            System.out.println("lat is "+bottom_bound+" lon is "+left_bound);
-            System.out.println("Original is "+Long.toBinaryString(mc.morton)+ " Length is "+Long.toBinaryString(mc.morton).length());
-            System.out.println("New one is " +Long.toBinaryString(toCompare.morton)+" Length is "+Long.toBinaryString(toCompare.morton).length());
-        }
-        if(level<max_depth){
-            if(NW!=null)
-                result = result&&NW.testMorton();
-            if(NE!=null)
-                result=result&&NE.testMorton();
-            if(SW!=null)
-                result=result&&SW.testMorton();
-            if(SE!=null)
-                result=result&&SE.testMorton();
-        }
-        return result;
 
-    }
 
     public void loadDiameter(HashMap<Integer, Float> diameterMap){
         if(diameterMap.containsKey(this.id)){
@@ -419,61 +495,6 @@ public class QuadTree {
         }
     }
 
-    public boolean testMorton2() throws CloneNotSupportedException {
-        boolean result=true;
-        MortonCode copy;
-        if(level<max_depth){
-            if(NW!=null) {
-                copy=NW.mc.shallowCopy();
-                copy.shift();
-                result = result && this.mc.exactlyEquals(copy) && NW.testMorton2();
-                if(!this.mc.exactlyEquals(copy)){
-                    mc.printBit();
-                    NW.mc.printBit();
-                   // copy.printBit();
-                    System.out.println("Complain 1");
-                }
-            }
-            if(NE!=null) {
-                copy=NE.mc.shallowCopy();
-                copy.shift();
-                result = result && this.mc.exactlyEquals(copy) && NE.testMorton2();
-                if(!this.mc.exactlyEquals(copy)){
-                    mc.printBit();
-                    NE.mc.printBit();
-                  //  copy.printBit();
-                    System.out.println("Complain 2");
-                }
-            }
-            if(SW!=null) {
-                copy=SW.mc.shallowCopy();
-                copy.shift();
-                result = result && this.mc.exactlyEquals(copy)&& SW.testMorton2();
-                if(!this.mc.exactlyEquals(copy)){
-                    mc.printBit();
-                    SW.mc.printBit();
-                 //   copy.printBit();
-                    System.out.println("Complain 3");
-                }
-            }
-            if(SE!=null) {
-                copy=SE.mc.shallowCopy();
-                copy.shift();
-                result = result && this.mc.exactlyEquals(copy) && SE.testMorton2();
-                if(!this.mc.exactlyEquals(copy)){
-                    mc.printBit();
-                    SE.mc.printBit();
-                 //   copy.printBit();
-                    System.out.println("Complain 4");
-                }
-            }
-        }
-     /*   if(!result){
-            mc.printBit();
-            System.out.println("Complain");
-        }*/
-        return result;
-    }
 
     public void output(){
         if(this.size==0){
@@ -494,5 +515,31 @@ public class QuadTree {
         if(SW!=null){
             SW.output();
         }
+    }
+
+    public boolean testMorton(){
+        MortonCode mc1 = new MortonCode(this.top_bound-1,this.right_bound-1,this.level);
+        MortonCode mc2 = new MortonCode(this.horizontal,this.vertical,this.level);
+        MortonCode mc3 = new MortonCode(this.bottom_bound,this.left_bound,this.level);
+        boolean result = mc1.equals(mc2)&&mc2.equals(mc3);
+        if(!result){
+            mc1.printBit();
+            mc2.printBit();
+            mc3.printBit();
+            Global.debug=true;
+        }
+        if(this.NE!=null){
+            result&=NE.testMorton();
+        }
+        if(this.NW!=null){
+            result&=NW.testMorton();
+        }
+        if(this.SW!=null){
+            result&=SW.testMorton();
+        }
+        if(this.SE!=null){
+            result&=SE.testMorton();
+        }
+        return result;
     }
 }

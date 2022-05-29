@@ -38,17 +38,17 @@ public class EDP_DO_Test {
                     continue;
                 }
                 int id =Integer.parseInt(fields[0]);
-                int rawLongitude = Integer.parseInt(fields[1]);
-                int rawLatitude = Integer.parseInt(fields[2]);
-                float latitude = ((float)rawLatitude)/1000000;
-                float longitude = ((float)rawLongitude)/1000000;
+                int rawLongitude = Math.abs(Integer.parseInt(fields[1]));
+                int rawLatitude = Math.abs(Integer.parseInt(fields[2]));
+                //int latitude = (rawLatitude)/1000;
+                //int longitude = (rawLongitude)/1000;
                 Vertex v = new Vertex();
                 v.setID((long)id);
                 //todo: change parser
                 v.setCoordinates(rawLatitude,rawLongitude);
                 //v.setCoordinates(latitude, longitude);
-                Parser.feedLat(rawLatitude);
-                Parser.feedLon(rawLongitude);
+                MortonCode.feedLat(rawLatitude);
+                MortonCode.feedLon(rawLongitude);
                 if(id<bound){
                     g.addVertex(v);
                 }
@@ -94,7 +94,7 @@ public class EDP_DO_Test {
         } catch (ObjectNotFoundException e) {
             e.printStackTrace();
         }
-        Parser.mofidy1();
+        MortonCode.finishLoading();
         g.printStats();
         index= HybridDOEDPIndex.buildIndex(g, null, false);
         index.isDirected=false;

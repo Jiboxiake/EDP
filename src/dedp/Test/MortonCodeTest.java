@@ -24,8 +24,8 @@ public class MortonCodeTest {
         int lo2 = Parser.normalizeLon(-11625891);
         System.out.println("lo2 is "+lo2);
         System.out.println(Integer.toBinaryString(lo2));
-        MortonCode mc1 = new MortonCode(la1,lo1,32,true);
-        MortonCode mc2 = new MortonCode(la2,lo2,32,true);
+        MortonCode mc1 = new MortonCode(la1,lo1,16);
+        MortonCode mc2 = new MortonCode(la2,lo2,16);
         mc1.printBit();
         mc2.printBit();
     }
