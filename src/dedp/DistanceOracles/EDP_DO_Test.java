@@ -212,7 +212,7 @@ public class EDP_DO_Test {
         long startTime = System.nanoTime();
         double total=0;
         double max_err=-100;
-        while(i<1000) {
+        while(i<30) {
             i++;
             String result="";
             //int from = ThreadLocalRandom.current().nextInt(0, 271450 + 1);
