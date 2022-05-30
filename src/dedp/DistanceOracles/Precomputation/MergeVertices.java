@@ -1,12 +1,11 @@
 package dedp.DistanceOracles.Precomputation;
 
+import dedp.DistanceOracles.EdgeLabelProcessor;
 import dedp.DistanceOracles.QuadTree;
+import dedp.structures.Edge;
 import dedp.structures.Vertex;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -71,6 +70,7 @@ public class MergeVertices {
                 SE = null;
             }
         }
+
         public void mergeVertices(HashMap<Integer,Integer>map){
             if(this.level<merge_level){
                 if(NE!=null){
@@ -129,10 +129,28 @@ public class MergeVertices {
             }
         }
     }
+    class EdgeInfo{//lightweright class merely used to store edge information
+        long from;
+        long to;
+        float weight;
+        int label;
+        //boolean isDirected;
+    }
+    class VertexInfo{
+        long id;
+        int latitude;
+        int longitude;
+    }
     public static String fileName = "./Graph_Source/ID.tmp";
-    public static String resultName = "./Graph_Source/ID_final.txt";
+    public static String verticesResultName = "./Graph_Source/ID_ver_final.txt";
+    public static String edgesResultName = "./Graph_Source/ID_edge_final.txt";
     public void loadAndMerge() throws IOException {
+        int bound =30000;
         File f =new File(fileName);
+        //File ver =new File(verticesResultName);
+        //File edge = new File(verticesResultName);
+        FileWriter vWriter = new FileWriter(verticesResultName);
+        FileWriter eWriter = new FileWriter(edgesResultName);
         BufferedReader reader = new BufferedReader(new FileReader(f));
         String line;
         ArrayList<Vertex> vSet = new ArrayList<>();
@@ -168,6 +186,64 @@ public class MergeVertices {
                 break;
             }
         }
+        MiniQuadtree tree = new MiniQuadtree(vSet,maxLat+1,minLat,minLong, maxLong+1,0);
+        HashMap<Integer,Integer> merge = new HashMap<>();
+        tree.mergeVertices(merge);
+        int result = merge.get(15267);
+        System.out.println(result);
+        //now we process the edges
+        long key=1;
+        long fromID=-1, toID=-1;
+        float weight;
+        int label;
+        ArrayList<EdgeInfo>edges = new ArrayList<>();
+        boolean flag = false;
+        while((line=reader.readLine())!=null){
+            String[]fields = line.split("\\s+");
+            if(fields.length==1){
+                continue;
+            }
+            if(!flag){
+                flag=true;
+                fromID=Long.parseLong(fields[0]);
+                toID=Long.parseLong(fields[1]);
+                if(merge.containsKey(fromID)){
+                    fromID = merge.get(fromID);
+                }
+                if(merge.containsKey(toID)){
+                    toID = merge.get(toID);
+                }
+            }else{
+                flag=false;
+                weight = Float.parseFloat(fields[1]);
+                label = Integer.parseInt(fields[2]);
+                //todo: for test set all labels to 1
+                    EdgeInfo e = new EdgeInfo();
+                    e.from=fromID;
+                    e.to = toID;
+                    e.label=label;
+                    e.weight = weight;
+                    edges.add(e);
+                    String edgeLine = String.valueOf(fromID)+","+String.valueOf(toID)+","+String.valueOf(label)+","+String.valueOf(weight)+"\n";
+                    eWriter.write(edgeLine);
 
+                key++;
+            }
+        }
+        eWriter.close();
+        for(int i=0; i<vSet.size();i++){
+            Vertex v = vSet.get(i);
+            if(merge.containsKey((int)v.getID())){
+                continue;
+            }
+            String vertexLine = String.valueOf(v.getID())+","+String.valueOf(v.latitude)+","+String.valueOf(v.longitude)+"\n";
+            vWriter.write(vertexLine);
+        }
+        vWriter.close();
+        //now we have all the edges stored;
+    }
+    public static void main(String[]args) throws IOException {
+        MergeVertices preprocess = new MergeVertices();
+        preprocess.loadAndMerge();
     }
 }
