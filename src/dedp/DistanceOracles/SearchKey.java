@@ -8,10 +8,20 @@ public class SearchKey implements Comparable<SearchKey> {
     public long mc;
     public char level;//to save space
     public SearchKey(MortonCode mc1, MortonCode mc2){
-        if(mc1.code> mc2.code){
-            mc = MortonCode.get4DMorton(mc1.code,mc2.code,(int)mc1.level);
-        }else if(mc1.code< mc2.code){
-            mc = MortonCode.get4DMorton(mc2.code,mc1.code,(int)mc1.level);
+        int temp1 = mc1.code;
+        int temp2 = mc2.code;
+        long code1 = (long)temp1;
+        long code2 = (long)temp2;
+        code1<<=32;
+        code1>>>=32;
+        code2<<=32;
+        code2>>>=32;
+        if(code1> code2){
+            mc = MortonCode.get4DMorton(code1,code2,(int)mc1.level);
+            //System.out.println(1);
+        }else if(code1< code2){
+            mc = MortonCode.get4DMorton(code2,code1,(int)mc1.level);
+            //System.out.println(1);
         }else{
             System.out.println("error");
         }
@@ -20,6 +30,10 @@ public class SearchKey implements Comparable<SearchKey> {
     public SearchKey(SearchKey key){
         this.mc=key.mc;
         this.level=key.level;
+    }
+    public SearchKey (long key, int level){
+        this.mc = key;
+        this.level = (char)level;
     }
     @Override
     public int hashCode(){

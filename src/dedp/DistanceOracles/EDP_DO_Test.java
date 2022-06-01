@@ -1,6 +1,7 @@
 package dedp.DistanceOracles;
 
 import dedp.DistanceOracles.Analytical.ConnectedComponentAnalyzer;
+import dedp.DistanceOracles.MonochromeDO.DOLoader;
 import dedp.DistanceOracles.Precomputation.DiameterLoader;
 import dedp.DistanceOracles.Precomputation.EDP_DO_Precomputation;
 import dedp.DistanceOracles.Precomputation.PrecomputationResultDatabase;
@@ -22,21 +23,22 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class EDP_DO_Test {
     public Graph g;
+    public static boolean precomputeDO = true;
     public HybridDOEDPIndex index;
     public void loadGraph(int bound) throws Exception {
         g=new Graph();
 
-        String pathName = "./Graph_Source/ID.tmp";
+        String vName = "./Graph_Source/ID_ver_final.txt";
+        String eName = "./Graph_Source/ID_edge_final.txt";
         try{
-            File f =new File(pathName);
-            BufferedReader reader = new BufferedReader(new FileReader(f));
+            File vFile =new File(vName);
+            File eFile = new File(eName);
+            BufferedReader vReader = new BufferedReader(new FileReader(vFile));
+            BufferedReader eReader = new BufferedReader(new FileReader(eFile));
             String line;
-            while((line=reader.readLine())!=null){
+            while((line=vReader.readLine())!=null){
                 //271449
-                String[]fields = line.split("\\s+");
-                if(fields.length==1){
-                    continue;
-                }
+                String[]fields = line.split(",");
                 int id =Integer.parseInt(fields[0]);
                 int rawLongitude = Math.abs(Integer.parseInt(fields[1]));
                 int rawLatitude = Math.abs(Integer.parseInt(fields[2]));
@@ -47,44 +49,31 @@ public class EDP_DO_Test {
                 //todo: change parser
                 v.setCoordinates(rawLatitude,rawLongitude);
                 //v.setCoordinates(latitude, longitude);
-                MortonCode.feedLat(rawLatitude);
-                MortonCode.feedLon(rawLongitude);
                 if(id<bound){
+                    MortonCode.feedLat(rawLatitude);
+                    MortonCode.feedLon(rawLongitude);
                     g.addVertex(v);
                 }
-                if(id==271449){
-                    break;
-                }
             }
-            boolean flag = false;
+            vReader.close();
             long key=1;
             long fromID=-1, toID=-1;
             float weight;
             int label;
             boolean isDirected=false;
-            while((line=reader.readLine())!=null){
-                String[]fields = line.split("\\s+");
-                if(fields.length==1){
-                    continue;
-                }
-                if(!flag){
-                    flag=true;
+            while((line=eReader.readLine())!=null){
+                String[]fields = line.split(",");
                     fromID=Long.parseLong(fields[0]);
                     toID=Long.parseLong(fields[1]);
-                }else{
-                    flag=false;
-                    weight = Float.parseFloat(fields[1]);
-                    EdgeLabelProcessor.insert(Integer.parseInt(fields[2]));
-                    label = EdgeLabelProcessor.translate(Integer.parseInt(fields[2]));
-                    //todo: for test set all labels to 1
+                EdgeLabelProcessor.insert(Integer.parseInt(fields[2]));
+                label = EdgeLabelProcessor.translate(Integer.parseInt(fields[2]));
+                    weight = Float.parseFloat(fields[3]);
                     if(fromID<bound&&toID<bound){
                         g.addEdge(key, fromID, toID, weight, label, isDirected, false);
                     }
                     key++;
-                }
-
             }
-            reader.close();
+            eReader.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -208,20 +197,30 @@ public class EDP_DO_Test {
             pre.start_preprocessing();
             return;
         }
+        if(precomputeDO){
+            DOLoader.DOLoad(t.index);
+        }
         FileWriter myWriter = new FileWriter("result.txt");
         long startTime = System.nanoTime();
         double total=0;
         double max_err=-100;
-        while(i<30) {
+        int from, to=-1;
+        while(i<1000) {
             i++;
             String result="";
             //int from = ThreadLocalRandom.current().nextInt(0, 271450 + 1);
             //int to = ThreadLocalRandom.current().nextInt(0, 271450 + 1);
-            int from = ThreadLocalRandom.current().nextInt(0, 30000 + 1);
-            int to = ThreadLocalRandom.current().nextInt(0, 30000 + 1);
-            //int from = 18173;
-            //int to = 886;
-            EDP_DO_Test_Thread th = new EDP_DO_Test_Thread();
+            if(i!=95){
+                from = ThreadLocalRandom.current().nextInt(0, 30000 + 1);
+                to = ThreadLocalRandom.current().nextInt(0, 30000 + 1);
+                if(!t.g.containsVertex(from)||!t.g.containsVertex(to)){
+                    continue;
+                }
+            }else{
+                from = 15649;
+                to = 17155;
+            }
+            //EDP_DO_Test_Thread th = new EDP_DO_Test_Thread();
             SPResult r = DOTraversal.shortestDistanceWithDO(t.index, from, to, list);
             SPResult rr = Dijkstra.shortestDistance(t.g,from,to,list);
             if(r.Distance==rr.Distance&&r.Distance==-1){
@@ -254,6 +253,7 @@ public class EDP_DO_Test {
             //System.out.println("error 2 is "+error2+"%");
             result+="error 2 is "+error2+"%\n";
             total+=error2;
+            //System.out.println(result);
             myWriter.write(result);
             //Global.printResult();
         }

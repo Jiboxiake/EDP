@@ -5,6 +5,7 @@ import dedp.DistanceOracles.Analytical.CCInfoCOntainer;
 import dedp.DistanceOracles.Analytical.ConnectedComponentAnalyzer;
 import dedp.exceptions.ObjectNotFoundException;
 
+import java.io.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
@@ -331,11 +332,19 @@ public class ConnectedComponent {
 
         return -1;
     }
-
+    //now let's just add locks
     public float noLockLookUp(PartitionVertex u, PartitionVertex v){
+        this.readLock.lock();
         try {
             SearchKey key;
             key = new SearchKey(u.morton(), v.morton());
+            if(u.getId()==6035&&v.getId()==4245&&Global.debug){
+                System.out.print(u.getId()+" morton is ");
+                u.morton().printBit();
+                System.out.print(v.getId()+" morton is ");
+                v.morton().printBit();
+                key.printBit();
+            }
            // key.printBit();
             //todo: only for undirected graph
             // SearchKey reverseKey = new SearchKey(v.mc,u.mc);
@@ -350,7 +359,9 @@ public class ConnectedComponent {
                     Global.DO_hit();
                     //float result = DO.get(key);
                     //System.out.println("got");
-                    return DO.get(key);
+                    float result =DO.get(key);
+                    this.readLock.unlock();
+                    return result;
                 }/*else if(DO.containsKey(reverseKey)){
                     Global.DO_hit();
                     return DO.get(reverseKey);
@@ -362,7 +373,10 @@ public class ConnectedComponent {
         }catch(RuntimeException e){
             e.printStackTrace();
         }
-
+        if(Global.debug){
+            System.out.println("shouldn't happen");
+        }
+        this.readLock.unlock();
         return -1;
     }
 
@@ -433,7 +447,7 @@ public class ConnectedComponent {
               }*/
               if(DistanceOracle.isWellSeparatedOpti(distance,forU,forV,u,v)||(forU.reachMaxLevel()&&forV.reachMaxLevel())){
                   SearchKey key = new SearchKey(forU.getMC(), forV.getMC());
-                /*  if(v.getId()==6797){
+                  if(v.getId()==5769&&u.getId()==5659){
                       forV.getMC().printBit();
                       forV.getParent().getMC().printBit();
                       v.morton().printBit();
@@ -442,7 +456,7 @@ public class ConnectedComponent {
                       forU.getParent().getMC().printBit();
                       u.morton().printBit();
                       key.printBit();
-                  }*/
+                  }
                  // key.printBit();
                   Global.addWSP();
                   Global.addBridge_do_count();
@@ -528,18 +542,44 @@ public class ConnectedComponent {
         }
     }
 
-    public boolean sendBridgeDOWork(DOBridgeBufferEntry entry){
-        if(!hasBridgeWorker){
-            return false;
+    public void computeBridgeDO() throws InterruptedException {
+        if(this.bridgeVertices==null||this.bridgeVertices.size()==0){
+            return;
         }
-        PartitionVertex source = entry.source;
-        int id = source.LocalId%numDOBridgeThreads;
-        DistanceOracleBridgeThread thread = DOBridgeThreads[id];
-        thread.lock.lock();
-        thread.q.add(entry);
-        thread.doEntryAdded.signal();
-        thread.lock.unlock();
-        return true;
+        PartitionVertex source = null;
+        for(Map.Entry<Integer,PartitionVertex>set: this.bridgeVertices.entrySet()){//this should populate all distance oracles.
+            source = set.getValue();
+            getBridgeEdgeList(source);
+            if(source.thread!=null){
+                source.thread.join();
+            }
+        }
+    }
+    public void outputDO() throws IOException, InterruptedException {
+        String uniqueID = "./DistanceOracle/"+this.partition.Label+"_"+this.ID+".txt";
+        FileWriter fileWriter = new FileWriter(uniqueID);
+        String result;
+        computeBridgeDO();
+        for(Map.Entry<SearchKey,Float>set:DO.entrySet()){
+            result = set.getKey().mc+","+(int)set.getKey().level+","+set.getValue()+"\n";
+            fileWriter.write(result);
+        }
+
+        fileWriter.close();
+    }
+    public void inputDO() throws IOException {
+        String uniqueID = "./DistanceOracle/"+this.partition.Label+"_"+this.ID+".txt";
+        FileReader reader = new FileReader(uniqueID);
+        BufferedReader br = new BufferedReader(reader);
+        String line;
+        while((line=br.readLine())!=null){
+            String[]fields = line.split(",");
+            long key = Long.parseLong(fields[0]);
+            int level = Integer.parseInt(fields[1]);
+            float distance = Float.parseFloat(fields[2]);
+            SearchKey sk = new SearchKey(key,level);
+            DO.put(sk,distance);
+        }
     }
 
 }

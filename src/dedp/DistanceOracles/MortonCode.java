@@ -54,13 +54,7 @@ public class MortonCode {
         this.level=(char)level;
 
     }
-    public static long get4DMorton(int code1, int code2, int level){
-        long lc1 = (long)code1;
-        long lc2 = (long)code2;
-        lc1<<=32;
-        lc1>>>=32;
-        lc2<<=32;
-        lc2>>>=32;
+    public static long get4DMorton(long lc1, long lc2, int level){
        // System.out.println(Integer.toBinaryString(code1));
        // System.out.println(Long.toBinaryString(lc1));
         lc1=interleave(lc1);

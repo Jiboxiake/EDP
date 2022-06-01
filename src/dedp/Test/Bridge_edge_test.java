@@ -50,7 +50,7 @@ public class Bridge_edge_test {
         float total_err=0;
         float max_err=0;
         //SearchKey key = new SearchKey(source.morton(),destination.morton());
-        for(int x=0; x<100; x++){
+        for(int x=0; x<1000; x++){
             PartitionVertex destination =  (PartitionVertex) vecs[generator.nextInt(vecs.length)];
             //PartitionVertex destination = cc.vertices.get(6797);
             float result = cc.noLockLookUp(source,destination);
@@ -60,12 +60,9 @@ public class Bridge_edge_test {
                 max_err=error;
             }
             total_err+=error;
-            if(error>5){
-                System.out.println("error is "+error+"% "+destination.getId());//12951
-            }
 
         }
-        //System.out.println("avg error is "+total_err/1000+"%");
+        System.out.println("avg error is "+total_err/1000+"%");
         System.out.println("max error is "+max_err+"%");
         //System.out.println(result);
     }

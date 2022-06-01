@@ -1,11 +1,9 @@
 package dedp.structures;
 
-import dedp.DistanceOracles.BridgeDOThread;
 import dedp.DistanceOracles.BridgeEdgeThread;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 
 public class SPResult
 {

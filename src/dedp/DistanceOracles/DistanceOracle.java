@@ -13,7 +13,7 @@ import java.util.PriorityQueue;
 
 //try to make this class completely static so we can just call its method for quadtree class.
 public class DistanceOracle {
-    public static double e=0.01;
+    public static double e=0.25;
     public static double s=2.0/e;
     public static int initialDpeth=2;
     public static int balancer = 2000;

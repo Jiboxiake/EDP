@@ -173,5 +173,5 @@ public class PartitionConnectedComponents
 	protected HashMap<Integer, HashMap<Integer, PartitionVertex>>verticesToCC;
 	protected HashMap<Integer, HashMap<Integer, PartitionVertex> >bridgeVerticesToCC;
 	protected HashMap<Integer,HashMap<Integer, PartitionEdge>>edgesToCC;
-	protected HashMap<Integer, ConnectedComponent> connectedComponents;
+	public HashMap<Integer, ConnectedComponent> connectedComponents;
 }

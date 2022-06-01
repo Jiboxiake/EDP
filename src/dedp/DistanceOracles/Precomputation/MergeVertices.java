@@ -207,11 +207,11 @@ public class MergeVertices {
                 flag=true;
                 fromID=Long.parseLong(fields[0]);
                 toID=Long.parseLong(fields[1]);
-                if(merge.containsKey(fromID)){
-                    fromID = merge.get(fromID);
+                if(merge.containsKey((int)fromID)){
+                    fromID = merge.get((int)fromID);
                 }
-                if(merge.containsKey(toID)){
-                    toID = merge.get(toID);
+                if(merge.containsKey((int)toID)){
+                    toID = merge.get((int)toID);
                 }
             }else{
                 flag=false;
