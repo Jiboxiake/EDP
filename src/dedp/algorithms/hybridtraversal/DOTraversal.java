@@ -60,9 +60,9 @@ public class DOTraversal {
         float newDistance = 0;
         boolean furtherExplore = false;
         int uId, toVertexId;
-        long totalStartTime = System.nanoTime();
         while (!q.isEmpty()) {
             Global.addVertex();
+
             result.NumberOfExploredNodes++;
            // System.out.println(result.NumberOfExploredNodes);
             uDist = q.poll();
@@ -79,6 +79,9 @@ public class DOTraversal {
             //if the destination vertex is in the current partition and in the same CC
             if (destVertex != null && currentPartition.inTheSameComponent(u, destVertex)) {
                 weight = currentPartition.getEdgeWeightDO(uId, destination);
+                if(weight<=0){
+                    throw new RuntimeException("weight between 2 vertices in the same cc is non-positive\n");
+                }
                 newDistance = uDist.Distance + weight;
                 //if we observe better distance than the best so far
                 if (newDistance < bestDistanceSoFar) {
@@ -189,15 +192,15 @@ public class DOTraversal {
                         toDist.PartitionId = currentPartition.Label;
                         toDist.Distance = newDistance;
                         toDist.PotentialDistance = newDistance;
-                        q.add(toDist);
+                       // q.add(toDist);
                         distMap.put(toDist.VertexId, toDist);
                     }
                     else if(toDist.Distance > newDistance)
                     {
                         toDist.Distance = newDistance;
                         toDist.PotentialDistance = newDistance;
-                        q.remove(toDist); //remove if it exists
-                        q.add(toDist);
+                       // q.remove(toDist); //remove if it exists
+                       // q.add(toDist);
                     }
                     Global.bridge_added();
                     furtherExplore = true;

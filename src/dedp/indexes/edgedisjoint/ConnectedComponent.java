@@ -338,13 +338,6 @@ public class ConnectedComponent {
         try {
             SearchKey key;
             key = new SearchKey(u.morton(), v.morton());
-            if(u.getId()==6035&&v.getId()==4245&&Global.debug){
-                System.out.print(u.getId()+" morton is ");
-                u.morton().printBit();
-                System.out.print(v.getId()+" morton is ");
-                v.morton().printBit();
-                key.printBit();
-            }
            // key.printBit();
             //todo: only for undirected graph
             // SearchKey reverseKey = new SearchKey(v.mc,u.mc);
@@ -447,7 +440,7 @@ public class ConnectedComponent {
               }*/
               if(DistanceOracle.isWellSeparatedOpti(distance,forU,forV,u,v)||(forU.reachMaxLevel()&&forV.reachMaxLevel())){
                   SearchKey key = new SearchKey(forU.getMC(), forV.getMC());
-                  if(v.getId()==5769&&u.getId()==5659){
+                /*  if(v.getId()==5769&&u.getId()==5659){
                       forV.getMC().printBit();
                       forV.getParent().getMC().printBit();
                       v.morton().printBit();
@@ -456,7 +449,7 @@ public class ConnectedComponent {
                       forU.getParent().getMC().printBit();
                       u.morton().printBit();
                       key.printBit();
-                  }
+                  }*/
                  // key.printBit();
                   Global.addWSP();
                   Global.addBridge_do_count();
@@ -528,6 +521,9 @@ public class ConnectedComponent {
                 source.thread=new BridgeEdgeThread();
                 source.underBridgeComputation=true;
                 source.numOfBridgeEdgesComputed=0;
+                if(Global.debug){
+                    System.out.println("Should not");
+                }
                 //Global.list.add(source.thread);
                 Global.addThread(source.thread);
                 source.thread.setParameters(this, source, potentialBridgeDestinations, doList, computedList, 0);

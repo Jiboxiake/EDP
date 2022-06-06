@@ -205,21 +205,22 @@ public class EDP_DO_Test {
         double total=0;
         double max_err=-100;
         int from, to=-1;
+        float error=0;
+        float error2=0;
         while(i<1000) {
             i++;
             String result="";
             //int from = ThreadLocalRandom.current().nextInt(0, 271450 + 1);
             //int to = ThreadLocalRandom.current().nextInt(0, 271450 + 1);
-            if(i!=95){
-                from = ThreadLocalRandom.current().nextInt(0, 30000 + 1);
-                to = ThreadLocalRandom.current().nextInt(0, 30000 + 1);
-                if(!t.g.containsVertex(from)||!t.g.containsVertex(to)){
-                    continue;
-                }
-            }else{
-                from = 15649;
-                to = 17155;
+
+            from = ThreadLocalRandom.current().nextInt(0, 30000 + 1);
+            to = ThreadLocalRandom.current().nextInt(0, 30000 + 1);
+            //from = 15649;
+            //to= 17155;
+            if(!t.g.containsVertex(from)||!t.g.containsVertex(to)) {
+                continue;
             }
+
             //EDP_DO_Test_Thread th = new EDP_DO_Test_Thread();
             SPResult r = DOTraversal.shortestDistanceWithDO(t.index, from, to, list);
             SPResult rr = Dijkstra.shortestDistance(t.g,from,to,list);
@@ -227,7 +228,7 @@ public class EDP_DO_Test {
                 //System.out.println("Source "+from+" destination "+to+" cannot reach each other");
                 result+="Source "+from+" destination "+to+" cannot reach each other\n";
             }else{
-                float error = Math.abs(100*(r.Distance-rr.Distance)/rr.Distance);
+                error = Math.abs(100*(r.Distance-rr.Distance)/rr.Distance);
                 if(error>max_err){
                     max_err=error;
                 }
@@ -244,7 +245,7 @@ public class EDP_DO_Test {
             }
             Global.list.clear();
             r = DOTraversal.shortestDistanceWithDO(t.index, from, to, list);
-            float error2 = Math.abs(100*(r.Distance-rr.Distance)/rr.Distance);
+            error2 = Math.abs(100*(r.Distance-rr.Distance)/rr.Distance);
             if(error2>max_err){
                 max_err=error2;
             }
@@ -253,8 +254,13 @@ public class EDP_DO_Test {
             //System.out.println("error 2 is "+error2+"%");
             result+="error 2 is "+error2+"%\n";
             total+=error2;
+
             //System.out.println(result);
-            myWriter.write(result);
+           // if(error>15||error2>15){
+                myWriter.write(result);
+            //}
+            error=0;
+            error2=0;
             //Global.printResult();
         }
         String stats="";

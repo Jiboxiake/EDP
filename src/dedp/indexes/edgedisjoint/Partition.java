@@ -594,13 +594,14 @@ public class Partition
 		if(!cc.vertices.containsKey(u.vertexId)||!cc.vertices.containsKey(v.vertexId)){
 			throw new ObjectNotFoundException("vertex is missing in cc");
 		}
-		float result = cc.lookUp(u,v);
+		//float result;
+		float result = cc.noLockLookUp(u,v);
 		if(result>0.0){
-			//Global.DO_hit();
+			Global.DO_hit();
 			return result;
 		}
 		//now we have to manually compute it
-		SPResult directedResult = Dijkstra.shortestDistance(this, u.vertexId, v.vertexId);
+		SPResult directedResult = Dijkstra.shortestDistance(this, u.vertexId, v.vertexId);//todo: change this to bidirectional
 		Global.Dij_exec();
 		result= directedResult.Distance;
 		//todo: distance oracle computation thread we can optimize it just as in bridge thread

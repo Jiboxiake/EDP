@@ -16,7 +16,7 @@ import java.io.IOException;
 import java.util.*;
 
 public class HybridDOEDPIndex {
-    public int MaxToExplore = 5;
+    public int MaxToExplore = 500;
     public boolean isDirected;
 
 
