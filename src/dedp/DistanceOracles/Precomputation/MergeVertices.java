@@ -256,6 +256,9 @@ public class MergeVertices {
                 flag=false;
                 weight = Float.parseFloat(fields[1]);
                 label = Integer.parseInt(fields[2]);
+                if(fromID==toID){
+                    continue;
+                }
                 //todo: for test set all labels to 1
                     EdgeInfo e = new EdgeInfo();
                     e.from=fromID;
