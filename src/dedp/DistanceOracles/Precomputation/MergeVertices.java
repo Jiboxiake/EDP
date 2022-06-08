@@ -144,8 +144,45 @@ public class MergeVertices {
     public static String fileName = "./Graph_Source/ID.tmp";
     public static String verticesResultName = "./Graph_Source/ID_ver_final.txt";
     public static String edgesResultName = "./Graph_Source/ID_edge_final.txt";
+    private int maxLat;
+    private int minLat;
+    private int maxLon;
+    private int minLon;
+    private double latRange;
+    private double lonRange;
+    private int noromalizeLat(int lat){
+        double z1 = (double)(lat-minLat);
+        z1 = z1/latRange;
+        int finalLat = (int)(z1*Math.pow(2.0,16));
+        return finalLat;
+    }
+    private int normalizeLon(int lon){
+        double z2 = (double)(lon-minLon);
+        z2 = z2/lonRange;
+        int finalLon = (int)(z2*Math.pow(2.0,16));
+        return finalLon;
+    }
+    private void normalize( ArrayList<Vertex> vSet){
+        maxLat++;
+        maxLon++;
+        latRange = maxLat-minLat;
+        lonRange = maxLon-minLon;
+        int finalLat;
+        int finalLon;
+        Vertex v;
+        for(int i=0; i<vSet.size();i++){
+            v = vSet.get(i);
+            finalLat =noromalizeLat(v.latitude);
+            finalLon =normalizeLon(v.longitude) ;
+            v.latitude=finalLat;
+            v.longitude=finalLon;
+        }
+        maxLat = noromalizeLat(maxLat);
+        maxLon = normalizeLon(maxLon);
+        minLat = noromalizeLat(minLat);
+        minLon = normalizeLon(minLon);
+    }
     public void loadAndMerge() throws IOException {
-        int bound =30000;
         File f =new File(fileName);
         //File ver =new File(verticesResultName);
         //File edge = new File(verticesResultName);
@@ -154,10 +191,10 @@ public class MergeVertices {
         BufferedReader reader = new BufferedReader(new FileReader(f));
         String line;
         ArrayList<Vertex> vSet = new ArrayList<>();
-        int maxLat = Integer.MIN_VALUE;
-        int minLat = Integer.MAX_VALUE;
-        int maxLong = Integer.MIN_VALUE;
-        int minLong = Integer.MAX_VALUE;
+        maxLat = Integer.MIN_VALUE;
+        minLat = Integer.MAX_VALUE;
+        maxLon = Integer.MIN_VALUE;
+        minLon = Integer.MAX_VALUE;
         while((line=reader.readLine())!=null){
             String[]fields = line.split("\\s+");
             if(fields.length==1){
@@ -172,11 +209,11 @@ public class MergeVertices {
             if(rawLatitude<minLat){
                 minLat = rawLatitude;
             }
-            if(rawLongitude>maxLong){
-                maxLong=rawLongitude;
+            if(rawLongitude>maxLon){
+                maxLon=rawLongitude;
             }
-            if(rawLongitude<minLong){
-                minLong=rawLongitude;
+            if(rawLongitude<minLon){
+                minLon=rawLongitude;
             }
             Vertex v = new Vertex();
             v.setID(id);
@@ -186,10 +223,12 @@ public class MergeVertices {
                 break;
             }
         }
-        MiniQuadtree tree = new MiniQuadtree(vSet,maxLat+1,minLat,minLong, maxLong+1,0);
+        //now let's normalize vertices.
+        normalize(vSet);
+        MiniQuadtree tree = new MiniQuadtree(vSet,maxLat,minLat,minLon, maxLon,0);
         HashMap<Integer,Integer> merge = new HashMap<>();
         tree.mergeVertices(merge);
-        int result = merge.get(15267);
+        int result = merge.get(129889);
         System.out.println(result);
         //now we process the edges
         long key=1;
