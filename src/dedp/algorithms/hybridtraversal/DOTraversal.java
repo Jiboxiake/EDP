@@ -127,6 +127,10 @@ public class DOTraversal {
                         q.add(lblDist);
                         lblDistMap.put(lblDist.VertexId, lblDist);
                     } else if (lblDist.Distance > uDist.Distance) {
+                        //assert lbldist hasn't been examine yet
+                        if(lblDist.Distance!= lblDist.PotentialDistance){
+                            throw new RuntimeException("this vertex should not be examine yet but have mismatched potential distances");
+                        }
                         lblDist.Distance = uDist.Distance;
                         lblDist.PotentialDistance = uDist.Distance;
                         lblDist.OutEdgeIdToProcess = 0;
@@ -199,7 +203,7 @@ public class DOTraversal {
                     {
                         toDist.Distance = newDistance;
                         toDist.PotentialDistance = newDistance;
-                       // q.remove(toDist); //remove if it exists
+                        q.remove(toDist); //remove if it exists
                        // q.add(toDist);
                     }
                     Global.bridge_added();

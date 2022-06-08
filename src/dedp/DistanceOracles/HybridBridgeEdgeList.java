@@ -29,7 +29,7 @@ public class HybridBridgeEdgeList {
         return this.edgeOrder;
     }
 
-
+    //todo: check correctness here
     public PartitionEdge getEdge() throws InterruptedException {
         if(edgeOrder!=DOIndex+computedIndex){
             throw new RuntimeException("Error at getting partition edge in special list\n");
@@ -39,7 +39,7 @@ public class HybridBridgeEdgeList {
         while(!source.allBridgeEdgesComputed&&source.numOfBridgeEdgesComputed<=edgeOrder){
             source.bridgeEdgeAdded.await();
         }
-        // nowe we can get one
+        // now we can get one
         if(edgeOrder<source.numOfBridgeEdgesComputed){
             if(computedList.size()==computedIndex){
                 result = DOList.get(DOIndex);

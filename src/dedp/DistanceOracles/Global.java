@@ -67,4 +67,18 @@ public class Global {
            // System.out.println("DO generated "+level_count[i]+" DO keys at level "+i);
         }
     }
+    public static void clearResult(){
+        DO_Count=0;
+        Dij_Count=0;
+        Bridge_requested=0;
+        Bridge_vertices_added=0;
+        failed_WSP=0;
+        WSP_found=0;
+        num_vertices=0;
+        bridge_do_count=0;
+        DO_hit_during_bridge_computation=0;
+        total_do_threads=0;
+        total_partition_vertex=0;
+        total_partition_edge=0;
+    }
 }

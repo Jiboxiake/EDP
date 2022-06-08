@@ -43,6 +43,16 @@ public class MortonCode {
         code= code >>>((max_depth-level)*2);
         this.level=(char)level;
     }
+    public static void reset(){
+        max_lat=Integer.MIN_VALUE;
+        min_lat=Integer.MAX_VALUE;
+        max_lon=Integer.MIN_VALUE;
+        min_lon=Integer.MAX_VALUE;
+        lat_range=0.0;
+        lon_range=0.0;
+        max = 65536;
+        min =0;
+    }
     public MortonCode(MortonCode mc, int commonPrefx,int level){
         this.code=mc.code;
         this.level=(char)level;

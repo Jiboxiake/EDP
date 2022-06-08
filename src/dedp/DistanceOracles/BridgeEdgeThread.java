@@ -143,10 +143,10 @@ public class BridgeEdgeThread extends Thread{
                 e.setTo(en.vertex);
                 e.setWeight(en.distance);
                 e.setLabel(source.Label);
-                computedBridgeEdgeList.add(e);
+                computedBridgeEdgeList.add(e);//computed list will be naturally sorted
                 newEntryAdded=true;
             }
-            for(int i=maxGuarantee;i<doBridgeEdgeList.size();i++){
+            for(int i=maxGuarantee;i<doBridgeEdgeList.size();i++){//max guarantee determines how many do entries are available
                 if(doBridgeEdgeList.get(i).getWeight()<=en.distance){
                     newEntryAdded=true;
                     maxGuarantee++;
@@ -154,14 +154,13 @@ public class BridgeEdgeThread extends Thread{
                     break;
                 }
             }
-            if(newEntryAdded){
+            if(newEntryAdded){//either computed list becomes available or do list has more entries available or both.
                 source.lock.lock();
                 source.numOfBridgeEdgesComputed=maxGuarantee+computedBridgeEdgeList.size();
                 source.bridgeEdgeAdded.signalAll();
                 source.lock.unlock();
             }
-            for(int i=0; i<en.vertex.outEdges.size();i++){
-                PartitionEdge e = en.vertex.outEdges.get(i);
+            for(PartitionEdge e: en.vertex.outEdges){//the Dijkstra part, updated to use O(n) time
                 PartitionVertex to = e.getTo();
  /*               if(to.getId()==14218&&cc.partition.Label==0){
                     System.out.println("current cc contains 14218 "+cc.vertices.containsKey(14218));

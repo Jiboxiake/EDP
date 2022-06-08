@@ -32,6 +32,7 @@ public class Dijkstra
 {
 	public static SPResult shortestDistance(Graph graph, long source, long destination, List<Integer> labelIDs) throws ObjectNotFoundException
 	{
+		//int explored=0;
 		SPResult result = new SPResult();
 		result.Distance = -1;
 		result.NumberOfExploredEdges = 0;
@@ -49,6 +50,7 @@ public class Dijkstra
 		long totalStartTime = System.nanoTime();
 		while(!q.isEmpty())
 		{
+			//explored++;
 			result.NumberOfExploredNodes++;
 			uDist = q.poll();
 			u = graph.getVertex(uDist.VertexID);
@@ -89,6 +91,7 @@ public class Dijkstra
 		Helper.DebugMsg("Edge disjoint dijkstra: exploring bridge edges = " + (exploringExternalEdgesTime));
 		*/
 		result.TotalProcessingTime = totalEndTime - totalStartTime;
+		//System.out.println("total explore is "+explored);
 		return result;
 	}
 	

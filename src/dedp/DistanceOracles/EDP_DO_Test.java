@@ -27,7 +27,8 @@ public class EDP_DO_Test {
     public HybridDOEDPIndex index;
     public void loadGraph(int bound) throws Exception {
         g=new Graph();
-
+        QuadTree.nextID=0;
+        MortonCode.reset();
         String vName = "./Graph_Source/ID_ver_final.txt";
         String eName = "./Graph_Source/ID_edge_final.txt";
         try{
@@ -87,6 +88,7 @@ public class EDP_DO_Test {
         g.printStats();
         index= HybridDOEDPIndex.buildIndex(g, null, false);
         index.isDirected=false;
+
 
        /* for(int i=0; i<index.partitions.length;i++){
             for(int j=0; j<index.partitions[i].ConnectedComponents.getConnectedComponentsCount(); j++){
@@ -256,9 +258,9 @@ public class EDP_DO_Test {
             total+=error2;
 
             //System.out.println(result);
-           // if(error>15||error2>15){
+            if(error>15||error2>15){
                 myWriter.write(result);
-            //}
+            }
             error=0;
             error2=0;
             //Global.printResult();

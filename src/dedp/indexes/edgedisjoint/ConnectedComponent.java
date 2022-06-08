@@ -576,6 +576,8 @@ public class ConnectedComponent {
             SearchKey sk = new SearchKey(key,level);
             DO.put(sk,distance);
         }
+        reader.close();
+        br.close();
     }
 
 }
