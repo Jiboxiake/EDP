@@ -21,16 +21,56 @@ import dedp.structures.SPResult;
 import dedp.structures.Vertex;
 //todo: garbage collection after a search.
 public class DOTraversal {
+    public static RuntimeQuadtreeDiameterThread needDiameterComputation(Partition p, PartitionVertex v){
+        ConnectedComponent sourceCC = p.ConnectedComponents.getConnectedComponent(v.ComponentId);
+        QuadTree sourceTree = sourceCC.tree;
+        for(int d=0; d<QuadTree.initial_depth;d++){
+            sourceTree = sourceTree.containingBlock(v);
+        }
+        while(true){
+            if(sourceTree==null||sourceTree.getLevel()==QuadTree.max_depth){
+                break;
+            }
+            if(sourceTree.getDiameter()<0){
+                //compute
+                RuntimeQuadtreeDiameterThread diameterThread = new RuntimeQuadtreeDiameterThread();
+                diameterThread.setParameters(v,sourceCC);
+                diameterThread.start();;
+                return diameterThread;
+            }else{
+                sourceTree = sourceTree.containingBlock(v);
+            }
+        }
+        return null;
+    }
     public static SPResult shortestDistanceWithDO(HybridDOEDPIndex index, int source, int destination, List<Integer> labelIDs) throws Exception {
+
         SPResult result = new SPResult();
         result.Distance = -1;
         result.NumberOfExploredEdges = 0;
         result.NumberOfExploredNodes = 0;
         result.NumberOfHybridEdgesExplored = 0;
+        RuntimeQuadtreeDiameterThread sourceT = null;
+        RuntimeQuadtreeDiameterThread destinationT = null;
         PriorityQueue<DOQueueEntry> q = new PriorityQueue<>();
         Map<Integer, Map<Integer, DOQueueEntry>> partitionToDistMap = new HashMap<Integer, Map<Integer, DOQueueEntry>>();
-        for (int label : labelIDs) {
+        for (int label : labelIDs) {//plan 1 let's also check which diameters need to be computed
             partitionToDistMap.put(label, new HashMap<Integer, DOQueueEntry>());
+            Partition checkPartition = index.partitions[label];
+            if(checkPartition.containsVertex(source)){
+                PartitionVertex parSource = checkPartition.getVertex(source);
+                sourceT=needDiameterComputation(checkPartition,parSource);
+            }
+            if(checkPartition.containsVertex(destination)){
+                PartitionVertex parDestination = checkPartition.getVertex(destination);
+                destinationT=needDiameterComputation(checkPartition,parDestination);
+            }
+            if(sourceT!=null){
+                sourceT.join();
+            }
+            if(destinationT!=null){
+                destinationT.join();
+            }
         }
         Map<Integer, DOQueueEntry> distMap = null;
         Map<Integer, DOQueueEntry> lblDistMap = null;

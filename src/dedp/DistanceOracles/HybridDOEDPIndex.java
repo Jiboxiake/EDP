@@ -48,6 +48,7 @@ public class HybridDOEDPIndex {
                 continue;
             }
             p.updateBridgeVertexes();
+            p.sourceGraph = graph;
             //p.updateBridgeVertexesBackward();
             //MSaber: to measure index time only
            // p.loadSavedIndex();

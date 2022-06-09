@@ -88,7 +88,7 @@ public class EDP_DO_Test {
         g.printStats();
         index= HybridDOEDPIndex.buildIndex(g, null, false);
         index.isDirected=false;
-
+        System.out.println("total bridge vertices are "+Global.total_bridge_vertices);
 
        /* for(int i=0; i<index.partitions.length;i++){
             for(int j=0; j<index.partitions[i].ConnectedComponents.getConnectedComponentsCount(); j++){
@@ -152,6 +152,7 @@ public class EDP_DO_Test {
             }
             index= HybridDOEDPIndex.buildIndex(g, null, false);
             index.isDirected=false;
+
         }
     }
 
@@ -186,7 +187,7 @@ public class EDP_DO_Test {
         System.out.println("total partition vertex number is "+Global.total_partition_vertex);
         System.out.println("total partition edge number is "+Global.total_partition_edge);
         int j = EdgeLabelProcessor.EDPLabelToRawLabel.get(1);
-       // ConnectedComponentAnalyzer.print(30);
+        //ConnectedComponentAnalyzer.print(30);
         int i =0;
         EDP_DO_Precomputation pre = new EDP_DO_Precomputation(t.index);
         File diameterFile = new File(PrecomputationResultDatabase.fileName);
@@ -258,9 +259,9 @@ public class EDP_DO_Test {
             total+=error2;
 
             //System.out.println(result);
-            if(error>15||error2>15){
+           // if(error>15||error2>15){
                 myWriter.write(result);
-            }
+          //  }
             error=0;
             error2=0;
             //Global.printResult();

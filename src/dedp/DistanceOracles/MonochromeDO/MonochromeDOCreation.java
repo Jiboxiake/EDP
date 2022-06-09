@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MonochromeDOCreation {
-    public static final int numThread=10;
+    public static final int numThread=60;
     public static void computeBridgeDO() throws Exception {
         BridgeDOThread[] doThread = new BridgeDOThread[numThread];
         for(int i=0; i<numThread;i++){
@@ -51,6 +51,33 @@ public class MonochromeDOCreation {
             doThread[i].join();
         }
     }
+
+    public static void precomputeBridgeDO(EDP_DO_Test t) throws Exception {
+        BridgeDOThread[] doThread = new BridgeDOThread[numThread];
+        for(int i=0; i<numThread;i++){
+            doThread[i] = new BridgeDOThread();
+        }
+        int id=0;
+        Partition p;
+        //ConnectedComponent cc;
+        for(int i=0; i<t.index.partitions.length;i++){
+            p=t.index.partitions[i];
+            for(int j=0; j<p.ConnectedComponents.getConnectedComponentsCount();j++){
+                ConnectedComponent cc = p.ConnectedComponents.getConnectedComponent(j);
+                id = id%numThread;
+                doThread[id].workloads.add(cc);
+                id++;
+            }
+        }
+        for(int i=0;i<numThread;i++){
+            doThread[i].start();
+        }
+        for(int i=0; i<numThread;i++){
+            doThread[i].join();
+        }
+        System.out.println("bridge DO computation finished");
+    }
+
     public static void main(String[]args) throws Exception {
         MonochromeDOCreation.computeBridgeDO();
 

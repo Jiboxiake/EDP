@@ -13,9 +13,9 @@ public class EDP_DO_Precomputation {
         CCPrecomputor computor = new CCPrecomputor(this.index);
         try {
             computor.startComputation();
-            System.out.println("computation finished\n");
+            System.out.println("diameter computation finished");
             //PrecomputationResultDatabase.print(30);
-            PrecomputationResultDatabase.output();
+            //PrecomputationResultDatabase.output();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

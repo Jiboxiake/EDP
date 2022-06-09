@@ -51,7 +51,7 @@ public class CCPrecomputor {
         for(int i=0; i<total_workers; i++){
             workers[i].join();
         }
-        for(int i=0; i<index.getNumOfPartitions(); i++){
+     /*   for(int i=0; i<index.getNumOfPartitions(); i++){
             p = index.partitions[i];
             for(int j=0; j<p.ConnectedComponents.getConnectedComponentsCount();j++){
                 cc = p.ConnectedComponents.getConnectedComponent(j);
@@ -60,7 +60,7 @@ public class CCPrecomputor {
                 }
                 cc.tree.output();
             }
-        }
+        }*/
     }
 
 }

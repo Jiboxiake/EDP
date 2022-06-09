@@ -30,7 +30,7 @@ public class PrecomputationResultDatabase {
                 }
             }
             myWriter.close();
-            System.out.println("Preprocessing finished");
+            System.out.println("Diameter output finished");
         } catch (IOException e) {
             e.printStackTrace();
         }

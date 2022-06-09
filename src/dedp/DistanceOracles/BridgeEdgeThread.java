@@ -122,11 +122,11 @@ public class BridgeEdgeThread extends Thread{
         source.underBridgeComputation=true;
         source.lock.unlock();
         RuntimeQuadtreeDiameterThread diameterThread = null;
-        if(!source.isBridge()){
+       /* if(!source.isBridge()){
             diameterThread = new RuntimeQuadtreeDiameterThread();
             diameterThread.setParameters(source,cc);
             diameterThread.start();;
-        }
+        }*/
         VertexQueueEntry entry = new VertexQueueEntry(source,0);
         PriorityQueue<VertexQueueEntry>q = new PriorityQueue<>();
         HashMap <Integer, VertexQueueEntry> distMap = new HashMap<>();
@@ -215,7 +215,7 @@ public class BridgeEdgeThread extends Thread{
         }*/
         //always do it yourself
         //just assume we ignore the source as it can be anywhere
-        if(source.isBridge()){
+     /*   if(source.isBridge()){
 
         }else{
             try {
@@ -223,7 +223,7 @@ public class BridgeEdgeThread extends Thread{
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-        }
+        }*/
         for(int i=0; i<computedBridgeEdgeList.size();i++){
             PartitionEdge pe = computedBridgeEdgeList.get(i);
             PartitionVertex destination = pe.getTo();

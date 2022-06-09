@@ -14,6 +14,7 @@ public class Global {
     private static int DO_hit_during_bridge_computation;
     public static int total_do_threads;
     public static int level_count[]= new int[33];
+    public static int total_bridge_vertices=0;
     public static int total_partition_vertex=0;
     public static int total_partition_edge=0;
     public static ArrayList<BridgeEdgeThread> list = new ArrayList<>();

@@ -493,6 +493,9 @@ public class QuadTree {
         if(SE!=null){
             SE.loadDiameter(diameterMap);
         }
+        if(this.size==1){
+            this.diameter=0;
+        }
     }
 
 

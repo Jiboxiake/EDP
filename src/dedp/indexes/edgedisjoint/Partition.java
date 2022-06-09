@@ -20,6 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import dedp.DistanceOracles.*;
 import dedp.algorithms.Dijkstra;
+import dedp.algorithms.bidirectional.BidirectionalDijkstra;
 import dedp.common.Constants;
 import dedp.exceptions.DuplicateEntryException;
 import dedp.exceptions.ObjectNotFoundException;
@@ -601,14 +602,17 @@ public class Partition
 			return result;
 		}
 		//now we have to manually compute it
-		SPResult directedResult = Dijkstra.shortestDistance(this, u.vertexId, v.vertexId);//todo: change this to bidirectional
+		//SPResult directedResult = Dijkstra.shortestDistance(this, u.vertexId, v.vertexId);//todo: change this to bidirectional
+		ArrayList<Integer> labels = new ArrayList<>();
+		labels.add(this.Label);
+		SPResult directedResult = BidirectionalDijkstra.shortestDistance(this.sourceGraph,u.getId(),v.getId(),labels);
 		Global.Dij_exec();
 		result= directedResult.Distance;
 		//todo: distance oracle computation thread we can optimize it just as in bridge thread
-	/*	DistanceOracleThread t = new DistanceOracleThread();
+		RuntimeDOThread t = new RuntimeDOThread();
 		t.setCC(cc);
 		t.setParameters(u, v, result);
-		t.start();*/
+		t.start();
 		return result;
 	}
 
@@ -775,7 +779,7 @@ public class Partition
 	//public EdgeDisjointIndex Index = null;
 	public HybridDOEDPIndex Index=null;
 	public Graph ContractedGraph = null;
-	
+	public Graph sourceGraph =null;
 	public Collection<Integer> bridgeVertexes = new ArrayList<Integer>();
 	public Collection<Integer> bridgeVertexesBackward = new ArrayList<Integer>();
 

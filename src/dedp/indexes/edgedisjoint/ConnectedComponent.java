@@ -42,6 +42,8 @@ public class ConnectedComponent {
 
     public ConnectedComponent(int id, Partition partition, HashMap<Integer, PartitionVertex> vertices, HashMap<Integer, PartitionEdge> edges, HashMap<Integer, PartitionVertex> bridgeVertices){
         this.bridgeVertices=bridgeVertices;
+        if(bridgeVertices!=null)
+            Global.total_bridge_vertices+=bridgeVertices.size();
         this.vertexToBridgeEdges = new HashMap<Integer, BridgeEdgesEntry>();
         this.vertices=vertices;
         this.edges=edges;
@@ -579,5 +581,13 @@ public class ConnectedComponent {
         reader.close();
         br.close();
     }
-
+    public void addSingleDO(SearchKey key, float result){
+        this.writeLock.lock();
+        if(this.DO.containsKey(key)){
+            this.writeLock.unlock();
+            return;
+        }
+        this.DO.put(key,result);
+        this.writeLock.unlock();
+    }
 }
