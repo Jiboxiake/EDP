@@ -35,7 +35,7 @@ public class Preprocessing {
             p = t.index.partitions[i];
             for(int j=0; j<p.ConnectedComponents.getConnectedComponentsCount();j++){
                 cc = p.ConnectedComponents.getConnectedComponent(j);
-                if(cc.bridgeVertices==null){
+                if(cc.vertices==null){
                     continue;
                 }
                 cc.tree.output();

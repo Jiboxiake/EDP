@@ -45,6 +45,9 @@ public class QuadTree {
         this.parent=parent;
         //diameter not set yet
         this.diameter=-1;
+        if(vertices.size()==0||vertices.size()==1){
+            this.diameter=0;
+        }
         //this.vertices=vertices;
         //this.vertices= new HashSet<Integer>(vertices.size());
         this.vertices = new HashMap<>(vertices.size());
@@ -132,6 +135,38 @@ public class QuadTree {
         if(newDia>this.diameter){
             this.diameter=newDia;
         }
+    }
+    public boolean testDiameter(){
+        boolean result;
+        if(this.level<=initial_depth){
+            result = true;
+        }else{
+            if(this.diameter>0&&this.size>0){
+                result = true;
+            }else if(this.diameter==0&&this.size<=1){
+                result = true;
+            }
+            else{
+                result = false;
+            }
+        }
+        if(!result){
+            this.printVertices();
+            System.out.println("error at diameter");
+        }
+        if(this.NW!=null){
+            result &= NW.testDiameter();
+        }
+        if(this.NE!=null){
+            result &= NE.testDiameter();
+        }
+        if(this.SW!=null){
+            result &= SW.testDiameter();
+        }
+        if(this.SE!=null){
+            result &= SE.testDiameter();
+        }
+        return result;
     }
     /*public HashSet<Integer> copy(){
         return new HashSet<>(vertices);
@@ -544,5 +579,28 @@ public class QuadTree {
             result&=SE.testMorton();
         }
         return result;
+    }
+
+    public void printVertices(){
+        if(this.level!=max_depth){
+            if(NW!=null){
+                NW.printVertices();
+            }
+            if(NE!=null){
+                NE.printVertices();
+            }
+            if(SW!=null){
+                SW.printVertices();
+            }
+            if(SE!=null){
+                SE.printVertices();
+            }
+        }else{
+            if(this.size>0){
+                for(Map.Entry<Integer, PartitionVertex> set:this.vertices.entrySet()){
+                    System.out.println("Vertex ID is "+set.getKey());
+                }
+            }
+        }
     }
 }
