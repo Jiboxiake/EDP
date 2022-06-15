@@ -2,10 +2,12 @@ package dedp.DistanceOracles;
 
 import dedp.DistanceOracles.Precomputation.DiameterResult;
 import dedp.DistanceOracles.Precomputation.PrecomputationResultDatabase;
+import dedp.DistanceOracles.Precomputation.allDiameter.DiameterRepPointPair;
 import dedp.exceptions.ObjectNotFoundException;
 import dedp.indexes.edgedisjoint.Partition;
 import dedp.indexes.edgedisjoint.PartitionVertex;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -16,12 +18,13 @@ public class QuadTree {
     public static final int initial_depth = 4;
     private QuadTree parent;
     public int id;
-    private QuadTree NW;
-    private QuadTree NE;
-    private QuadTree SW;
-    private QuadTree SE;
+    public QuadTree NW;
+    public QuadTree NE;
+    public QuadTree SW;
+    public QuadTree SE;
     private int level;
     int size;
+    public int representativePoint;
     private float diameter;
     private MortonCode mc;
     private int top_bound;
@@ -47,6 +50,13 @@ public class QuadTree {
         this.diameter=-1;
         if(vertices.size()==0||vertices.size()==1){
             this.diameter=0;
+        }
+        if(vertices.size()==1){
+            for(Map.Entry<Integer, PartitionVertex> set: vertices.entrySet()){
+                this.representativePoint = set.getKey();
+            }
+        }else{
+            this.representativePoint = -1;
         }
         //this.vertices=vertices;
         //this.vertices= new HashSet<Integer>(vertices.size());
@@ -131,23 +141,46 @@ public class QuadTree {
     public synchronized float getDiameter(){
         return this.diameter;
     }
-    public synchronized void setDiameter(float newDia){
+    public synchronized void setDiameter(float newDia, int represenID){
         if(newDia>this.diameter){
+            this.representativePoint = represenID;
             this.diameter=newDia;
         }
     }
     public boolean testDiameter(){
-        boolean result;
+        boolean result=true;
+        if(this.vertices!=null&&this.vertices.size()>0){
+            result = this.representativePoint>=0;
+            if(this.level<max_depth&&this.level>=initial_depth){
+                int rep1=-1;
+                int rep2=-1;
+                int rep3 = -1;
+                int rep4 = -1;
+                if(NW!=null){
+                    rep1 = NW.representativePoint;
+                }
+                if(NE!=null){
+                    rep2 = NE.representativePoint;
+                }
+                if(SW!=null){
+                    rep3 = SW.representativePoint;
+                }
+                if(SE!=null){
+                    rep4 = SE.representativePoint;
+                }
+                result = rep1==this.representativePoint || rep2 ==this.representativePoint ||rep3 == this.representativePoint ||rep4 == this.representativePoint;
+            }
+        }
         if(this.level<=initial_depth){
-            result = true;
+            result &= true;
         }else{
             if(this.diameter>0&&this.size>0){
-                result = true;
+                result &= true;
             }else if(this.diameter==0&&this.size<=1){
-                result = true;
+                result &= true;
             }
             else{
-                result = false;
+                result &= false;
             }
         }
         if(!result){
@@ -243,6 +276,28 @@ public class QuadTree {
             vertices.remove(id);
         }
     }*/
+
+    public void getAllInitialLevelBlocks (ArrayList<QuadTree> list){
+        if(this.level==initial_depth){
+            if(this.size>0){
+                list.add(this);
+            }
+            return;
+        }
+        if(NW!=null){
+            NW.getAllInitialLevelBlocks(list);
+        }
+        if(NE!=null){
+            NE.getAllInitialLevelBlocks(list);
+        }
+        if(SW!=null){
+            SW.getAllInitialLevelBlocks(list);
+        }
+        if(SE!=null){
+            SE.getAllInitialLevelBlocks(list);
+        }
+    }
+
     public void remove(PartitionVertex v){
         if(vertices.containsKey(v.getId())){
             this.vertices.remove(v.getId());
@@ -507,14 +562,17 @@ public class QuadTree {
     }
 
     public int size(){
-        return vertices.size();
+        return size;
     }
 
 
 
-    public void loadDiameter(HashMap<Integer, Float> diameterMap){
+    public void loadDiameter(HashMap<Integer, DiameterRepPointPair> diameterMap){
         if(diameterMap.containsKey(this.id)){
-            this.diameter = diameterMap.get(id);
+            DiameterRepPointPair pair = diameterMap.get(id);
+            this.diameter = pair.diamter;
+            this.representativePoint = pair.vertexID;
+            //this.diameter = diameterMap.get(id);
         }
         if(NW!=null){
             NW.loadDiameter(diameterMap);
@@ -539,7 +597,7 @@ public class QuadTree {
             return;
         }
         if(this.diameter!=-1) {
-            PrecomputationResultDatabase.insert(new DiameterResult(this.id, this.diameter));
+            PrecomputationResultDatabase.insert(new DiameterResult(this.id, this.diameter, this.representativePoint));
         }
         if(NW!=null){
             NW.output();

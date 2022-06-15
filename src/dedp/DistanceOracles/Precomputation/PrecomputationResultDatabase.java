@@ -24,8 +24,9 @@ public class PrecomputationResultDatabase {
             for(int i=0; i<results.size();i++){
                 int id = results.get(i).quadtreeID;
                 float diameter = results.get(i).diameter;
+                int representativeID = results.get(i).representativeID;
                 if(diameter!=-1.0){
-                    String result = String.valueOf(id)+","+String.valueOf(diameter)+"\n";
+                    String result = String.valueOf(id)+","+String.valueOf(diameter)+","+String.valueOf(representativeID)+"\n";
                     myWriter.write(result);
                 }
             }

@@ -26,7 +26,7 @@ public class DiameterQueryEntry {
                 max_distance = distance >max_distance ? distance : max_distance;
                 if(vertices.isEmpty()){
                     //System.out.println("block is set");//for debug
-                    tree.setDiameter(max_distance);
+                    tree.setDiameter(max_distance, source.getId());
                 }
                 return true;
             }

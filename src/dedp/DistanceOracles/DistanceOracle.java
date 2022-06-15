@@ -107,7 +107,7 @@ public class DistanceOracle {
                 }
                 allVer.remove((int)uDist.VertexID);
                 if(allVer.isEmpty()){
-                    t.setDiameter(maxDistance);
+                    //t.setDiameter(maxDistance);
                     //for debug
                    // System.out.println("found diameter");
                     q=null;
@@ -146,7 +146,7 @@ public class DistanceOracle {
                 maxDistance=disMap.get(id).distance;
             }
         }
-        t.setDiameter(maxDistance);
+        //t.setDiameter(maxDistance);
         return maxDistance;
     }
 

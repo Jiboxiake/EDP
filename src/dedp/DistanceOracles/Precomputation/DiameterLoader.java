@@ -1,6 +1,7 @@
 package dedp.DistanceOracles.Precomputation;
 
 import dedp.DistanceOracles.HybridDOEDPIndex;
+import dedp.DistanceOracles.Precomputation.allDiameter.DiameterRepPointPair;
 import dedp.indexes.edgedisjoint.ConnectedComponent;
 import dedp.indexes.edgedisjoint.Partition;
 
@@ -10,7 +11,7 @@ import java.util.HashMap;
 public class DiameterLoader {
     HybridDOEDPIndex index;
     File diameterFile;
-    HashMap<Integer, Float> quadtreeDiameterMap;
+    HashMap<Integer, DiameterRepPointPair> quadtreeDiameterMap;
     public DiameterLoader(HybridDOEDPIndex index, File diameterFile){
         this.index=index;
         this.diameterFile=diameterFile;
@@ -23,10 +24,14 @@ public class DiameterLoader {
             String fields[] = line.split(",");
             int id = Integer.valueOf(fields[0]);
             float diameter = Float.valueOf(fields[1]);
+            int vertexID = Integer.valueOf(fields[2]);
+            DiameterRepPointPair pair = new DiameterRepPointPair();
+            pair.diamter = diameter;
+            pair.vertexID = vertexID;
             if(quadtreeDiameterMap.containsKey(id)){
                 throw new Exception("Error, this id alreayd exits "+id);
             }
-            quadtreeDiameterMap.put(id, diameter);
+            quadtreeDiameterMap.put(id, pair);
         }
         //System.out.println(quadtreeDiameterMap.containsKey(118032));
         reader.close();
