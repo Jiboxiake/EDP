@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class Precompute_all_diameters {
-    public static int total_workers = 80;
+    public static int total_workers = 40;
     public static void compputeDiameter(EDP_DO_Test t) throws InterruptedException {
         allDiameterThread[] workers = new allDiameterThread[total_workers];
         for(int i=0; i<total_workers;i++){

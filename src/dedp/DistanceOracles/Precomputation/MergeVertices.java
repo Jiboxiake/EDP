@@ -23,8 +23,8 @@ public class MergeVertices {
         public MiniQuadtree SW;
         public MiniQuadtree SE;
         public ArrayList<Vertex> vertices;
-        public static int max_depth=16;
-        public static int merge_level = 16;
+        public  int max_depth=16;
+        public  int merge_level = 16;
         public MiniQuadtree(ArrayList<Vertex> vertices, int top, int bottom, int left, int right,int level){
             this.level = level;
             this.top = top;

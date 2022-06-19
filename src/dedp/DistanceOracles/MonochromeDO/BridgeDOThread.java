@@ -24,7 +24,7 @@ public class BridgeDOThread extends Thread {
         for(int i=0; i<workloads.size();i++){
             cc = workloads.get(i);
             try {
-                cc.outputDO();
+                cc.outputBridgeDO();
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (InterruptedException e) {

@@ -2,6 +2,7 @@ package dedp.DistanceOracles.Precomputation.ALLDO;
 
 import dedp.DistanceOracles.DistanceOracle;
 import dedp.DistanceOracles.EDP_DO_Test;
+import dedp.DistanceOracles.Precomputation.Preprocessing;
 import dedp.DistanceOracles.QuadTree;
 import dedp.DistanceOracles.SearchKey;
 import dedp.algorithms.bidirectional.BidirectionalDijkstra;
@@ -32,6 +33,21 @@ public class AllDOThread extends Thread{
             }
         }
     }
+    private int pairing(int x, int y){//todo: change this to long
+        int i=-1;
+        int j=-1;
+        if(x>y){
+            i=x;
+            j=y;
+        }else if(x<y){
+            i=y;
+            j=x;
+        }else{
+            System.out.println("They should not be the same "+x+" "+y);
+        }
+        int result =(i+j-2)/2*(i+j-1)+i;
+        return result;
+    }
     public void processPair(AllDOWorkloadEntry e) throws ObjectNotFoundException {
         LinkedList<AllDOWorkloadEntry> list = new LinkedList<>();
         list.add(e);
@@ -40,6 +56,7 @@ public class AllDOThread extends Thread{
         labels.add(p.Label);
         cc =e.cc;
         HashMap<SearchKey,Float> partialDO = new HashMap<>();
+        HashMap<Integer, Float> distanceMap = new HashMap<>();
         AllDOWorkloadEntry firstEntry = null;
         while(!list.isEmpty()){
             firstEntry = list.removeFirst();
@@ -53,13 +70,24 @@ public class AllDOThread extends Thread{
             else{
                 int vid1 = t1.representativePoint;
                 int vid2 = t2.representativePoint;
-                result = BidirectionalDijkstra.shortestDistance(t.g,vid1,vid2,labels);
-                if(DistanceOracle.isWellSeparatedOpti(result.Distance, t1, t2, null, null)){
+                int pairKey = pairing(vid1,vid2);
+                float distance;
+                if(distanceMap.containsKey(pairKey)){
+                    distance = distanceMap.get(pairKey);
+                }else{
+                    result = BidirectionalDijkstra.shortestDistance(t.g,vid1,vid2,labels);//todo:cache this result
+                    PreprocessingGlobal.dijAdd();
+                    distance = result.Distance;
+                    distanceMap.put(pairKey,distance);
+                }
+                if(DistanceOracle.isWellSeparatedOpti(distance, t1, t2, null, null)){
                     SearchKey key = new SearchKey(t1.getMC(),t2.getMC());
                     //cc.addSingleDO(key,result.Distance);
-                    partialDO.put(key,result.Distance);
+                    partialDO.put(key,distance);
+                    PreprocessingGlobal.doLevelAdd(t1.getLevel());
                 }else{
                     insertToQueue(t1,t2,list);
+                    PreprocessingGlobal.queueInsertionAdd();
                 }
             }
         }
@@ -74,21 +102,21 @@ public class AllDOThread extends Thread{
         QuadTree SW2 = t2.SW;
         QuadTree SE1 = t1.SE;
         QuadTree SE2 = t2.SE;
-        if(NW1!=null){
+        if(NW1!=null&&NW1.size()>0){
             pairInsert(NW1,NW2, NE2, SW2, SE2, list);
         }
-        if(NE1!=null){
+        if(NE1!=null&&NE1.size()>0){
             pairInsert(NE1,NW2, NE2, SW2, SE2, list);
         }
-        if(SW1!=null){
+        if(SW1!=null&&SW1.size()>0){
             pairInsert(SW1,NW2, NE2, SW2, SE2, list);
         }
-        if(SE1!=null){
+        if(SE1!=null&&SE1.size()>0){
             pairInsert(SE1,NW2, NE2, SW2, SE2, list);
         }
     }
     private void pairInsert(QuadTree left, QuadTree NW2,  QuadTree NE2,  QuadTree SW2,  QuadTree SE2, LinkedList<AllDOWorkloadEntry> list){
-        if(NW2!=null){
+        if(NW2!=null&&NW2.size()>0){
             AllDOWorkloadEntry entry = new AllDOWorkloadEntry();
             entry.cc= cc;
             entry.partition = p;
@@ -96,7 +124,7 @@ public class AllDOThread extends Thread{
             entry.t2 = NW2;
             list.addLast(entry);
         }
-        if(NE2!=null){
+        if(NE2!=null&&NE2.size()>0){
             AllDOWorkloadEntry entry = new AllDOWorkloadEntry();
             entry.cc= cc;
             entry.partition = p;
@@ -104,7 +132,7 @@ public class AllDOThread extends Thread{
             entry.t2 = NE2;
             list.addLast(entry);
         }
-        if(SW2!=null){
+        if(SW2!=null&&SW2.size()>0){
             AllDOWorkloadEntry entry = new AllDOWorkloadEntry();
             entry.cc= cc;
             entry.partition = p;
@@ -112,7 +140,7 @@ public class AllDOThread extends Thread{
             entry.t2 = SW2;
             list.addLast(entry);
         }
-        if(SE2!=null){
+        if(SE2!=null&&SE2.size()>0){
             AllDOWorkloadEntry entry = new AllDOWorkloadEntry();
             entry.cc= cc;
             entry.partition = p;

@@ -553,8 +553,8 @@ public class ConnectedComponent {
             }
         }
     }
-    public void outputDO() throws IOException, InterruptedException {
-        String uniqueID = "./DistanceOracle/"+this.partition.Label+"_"+this.ID+".txt";
+    public void outputBridgeDO() throws IOException, InterruptedException {
+        String uniqueID = "./DistanceOracles/"+this.partition.Label+"_"+this.ID+".txt";
         FileWriter fileWriter = new FileWriter(uniqueID);
         String result;
         computeBridgeDO();
@@ -562,9 +562,20 @@ public class ConnectedComponent {
             result = set.getKey().mc+","+(int)set.getKey().level+","+set.getValue()+"\n";
             fileWriter.write(result);
         }
-
         fileWriter.close();
     }
+
+    public void outputDO() throws IOException, InterruptedException {
+        String uniqueID = "./DistanceOracles/"+this.partition.Label+"_"+this.ID+".txt";
+        FileWriter fileWriter = new FileWriter(uniqueID);
+        String result;
+        for(Map.Entry<SearchKey,Float>set:DO.entrySet()){
+            result = set.getKey().mc+","+(int)set.getKey().level+","+set.getValue()+"\n";
+            fileWriter.write(result);
+        }
+        fileWriter.close();
+    }
+
     public void inputDO() throws IOException {
         String uniqueID = "./DistanceOracle/"+this.partition.Label+"_"+this.ID+".txt";
         FileReader reader = new FileReader(uniqueID);
