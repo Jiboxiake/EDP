@@ -50,8 +50,8 @@ public class DOTraversal {
         result.NumberOfExploredEdges = 0;
         result.NumberOfExploredNodes = 0;
         result.NumberOfHybridEdgesExplored = 0;
-        RuntimeQuadtreeDiameterThread sourceT = null;
-        RuntimeQuadtreeDiameterThread destinationT = null;
+        //RuntimeQuadtreeDiameterThread sourceT = null;
+        //RuntimeQuadtreeDiameterThread destinationT = null;
         PriorityQueue<DOQueueEntry> q = new PriorityQueue<>();
         Map<Integer, Map<Integer, DOQueueEntry>> partitionToDistMap = new HashMap<Integer, Map<Integer, DOQueueEntry>>();
         for (int label : labelIDs) {//plan 1 let's also check which diameters need to be computed
@@ -59,18 +59,18 @@ public class DOTraversal {
             Partition checkPartition = index.partitions[label];
             if(checkPartition.containsVertex(source)){
                 PartitionVertex parSource = checkPartition.getVertex(source);
-                sourceT=needDiameterComputation(checkPartition,parSource);
+                //sourceT=needDiameterComputation(checkPartition,parSource);
             }
             if(checkPartition.containsVertex(destination)){
                 PartitionVertex parDestination = checkPartition.getVertex(destination);
-                destinationT=needDiameterComputation(checkPartition,parDestination);
+               // destinationT=needDiameterComputation(checkPartition,parDestination);
             }
-            if(sourceT!=null){
+         /*   if(sourceT!=null){
                 sourceT.join();
             }
             if(destinationT!=null){
                 destinationT.join();
-            }
+            }*/
         }
         Map<Integer, DOQueueEntry> distMap = null;
         Map<Integer, DOQueueEntry> lblDistMap = null;

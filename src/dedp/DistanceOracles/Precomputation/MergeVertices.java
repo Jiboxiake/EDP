@@ -223,13 +223,17 @@ public class MergeVertices {
                 break;
             }
         }
+        System.out.println("max lat is "+maxLat);
+        System.out.println("min lat is "+minLat);
+        System.out.println("max lon is "+maxLon);
+        System.out.println("min long is "+minLon);
         //now let's normalize vertices.
         normalize(vSet);
         MiniQuadtree tree = new MiniQuadtree(vSet,maxLat,minLat,minLon, maxLon,0);
         HashMap<Integer,Integer> merge = new HashMap<>();
         tree.mergeVertices(merge);
-        int result = merge.get(129889);
-        System.out.println(result);
+        //int result = merge.get(129889);
+        //System.out.println(result);
         //now we process the edges
         long key=1;
         long fromID=-1, toID=-1;

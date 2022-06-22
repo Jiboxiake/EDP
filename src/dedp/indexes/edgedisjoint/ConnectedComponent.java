@@ -577,7 +577,7 @@ public class ConnectedComponent {
     }
 
     public void inputDO() throws IOException {
-        String uniqueID = "./DistanceOracle/"+this.partition.Label+"_"+this.ID+".txt";
+        String uniqueID = "./DistanceOracles/"+this.partition.Label+"_"+this.ID+".txt";
         FileReader reader = new FileReader(uniqueID);
         BufferedReader br = new BufferedReader(reader);
         String line;
@@ -600,5 +600,41 @@ public class ConnectedComponent {
         }
         this.DO.put(key,result);
         this.writeLock.unlock();
+    }
+    public boolean testDO(int count){
+        boolean result = true;
+        Random generator = new Random();
+        Object[] values = vertices.values().toArray();
+        for(Map.Entry<Integer,PartitionVertex>set:vertices.entrySet()){
+            PartitionVertex source =set.getValue();
+            for(Map.Entry<Integer,PartitionVertex>dset:vertices.entrySet()){
+                PartitionVertex destination =dset.getValue();
+                if(source.getId()==destination.getId()){
+                    continue;
+                }
+                result&=WSPDCheck(source,destination);
+            }
+        }
+        return result;
+    }
+
+    public boolean WSPDCheck(PartitionVertex source, PartitionVertex destination){
+        boolean flag = true;
+        SearchKey key = new SearchKey(source.morton(),destination.morton());
+        int count=0;
+        for(int i=0; i<16;i++){
+            if(DO.containsKey(key)){
+                count++;
+            }
+            key.shift();
+        }
+        if(count!=1){
+            Global.WSPD_Fail++;
+            flag = false;
+        }else{
+            Global.WSPD_Pass++;
+            flag = true;
+        }
+        return flag;
     }
 }

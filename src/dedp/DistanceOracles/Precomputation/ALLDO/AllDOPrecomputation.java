@@ -34,6 +34,9 @@ public class AllDOPrecomputation {
                 ArrayList<QuadTree> initialLevelBlocks = new ArrayList<>();
                 cc.tree.getAllInitialLevelBlocks(initialLevelBlocks);
                 ArrayList<AllDOWorkloadEntry> allPairs = createPairs(initialLevelBlocks,p,cc);
+              /*  if(i==1&&j==3){
+                    System.out.println(cc.vertices.size());
+                }*/
                 for(int z=0;z<allPairs.size();z++){
                     workers[z%total_workers].workloads.add(allPairs.get(z));
                 }

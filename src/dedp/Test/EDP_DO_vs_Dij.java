@@ -17,7 +17,7 @@ import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class EDP_DO_vs_Dij {
-    public static boolean coldStart=false;
+    public static boolean coldStart=true;
     public static void load(EDP_DO_Test t, ArrayList<Integer>list) throws Exception {
         t.loadGraph(30000);
         for(int i=0; i<t.g.LabelsIDs.size();i++){

@@ -1,5 +1,6 @@
-package dedp.DistanceOracles;
+package dedp.Test;
 
+import dedp.DistanceOracles.*;
 import dedp.DistanceOracles.Analytical.ConnectedComponentAnalyzer;
 import dedp.DistanceOracles.MonochromeDO.DOLoader;
 import dedp.DistanceOracles.Precomputation.DiameterLoader;
@@ -21,9 +22,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadLocalRandom;
 
-public class EDP_DO_Test {
+public class ALL_DO_Query_Test {
     public Graph g;
-    public static boolean precomputeDO = false;
+    public static boolean precomputeDO = true;
     public HybridDOEDPIndex index;
     public void loadGraph(int bound) throws Exception {
         g=new Graph();
@@ -64,15 +65,15 @@ public class EDP_DO_Test {
             boolean isDirected=false;
             while((line=eReader.readLine())!=null){
                 String[]fields = line.split(",");
-                    fromID=Long.parseLong(fields[0]);
-                    toID=Long.parseLong(fields[1]);
+                fromID=Long.parseLong(fields[0]);
+                toID=Long.parseLong(fields[1]);
                 EdgeLabelProcessor.insert(Integer.parseInt(fields[2]));
                 label = EdgeLabelProcessor.translate(Integer.parseInt(fields[2]));
-                    weight = Float.parseFloat(fields[3]);
-                    if(fromID<bound&&toID<bound){
-                        g.addEdge(key, fromID, toID, weight, label, isDirected, false);
-                    }
-                    key++;
+                weight = Float.parseFloat(fields[3]);
+                if(fromID<bound&&toID<bound){
+                    g.addEdge(key, fromID, toID, weight, label, isDirected, false);
+                }
+                key++;
             }
             eReader.close();
         } catch (FileNotFoundException e) {
@@ -88,7 +89,7 @@ public class EDP_DO_Test {
         g.printStats();
         index= HybridDOEDPIndex.buildIndex(g, null, false);
         index.isDirected=false;
-        System.out.println("total bridge vertices are "+Global.total_bridge_vertices);
+        System.out.println("total bridge vertices are "+ Global.total_bridge_vertices);
 
        /* for(int i=0; i<index.partitions.length;i++){
             for(int j=0; j<index.partitions[i].ConnectedComponents.getConnectedComponentsCount(); j++){
@@ -158,10 +159,10 @@ public class EDP_DO_Test {
 
     public void test() throws Exception {
         ArrayList<Integer>list = new ArrayList<>();
-       for(int i=0; i<g.LabelsIDs.size();i++){
+        for(int i=0; i<g.LabelsIDs.size();i++){
             list.add(i);
         }
-       // list.add(2);
+        // list.add(2);
         SPResult r=HybridTraversal.shortestDistanceWithEdgeDisjointDistanceOracle(index, 345, 21312, list);
         //System.out.println("Shortest distance = " + r.Distance);
         Global.printResult();
@@ -177,8 +178,8 @@ public class EDP_DO_Test {
     //todo: check garbage collection, implement LRU regarding bridge edges
     public static void main(String[] args) throws Exception {
         //DistanceOracle.setParameter(0.05);
-        EDP_DO_Test t = new EDP_DO_Test();
-        t.loadGraph(300000);//set a bound on how many vertices we want
+        dedp.DistanceOracles.EDP_DO_Test t = new dedp.DistanceOracles.EDP_DO_Test();
+        t.loadGraph(30000);//set a bound on how many vertices we want
         ArrayList<Integer>list = new ArrayList<>();
         for(int i=0; i<t.g.LabelsIDs.size()/2;i++){
             list.add(i);
@@ -186,10 +187,6 @@ public class EDP_DO_Test {
         System.out.println("total number of do threads are "+Global.total_do_threads);
         System.out.println("total partition vertex number is "+Global.total_partition_vertex);
         System.out.println("total partition edge number is "+Global.total_partition_edge);
-        System.out.println("Max lat is "+MortonCode.max_lat);
-        System.out.println("Min lat is "+MortonCode.min_lat);
-        System.out.println("Max lon is "+MortonCode.max_lon);
-        System.out.println("Min lon is "+MortonCode.min_lon);
         int j = EdgeLabelProcessor.EDPLabelToRawLabel.get(1);
         //ConnectedComponentAnalyzer.print(30);
         int i =0;
@@ -208,13 +205,14 @@ public class EDP_DO_Test {
             DOLoader.DOLoad(t.index);
         }
         FileWriter myWriter = new FileWriter("result.txt");
-        long startTime = System.nanoTime();
+
         double total=0;
         double max_err=-100;
         int from, to=-1;
         float error=0;
-        float error2=0;
-        while(i<0) {
+        long edp_time=0;
+        long dijTime=0;
+        while(i<1000) {
             i++;
             String result="";
             //int from = ThreadLocalRandom.current().nextInt(0, 271450 + 1);
@@ -229,8 +227,14 @@ public class EDP_DO_Test {
             }
 
             //EDP_DO_Test_Thread th = new EDP_DO_Test_Thread();
+            long startTime1 = System.nanoTime();
             SPResult r = DOTraversal.shortestDistanceWithDO(t.index, from, to, list);
+            long endTime1   = System.nanoTime();
+            edp_time += (endTime1 - startTime1);
+            long startTime2 = System.nanoTime();
             SPResult rr = Dijkstra.shortestDistance(t.g,from,to,list);
+            long endTime2   = System.nanoTime();
+            dijTime += (endTime2 - startTime2);
             if(r.Distance==rr.Distance&&r.Distance==-1){
                 //System.out.println("Source "+from+" destination "+to+" cannot reach each other");
                 result+="Source "+from+" destination "+to+" cannot reach each other\n";
@@ -250,31 +254,24 @@ public class EDP_DO_Test {
             for(int z=0; z<Global.list.size();z++){
                 Global.list.get(z).join();
             }
-            Global.list.clear();
-            r = DOTraversal.shortestDistanceWithDO(t.index, from, to, list);
-            error2 = Math.abs(100*(r.Distance-rr.Distance)/rr.Distance);
-            if(error2>max_err){
-                max_err=error2;
+            if(Global.list.size()>0){
+                System.out.println("Should not execute here");
             }
-            //System.out.println("Second run EDP: Source is "+from+" destination is "+to+" Shortest distance = " + r.Distance);
-            result+="Second run EDP: Source is "+from+" destination is "+to+" Shortest distance = " + r.Distance+"\n";
-            //System.out.println("error 2 is "+error2+"%");
-            result+="error 2 is "+error2+"%\n";
-            total+=error2;
-
+            Global.list.clear();
             //System.out.println(result);
-            if(error>15||error2>15){
+            if(error>15){
                 myWriter.write(result);
             }
             error=0;
-            error2=0;
             //Global.printResult();
         }
         String stats="";
-        long endTime   = System.nanoTime();
-        double totalTime = (double)(endTime - startTime)/1000000000;
-        double avg_error = total/2000;
-        stats+="avg error is "+avg_error+"%\n"+"max error is "+max_err+"%\n"+"Total time is "+totalTime+" seconds\n";
+
+        //double totalTime = (double)(endTime - startTime)/1000000000;
+        double avg_error = total/1000;
+        double totalEDPSec = (double)edp_time/1000000000;
+        double totalDijTime = (double)dijTime/1000000000;
+        stats+="avg error is "+avg_error+"%\n"+"max error is "+max_err+"%\n"+"Total edp time is "+totalEDPSec+" seconds\n"+"Total DIJ time is "+totalDijTime+" seconds";
         myWriter.write(stats);
         myWriter.close();
         //System.out.println("avg error is "+avg_error+"%");
@@ -283,3 +280,4 @@ public class EDP_DO_Test {
         Global.printResult();
     }
 }
+

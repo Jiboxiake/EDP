@@ -17,6 +17,8 @@ public class Global {
     public static int total_bridge_vertices=0;
     public static int total_partition_vertex=0;
     public static int total_partition_edge=0;
+    public static int WSPD_Pass = 0;
+    public static int WSPD_Fail = 0;
     public static ArrayList<BridgeEdgeThread> list = new ArrayList<>();
     public static boolean debug = false;
 
