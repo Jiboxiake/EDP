@@ -9,6 +9,7 @@ import dedp.algorithms.bidirectional.BidirectionalDijkstra;
 import dedp.exceptions.ObjectNotFoundException;
 import dedp.indexes.edgedisjoint.ConnectedComponent;
 import dedp.indexes.edgedisjoint.Partition;
+import dedp.indexes.edgedisjoint.PartitionVertex;
 import dedp.structures.SPResult;
 
 import java.util.*;
@@ -56,21 +57,24 @@ public class AllDOThread extends Thread{
         labels.add(p.Label);
         cc =e.cc;
         HashMap<SearchKey,Float> partialDO = new HashMap<>();
-        HashMap<Integer, Float> distanceMap = new HashMap<>();
+        HashMap<SearchKey, Float> distanceMap = new HashMap<>();
         AllDOWorkloadEntry firstEntry = null;
         while(!list.isEmpty()){
             firstEntry = list.removeFirst();
             t1 = firstEntry.t1;
             t2 = firstEntry.t2;
             if(t1.id==t2.id){
-                insertToQueue(t1,t2,list);
+                insertSelf(t1,list);
             }else if(t1.size()==0||t2.size()==0){
                 continue;
             }
             else{
                 int vid1 = t1.representativePoint;
                 int vid2 = t2.representativePoint;
-                int pairKey = pairing(vid1,vid2);
+                //int pairKey = pairing(vid1,vid2);
+                PartitionVertex v1 = cc.getVertex(vid1);
+                PartitionVertex v2 = cc.getVertex(vid2);
+                SearchKey pairKey = new SearchKey(v1.morton(),v2.morton());
                 float distance;
                 if(distanceMap.containsKey(pairKey)){
                     distance = distanceMap.get(pairKey);
@@ -82,11 +86,6 @@ public class AllDOThread extends Thread{
                 }
                 if(DistanceOracle.isWellSeparatedOpti(distance, t1, t2, null, null)){
                     SearchKey key = new SearchKey(t1.getMC(),t2.getMC());
-            /*        if(Math.abs(distance- 1428)<1){
-                        t1.printVertices();
-                        t2.printVertices();
-                        System.out.println("here");
-                    }*/
                     //cc.addSingleDO(key,result.Distance);
                     partialDO.put(key,distance);
                     PreprocessingGlobal.doLevelAdd(t1.getLevel());
@@ -152,6 +151,34 @@ public class AllDOThread extends Thread{
             entry.t1 = left;
             entry.t2 = SE2;
             list.addLast(entry);
+        }
+    }
+
+    private void insertSelf(QuadTree t1,LinkedList<AllDOWorkloadEntry> list){
+        ArrayList<QuadTree> entryset = new ArrayList<>();
+        if(t1.NW!=null&&t1.NW.size()>0){
+            entryset.add(t1.NW);
+        }
+        if(t1.NE!=null&&t1.NE.size()>0){
+            entryset.add(t1.NE);
+        }
+        if(t1.SW!=null&&t1.SW.size()>0){
+            entryset.add(t1.SW);
+        }
+        if(t1.SE!=null&&t1.SE.size()>0){
+            entryset.add(t1.SE);
+        }
+        for(int i=0; i<entryset.size();i++){
+            QuadTree tree1 = entryset.get(i);
+            for(int j=i; j<entryset.size();j++){
+                QuadTree tree2 = entryset.get(j);
+                AllDOWorkloadEntry entry = new AllDOWorkloadEntry();
+                entry.cc= cc;
+                entry.partition = p;
+                entry.t1 = tree1;
+                entry.t2 = tree2;
+                list.addLast(entry);
+            }
         }
     }
 }

@@ -97,16 +97,17 @@ public class AllDOPrecomputation {
         for(int i=0; i<PreprocessingGlobal.doLevel.length;i++){
             result+="Do created at level "+i+" is "+PreprocessingGlobal.doLevel[i]+"\n";
         }
+        result+="Total time is "+totalTime;
         fileWriter.write(result);
         //System.out.println("total time is "+totalTime);
 
-     /*   for(int i=0; i<t.index.getNumOfPartitions();i++){
+        for(int i=0; i<t.index.getNumOfPartitions();i++){
             Partition p = t.index.getPartition(i);
             for(int j=0; j<p.ConnectedComponents.getConnectedComponentsCount();j++){
                 ConnectedComponent cc = p.ConnectedComponents.getConnectedComponent(j);
                 cc.outputDO();
             }
-        }*/
+        }
         //let's do some random test later
     }
 }
