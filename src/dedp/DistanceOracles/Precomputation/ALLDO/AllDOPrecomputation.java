@@ -99,6 +99,7 @@ public class AllDOPrecomputation {
         }
         result+="Total time is "+totalTime;
         fileWriter.write(result);
+        fileWriter.close();
         //System.out.println("total time is "+totalTime);
 
         for(int i=0; i<t.index.getNumOfPartitions();i++){
