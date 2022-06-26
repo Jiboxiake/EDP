@@ -82,6 +82,11 @@ public class AllDOThread extends Thread{
                 }
                 if(DistanceOracle.isWellSeparatedOpti(distance, t1, t2, null, null)){
                     SearchKey key = new SearchKey(t1.getMC(),t2.getMC());
+            /*        if(Math.abs(distance- 1428)<1){
+                        t1.printVertices();
+                        t2.printVertices();
+                        System.out.println("here");
+                    }*/
                     //cc.addSingleDO(key,result.Distance);
                     partialDO.put(key,distance);
                     PreprocessingGlobal.doLevelAdd(t1.getLevel());

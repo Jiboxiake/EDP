@@ -212,7 +212,7 @@ public class ALL_DO_Query_Test {
         float error=0;
         long edp_time=0;
         long dijTime=0;
-        while(i<1000) {
+        while(i<10000) {
             i++;
             String result="";
             //int from = ThreadLocalRandom.current().nextInt(0, 271450 + 1);
@@ -268,7 +268,7 @@ public class ALL_DO_Query_Test {
         String stats="";
 
         //double totalTime = (double)(endTime - startTime)/1000000000;
-        double avg_error = total/1000;
+        double avg_error = total/10000;
         double totalEDPSec = (double)edp_time/1000000000;
         double totalDijTime = (double)dijTime/1000000000;
         stats+="avg error is "+avg_error+"%\n"+"max error is "+max_err+"%\n"+"Total edp time is "+totalEDPSec+" seconds\n"+"Total DIJ time is "+totalDijTime+" seconds";

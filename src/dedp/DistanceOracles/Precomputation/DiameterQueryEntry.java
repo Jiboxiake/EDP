@@ -9,7 +9,7 @@ import dedp.structures.DistanceFromSource;
 
 import java.util.*;
 
-public class DiameterQueryEntry {
+public class DiameterQueryEntry { //todo: additional test on this, but honestly it seems correct.
     class Container{
         QuadTree tree;
         HashSet<Integer> vertices;

@@ -3,7 +3,10 @@ package dedp.indexes.edgedisjoint;
 import dedp.DistanceOracles.*;
 import dedp.DistanceOracles.Analytical.CCInfoCOntainer;
 import dedp.DistanceOracles.Analytical.ConnectedComponentAnalyzer;
+import dedp.algorithms.Dijkstra;
+import dedp.algorithms.bidirectional.BidirectionalDijkstra;
 import dedp.exceptions.ObjectNotFoundException;
+import dedp.structures.SPResult;
 
 import java.io.*;
 import java.util.*;
@@ -603,8 +606,6 @@ public class ConnectedComponent {
     }
     public boolean testDO(int count){
         boolean result = true;
-        Random generator = new Random();
-        Object[] values = vertices.values().toArray();
         for(Map.Entry<Integer,PartitionVertex>set:vertices.entrySet()){
             PartitionVertex source =set.getValue();
             for(Map.Entry<Integer,PartitionVertex>dset:vertices.entrySet()){
@@ -636,5 +637,67 @@ public class ConnectedComponent {
             flag = true;
         }
         return flag;
+    }
+
+    public boolean DoQualityTest(int count) throws ObjectNotFoundException {
+        if(count>this.vertices.size()){
+            count = this.vertices.size()/2;
+        }
+        boolean result = true;
+        Random generator = new Random();
+        Object[] values = vertices.values().toArray();
+        for(int i=0; i<count; i++){
+            PartitionVertex source =(PartitionVertex) values[generator.nextInt(values.length)];
+            PartitionVertex destination =(PartitionVertex) values[generator.nextInt(values.length)];
+            if(source.getId()==destination.getId()){
+                i--;
+                continue;
+            }
+            SPResult sr = Dijkstra.shortestDistance(this.partition,source.getId(),destination.getId());//todo: implement per partition version or per cc version of bidirectional dij.
+            float doresult = this.noLockLookUp(source,destination);
+            double error = (Math.abs(sr.Distance-doresult))/sr.Distance;
+            if(error>Global.maxError){
+                Global.maxError = error;
+            }
+            if(error>0.25){
+                System.out.println(source.getId()+" "+destination.getId()+" dij result "+sr.Distance+" do result "+doresult+" Error: "+error);
+                Global.addBadDOResult();
+                result = false;
+            }
+        }
+        return result;
+    }
+
+    public boolean completeDOQualityTest() throws ObjectNotFoundException {
+        boolean result = true;
+        Random generator = new Random();
+        Object[] values = vertices.values().toArray();
+        for(Map.Entry<Integer, PartitionVertex>sset:vertices.entrySet()){
+            PartitionVertex source =sset.getValue();
+            for(Map.Entry<Integer, PartitionVertex>dset:vertices.entrySet()){
+                PartitionVertex destination =dset.getValue();
+                if(source.getId()==destination.getId()){
+                    continue;
+                }
+                SPResult sr = Dijkstra.shortestDistance(this.partition,source.getId(),destination.getId());//todo: implement per partition version or per cc version of bidirectional dij.
+                float doresult = this.noLockLookUp(source,destination);
+                double error = (Math.abs(sr.Distance-doresult))/sr.Distance;
+                if(error>Global.maxError){
+                    Global.maxError = error;
+                }
+                if(error>0.25){
+                    System.out.println(source.getId()+" "+destination.getId()+" dij result "+sr.Distance+" do result "+doresult+" Error: "+error);
+                    Global.addBadDOResult();
+                    result = false;
+                }
+            }
+        }
+        return result;
+    }
+    public void printDO(){
+        for(Map.Entry<SearchKey, Float>set:DO.entrySet()){
+            set.getKey().printBit();
+            System.out.println(set.getValue());
+        }
     }
 }

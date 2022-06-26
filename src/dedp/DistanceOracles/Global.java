@@ -21,7 +21,8 @@ public class Global {
     public static int WSPD_Fail = 0;
     public static ArrayList<BridgeEdgeThread> list = new ArrayList<>();
     public static boolean debug = false;
-
+    public static int badDOResult = 0;
+    public static double maxError = 0;
 
     public synchronized static void DO_hit(){
         DO_Count++;
@@ -55,7 +56,9 @@ public class Global {
     public synchronized  static void addThread(BridgeEdgeThread t){
         Global.list.add(t);
     }
-
+    public synchronized  static void addBadDOResult(){
+        badDOResult++;
+    }
     public static void printResult(){
         System.out.println("number of DO hit is: "+DO_Count);
         System.out.println("number of Dij executed is: "+Dij_Count);

@@ -214,7 +214,7 @@ public class EDP_DO_Test {
         int from, to=-1;
         float error=0;
         float error2=0;
-        while(i<0) {
+        while(i<1000) {
             i++;
             String result="";
             //int from = ThreadLocalRandom.current().nextInt(0, 271450 + 1);
