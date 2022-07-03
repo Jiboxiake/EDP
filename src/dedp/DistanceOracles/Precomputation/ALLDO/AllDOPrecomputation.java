@@ -27,6 +27,7 @@ public class AllDOPrecomputation {
         }
         Partition p = null;
         ConnectedComponent cc = null;
+        int count=0;
         for(int i=0; i<t.index.getNumOfPartitions();i++){
             p = t.index.getPartition(i);
             for(int j=0; j<p.ConnectedComponents.getConnectedComponentsCount();j++){
@@ -38,7 +39,8 @@ public class AllDOPrecomputation {
                     System.out.println(cc.vertices.size());
                 }*/
                 for(int z=0;z<allPairs.size();z++){
-                    workers[z%total_workers].workloads.add(allPairs.get(z));
+                    workers[count%total_workers].workloads.add(allPairs.get(z));
+                    count++;
                 }
             }
         }

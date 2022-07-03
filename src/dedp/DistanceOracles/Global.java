@@ -20,7 +20,7 @@ public class Global {
     public static int WSPD_Pass = 0;
     public static int WSPD_Fail = 0;
     public static ArrayList<BridgeEdgeThread> list = new ArrayList<>();
-    public static boolean debug = false;
+    public static boolean debug = true;
     public static int badDOResult = 0;
     public static double maxError = 0;
 

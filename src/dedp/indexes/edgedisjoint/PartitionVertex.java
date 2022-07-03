@@ -95,10 +95,10 @@ public class PartitionVertex
 	}
 
 	public void setCoordinates(int latitude, int longitude){
-		//this.latitude=latitude;
-		//this.longitude=longitude;
-		this.latitude=MortonCode.normalizeLat(latitude);
-		this.longitude=MortonCode.normalizeLon(longitude);
+		this.latitude=latitude;
+		this.longitude=longitude;
+		//this.latitude=MortonCode.normalizeLat(latitude);
+		//this.longitude=MortonCode.normalizeLon(longitude);
 		this.morton();
 	}
 

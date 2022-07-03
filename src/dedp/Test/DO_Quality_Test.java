@@ -33,21 +33,21 @@ public class DO_Quality_Test {
             return;
         }
         DOLoader.DOLoad(t.index);
-    /*    for(int i=0; i<t.index.getNumOfPartitions();i++){
+        for(int i=0; i<t.index.getNumOfPartitions();i++){
             Partition p = t.index.getPartition(i);
             for(int j=0; j<p.ConnectedComponents.getConnectedComponentsCount();j++){
                 ConnectedComponent cc = p.ConnectedComponents.getConnectedComponent(j);
-                if(!cc.completeDOQualityTest()){
+                if(!cc.DoQualityTest(10000)){
                     System.out.println("Partition "+i+" Connected component "+j+" failed the DO quality test");
                 }
             }
-        }*/
-        ConnectedComponent cc0 = t.index.partitions[0].ConnectedComponents.getConnectedComponent(0);
+        }
+      /*  ConnectedComponent cc0 = t.index.partitions[0].ConnectedComponents.getConnectedComponent(0);
         PartitionVertex v1 = cc0.vertices.get(3);
         PartitionVertex v2 = cc0.getVertex(4);
         SearchKey key = new SearchKey(v1.morton(),v2.morton());
         key.printBit();
         cc0.noLockLookUp(v1,v2);
-        System.out.println("max error is "+Global.maxError);
+        System.out.println("max error is "+Global.maxError);*/
     }
 }

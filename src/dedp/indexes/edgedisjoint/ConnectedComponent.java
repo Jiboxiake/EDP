@@ -613,6 +613,9 @@ public class ConnectedComponent {
                 if(source.getId()==destination.getId()){
                     continue;
                 }
+                if(source.getId()==8327&&destination.getId()==4108){
+                    System.out.println("reached");
+                }
                 result&=WSPDCheck(source,destination);
             }
         }

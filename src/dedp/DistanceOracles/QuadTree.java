@@ -13,9 +13,9 @@ import java.util.HashSet;
 import java.util.Map;
 //todo: implement well-separated pairs
 public class QuadTree {
-    public static int max_depth=16;
+    public static int max_depth=14;
     public static int nextID = 0;
-    public static final int initial_depth = 4;
+    public static final int initial_depth = 2;
     private QuadTree parent;
     public int id;
     public QuadTree NW;
@@ -171,7 +171,10 @@ public class QuadTree {
                 result = rep1==this.representativePoint || rep2 ==this.representativePoint ||rep3 == this.representativePoint ||rep4 == this.representativePoint;
             }
         }
-        if(this.level<=initial_depth){
+        if(this.level==max_depth&&this.size>1){
+            result = false;
+        }
+        if(this.level<initial_depth){
             result &= true;
         }else{
             if(this.diameter>0&&this.size>0){
@@ -456,7 +459,7 @@ public class QuadTree {
         if(this.level==max_depth){
             if(this.size>0){
                 for(Map.Entry<Integer,PartitionVertex>set:vertices.entrySet()) {
-                    for (Map.Entry<Integer, PartitionVertex> e : vertices.entrySet()) {
+                /*    for (Map.Entry<Integer, PartitionVertex> e : vertices.entrySet()) {
                         int result = set.getValue().morton().code ^ e.getValue().morton().code;
                         if (Integer.numberOfLeadingZeros(result) < longest_common_prefix) {
                             longest_common_prefix = Integer.numberOfLeadingZeros(result);
@@ -464,9 +467,9 @@ public class QuadTree {
                     }
                     if(longest_common_prefix%2==1){
                         longest_common_prefix--;
-                    }
+                    }*/
                     //we hope longest common prefix to be 32 here
-                    this.mc = new MortonCode(set.getValue().morton(),longest_common_prefix,this.level);
+                    this.mc = new MortonCode(set.getValue().morton(),28,this.level);
                     return this.mc;
                 }
             }

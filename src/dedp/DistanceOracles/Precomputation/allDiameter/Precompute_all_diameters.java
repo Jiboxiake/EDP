@@ -17,13 +17,13 @@ import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class Precompute_all_diameters {
-    public static int total_workers = 40;
+    public static int total_workers = 120;
     public static void compputeDiameter(EDP_DO_Test t) throws InterruptedException {
         allDiameterThread[] workers = new allDiameterThread[total_workers];
         for(int i=0; i<total_workers;i++){
             workers[i] = new allDiameterThread();
         }
-        int size = 30000;
+        int size = 300000;
         int amount;
         if(size%total_workers==0){
             amount = size/total_workers;
@@ -70,7 +70,7 @@ public class Precompute_all_diameters {
     }
     public static void main(String[]args) throws Exception {
         EDP_DO_Test t = new EDP_DO_Test();
-        t.loadGraph(30000);
+        t.loadGraph(300000);
         File diameterFile = new File(PrecomputationResultDatabase.fileName);
         if(diameterFile.exists()){
             //System.out.println("esixts");

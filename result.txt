@@ -1,4 +1,4 @@
-avg error is 0.9427945753710585%
-max error is 14.125175476074219%
-Total edp time is 51.596845498 seconds
-Total DIJ time is 35.908201051 seconds
+avg error is 0.8189170018455063%
+max error is 13.873560905456543%
+Total edp time is 53.53862015 seconds
+Total DIJ time is 34.690442518 seconds

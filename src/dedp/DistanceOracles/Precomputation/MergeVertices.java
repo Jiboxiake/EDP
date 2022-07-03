@@ -23,8 +23,8 @@ public class MergeVertices {
         public MiniQuadtree SW;
         public MiniQuadtree SE;
         public ArrayList<Vertex> vertices;
-        public  int max_depth=16;
-        public  int merge_level = 16;
+        public  int max_depth=14;
+        public  int merge_level = 14;
         public MiniQuadtree(ArrayList<Vertex> vertices, int top, int bottom, int left, int right,int level){
             this.level = level;
             this.top = top;
@@ -91,6 +91,9 @@ public class MergeVertices {
                 if(max_depth==merge_level){
                     if(this.vertices!=null&&this.vertices.size()>=2){
                         Vertex leader = this.vertices.get(0);
+                        if(leader.getID()==23976||leader.getID()==23975){
+                            System.out.println();
+                        }
                         for(int i=1; i<this.vertices.size();i++){
                             Vertex member = this.vertices.get(i);
                             map.put((int)member.getID(),(int)leader.getID());
@@ -182,6 +185,7 @@ public class MergeVertices {
         minLat = noromalizeLat(minLat);
         minLon = normalizeLon(minLon);
     }
+    //modify a bit to only handle first 30k vertices
     public void loadAndMerge() throws IOException {
         File f =new File(fileName);
         //File ver =new File(verticesResultName);
@@ -218,7 +222,8 @@ public class MergeVertices {
             Vertex v = new Vertex();
             v.setID(id);
             v.setCoordinates(rawLatitude,rawLongitude);
-            vSet.add(v);
+            if(id<=300000)
+                vSet.add(v);
             if(id==271449){
                 break;
             }
@@ -229,11 +234,15 @@ public class MergeVertices {
         System.out.println("min long is "+minLon);
         //now let's normalize vertices.
         normalize(vSet);
+        //System.out.println("max lat is "+maxLat);
+        //System.out.println("min lat is "+minLat);
+        //System.out.println("max lon is "+maxLon);
+        //System.out.println("min long is "+minLon);
         MiniQuadtree tree = new MiniQuadtree(vSet,maxLat,minLat,minLon, maxLon,0);
         HashMap<Integer,Integer> merge = new HashMap<>();
         tree.mergeVertices(merge);
-        //int result = merge.get(129889);
-        //System.out.println(result);
+       // int result = merge.get(23975);
+       // System.out.println(result);
         //now we process the edges
         long key=1;
         long fromID=-1, toID=-1;
@@ -260,7 +269,7 @@ public class MergeVertices {
                 flag=false;
                 weight = Float.parseFloat(fields[1]);
                 label = Integer.parseInt(fields[2]);
-                if(fromID==toID){
+                if(fromID==toID||fromID>300000||toID>300000){
                     continue;
                 }
                 //todo: for test set all labels to 1

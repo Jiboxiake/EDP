@@ -127,11 +127,11 @@ public class PartitionConnectedComponents
 		this.edgesToCC=edgesToCC;
 		capacity = (int)((float)numOfConnectedComponents * (2f - loadFactor));
 		numOfConnectedComponents=initialNumOfComponents;
-		connectedComponents=new HashMap<>();
+		connectedComponents=new ArrayList<>();
 		for(int i=0; i<verticesToCC.size(); i++){
 			assert(verticesToCC.containsKey(i)&&edgesToCC.containsKey(i));
 			ConnectedComponent cc = new ConnectedComponent(i, partition, verticesToCC.get(i),edgesToCC.get(i), bridgeVerticesToCC.get(i));
-			connectedComponents.put(i, cc);
+			connectedComponents.add(cc);
 		}
 		this.verticesToCC=null;
 		this.bridgeVerticesToCC=null;
@@ -153,15 +153,20 @@ public class PartitionConnectedComponents
 	}
 
 	public void printCC(){
-		for(Map.Entry<Integer, ConnectedComponent>e:connectedComponents.entrySet()){
+		/*for(Map.Entry<Integer, ConnectedComponent>e:connectedComponents.entrySet()){
 			e.getValue().print();
+		}*/
+		for(int i=0; i<connectedComponents.size();i++){
+			connectedComponents.get(i).print();
 		}
 	}
 
 	public void conditionPrintCC(int num){
-		for(Map.Entry<Integer, ConnectedComponent>e:connectedComponents.entrySet()){
-			if(e.getValue().vertices.size()>num)
-			e.getValue().print();
+		for(int i=0; i<num;i++){
+			if(i>connectedComponents.size()){
+				break;
+			}
+			connectedComponents.get(i).print();
 		}
 	}
 
@@ -173,5 +178,6 @@ public class PartitionConnectedComponents
 	protected HashMap<Integer, HashMap<Integer, PartitionVertex>>verticesToCC;
 	protected HashMap<Integer, HashMap<Integer, PartitionVertex> >bridgeVerticesToCC;
 	protected HashMap<Integer,HashMap<Integer, PartitionEdge>>edgesToCC;
-	public HashMap<Integer, ConnectedComponent> connectedComponents;
+	//public HashMap<Integer, ConnectedComponent> connectedComponents;
+	public ArrayList<ConnectedComponent> connectedComponents;
 }

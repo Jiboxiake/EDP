@@ -8,6 +8,7 @@ import dedp.DistanceOracles.Precomputation.EDP_DO_Precomputation;
 import dedp.DistanceOracles.Precomputation.PrecomputationResultDatabase;
 import dedp.indexes.edgedisjoint.ConnectedComponent;
 import dedp.indexes.edgedisjoint.Partition;
+import dedp.indexes.edgedisjoint.PartitionVertex;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -39,11 +40,17 @@ public class WSPD_Test {
             Partition p = t.index.getPartition(i);
             for(int j=0; j<p.ConnectedComponents.getConnectedComponentsCount();j++){
                 ConnectedComponent cc = p.ConnectedComponents.getConnectedComponent(j);
-                if(!cc.testDO(10000)){
+                if(!cc.testDO(1)){
                     System.out.println("Partition "+i+" Connected component "+j+" failed the WSPD test");
                 }
             }
         }
+      /*  Partition p = t.index.getPartition(1);
+        ConnectedComponent cc = p.ConnectedComponents.getConnectedComponent(3);
+        PartitionVertex source = p.getVertex(510);
+        PartitionVertex destination = p.getVertex(4108);
+        float result = cc.noLockLookUp(source,destination);
+        System.out.println(result);*/
         System.out.println("Total WSPD pass is "+Global.WSPD_Pass);
         System.out.println("Total WSPD fail is "+Global.WSPD_Fail);
     }
