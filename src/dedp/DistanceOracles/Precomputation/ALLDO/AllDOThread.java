@@ -12,11 +12,13 @@ import dedp.indexes.edgedisjoint.Partition;
 import dedp.indexes.edgedisjoint.PartitionVertex;
 import dedp.structures.SPResult;
 
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class AllDOThread extends Thread{
     public EDP_DO_Test t;
     public ArrayList<AllDOWorkloadEntry> workloads = new ArrayList<>();
+    public int id;
     QuadTree t1=null;
     QuadTree t2 = null;
     Partition p=null;
@@ -33,6 +35,8 @@ public class AllDOThread extends Thread{
                 ex.printStackTrace();
             }
         }
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
+        System.out.println(id+" finish at time "+timeStamp);
     }
     private int pairing(int x, int y){//todo: change this to long
         int i=-1;

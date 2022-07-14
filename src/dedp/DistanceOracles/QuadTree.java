@@ -148,6 +148,13 @@ public class QuadTree {
         }
     }
     public boolean testDiameter(){
+        if(this.level>=initial_depth){
+        if(this.size>1&&this.diameter<=0){
+            System.out.println("error");
+        }else if(this.size==1&&this.diameter!=0){
+            System.out.println("error");
+        }
+        }
         boolean result=true;
         if(this.vertices!=null&&this.vertices.size()>0){
             result = this.representativePoint>=0;

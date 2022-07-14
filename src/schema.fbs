@@ -1,0 +1,10 @@
+namespace dedp.DistanceOracles.FlatBuffer;
+struct Wsp {
+    code:long;
+    level:short;
+    distance:float;
+ }
+  table Oracle {
+  wsps: [Wsp];
+  }
+  root_type Oracle;

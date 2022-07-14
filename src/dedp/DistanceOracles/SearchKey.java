@@ -6,7 +6,7 @@ import java.util.stream.IntStream;
 
 public class SearchKey implements Comparable<SearchKey> {
     public long mc;
-    public char level;//to save space
+    public short level;//to save space
     public SearchKey(MortonCode mc1, MortonCode mc2){
         int temp1 = mc1.code;
         int temp2 = mc2.code;
@@ -33,11 +33,11 @@ public class SearchKey implements Comparable<SearchKey> {
     }
     public SearchKey (long key, int level){
         this.mc = key;
-        this.level = (char)level;
+        this.level = (short)level;
     }
     @Override
     public int hashCode(){
-        return Long.hashCode(this.mc)+Character.hashCode(level);
+        return Long.hashCode(this.mc)+Short.hashCode(level);
     }
     @Override
     public int compareTo(SearchKey k){

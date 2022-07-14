@@ -1,4 +1,10 @@
-avg error is 0.8189170018455063%
-max error is 13.873560905456543%
-Total edp time is 53.53862015 seconds
-Total DIJ time is 34.690442518 seconds
+EDP: Source is 58 destination is 1933 Shortest distance = 16411.53
+Dijkstra: Source is 58 destination is 1933 Shortest distance = 14179.231
+error is 15.743433%
+EDP: Source is 3545 destination is 581 Shortest distance = 36394.414
+Dijkstra: Source is 3545 destination is 581 Shortest distance = 31513.857
+error is 15.487018%
+avg error is 0.8500740867489963%
+max error is 15.743432998657227%
+Total edp time is 43.265885333 seconds
+Total DIJ time is 27.380294999 seconds

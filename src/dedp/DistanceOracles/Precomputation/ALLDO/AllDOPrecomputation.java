@@ -17,13 +17,14 @@ import java.util.ArrayList;
 //todo: test this part
 public class AllDOPrecomputation {
     //assume diameters are all already loaded.
-    public static int total_workers=60;
+    public static int total_workers=120;
     public static void precomputeAllDO(EDP_DO_Test t) throws InterruptedException, IOException {
 
         AllDOThread[] workers = new AllDOThread[total_workers];
         for(int i=0;i<workers.length;i++){
             workers[i]= new AllDOThread();
             workers[i].t = t;
+            workers[i].id=i;
         }
         Partition p = null;
         ConnectedComponent cc = null;
@@ -35,15 +36,16 @@ public class AllDOPrecomputation {
                 ArrayList<QuadTree> initialLevelBlocks = new ArrayList<>();
                 cc.tree.getAllInitialLevelBlocks(initialLevelBlocks);
                 ArrayList<AllDOWorkloadEntry> allPairs = createPairs(initialLevelBlocks,p,cc);
-              /*  if(i==1&&j==3){
+                if(i==1&&j==0){
                     System.out.println(cc.vertices.size());
-                }*/
+                }
                 for(int z=0;z<allPairs.size();z++){
                     workers[count%total_workers].workloads.add(allPairs.get(z));
                     count++;
                 }
             }
         }
+        System.out.println("workload assigned");
         for(int z=0;z<workers.length;z++){
             workers[z].start();
         }
@@ -78,7 +80,7 @@ public class AllDOPrecomputation {
     }
     public static void main(String[]args) throws Exception {
         EDP_DO_Test t = new EDP_DO_Test();
-        t.loadGraph(30000);
+        t.loadGraph(300000);
         File diameterFile = new File(PrecomputationResultDatabase.fileName);
         if(diameterFile.exists()){
             //System.out.println("esixts");

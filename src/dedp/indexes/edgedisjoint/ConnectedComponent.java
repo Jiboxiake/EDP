@@ -1,8 +1,11 @@
 package dedp.indexes.edgedisjoint;
 
+import com.google.flatbuffers.FlatBufferBuilder;
 import dedp.DistanceOracles.*;
 import dedp.DistanceOracles.Analytical.CCInfoCOntainer;
 import dedp.DistanceOracles.Analytical.ConnectedComponentAnalyzer;
+import dedp.DistanceOracles.FlatBuffer.Oracle;
+import dedp.DistanceOracles.FlatBuffer.Wsp;
 import dedp.algorithms.Dijkstra;
 import dedp.algorithms.bidirectional.BidirectionalDijkstra;
 import dedp.exceptions.ObjectNotFoundException;
@@ -613,9 +616,6 @@ public class ConnectedComponent {
                 if(source.getId()==destination.getId()){
                     continue;
                 }
-                if(source.getId()==8327&&destination.getId()==4108){
-                    System.out.println("reached");
-                }
                 result&=WSPDCheck(source,destination);
             }
         }
@@ -644,7 +644,7 @@ public class ConnectedComponent {
 
     public boolean DoQualityTest(int count) throws ObjectNotFoundException {
         if(count>this.vertices.size()){
-            count = this.vertices.size()/2;
+            count = this.vertices.size();
         }
         boolean result = true;
         Random generator = new Random();
@@ -701,6 +701,79 @@ public class ConnectedComponent {
         for(Map.Entry<SearchKey, Float>set:DO.entrySet()){
             set.getKey().printBit();
             System.out.println(set.getValue());
+        }
+    }
+    public boolean WSPD_Reverse_Test(){//ok it seems like this test also passed
+        HashMap<SearchKey,Integer> doChecker = new HashMap<>();
+        //initialize the checker
+        for(Map.Entry<SearchKey,Float>set:DO.entrySet()){
+            doChecker.put(set.getKey(),0);
+        }
+        for(Map.Entry<Integer, PartitionVertex>set:vertices.entrySet()){
+            for(Map.Entry<Integer,PartitionVertex>dset:vertices.entrySet()){
+                if(set.getValue().getId()== dset.getValue().getId()){
+                    continue;
+                }
+                PartitionVertex source = set.getValue();
+                PartitionVertex destination = dset.getValue();
+                SearchKey key = new SearchKey(source.morton(),destination.morton());
+                for(int i=0;i<16; i++){
+                    if(DO.containsKey(key)){
+                        int count = doChecker.get(key);
+                        count++;
+                        doChecker.put(key,count);
+                    }
+                    key.shift();
+                }
+            }
+        }
+        for(Map.Entry<SearchKey, Integer>set:doChecker.entrySet()){
+            int result = set.getValue();
+            if(result<=0){
+                System.out.print("searchkey ");
+                set.getKey().printBit();
+                System.out.println("Has value "+set.getValue());
+                return false;
+            }
+        }
+        return true;
+    }
+    public void serialize() throws IOException {
+        if(this.DO.size()==0){
+            return;
+        }
+        //first read in DO
+        this.inputDO();
+        //now let's output do
+        FlatBufferBuilder builder = new FlatBufferBuilder(this.vertices.size()*3);
+       // Vector<Integer> wsp_vector = new Vector<Integer>();
+        int offset=-1;
+        //now let's play with each DO entry
+        int[]DOs = new int[DO.size()];
+        int index=0;
+        //Oracle.startWspsVector(builder,DO.size());
+        for(Map.Entry<SearchKey,Float>set:DO.entrySet()){
+            SearchKey key = set.getKey();
+            float dist = set.getValue();
+            long code = key.mc;
+            short level = key.level;
+            System.out.println(""+code+","+level+","+dist);
+           DOs[index]= Wsp.createWsp(builder,code,(short)level,dist);
+            index++;
+        }
+        int dos = builder.createVectorOfTables(DOs);
+        int oracle = Oracle.createOracle(builder,dos);
+        builder.finish(oracle);
+        readFlatBuffer(builder);
+    }
+    public void readFlatBuffer( FlatBufferBuilder builder){
+        byte[] bytes = builder.sizedByteArray();
+        java.nio.ByteBuffer buf = java.nio.ByteBuffer.wrap(bytes);
+        Oracle oracle = Oracle.getRootAsOracle(buf);
+        Wsp.Vector vector = oracle.wspsVector();
+        for(int i=0; i<vector.length();i++){
+            Wsp wsp = vector.get(i);
+            System.out.println(wsp.code()+","+wsp.level()+","+wsp.distance());
         }
     }
 }

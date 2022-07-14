@@ -22,7 +22,7 @@ public class MortonCode {
     public static int min =0;
     //public long code;
     public int code;
-    public char level;
+    public short level;
     public  MortonCode(int latitude, int longitude, int level){
      /*   double z1 = (double)(latitude-min_lat);
         z1 = z1/lat_range;
@@ -41,7 +41,7 @@ public class MortonCode {
         int x= interleave(longitude);
         code= ((x<<1)|y);
         code= code >>>((max_depth-level)*2);
-        this.level=(char)level;
+        this.level=(short)level;
     }
     public static void reset(){
         max_lat=Integer.MIN_VALUE;
@@ -55,13 +55,13 @@ public class MortonCode {
     }
     public MortonCode(MortonCode mc, int commonPrefx,int level){
         this.code=mc.code;
-        this.level=(char)level;
+        this.level=(short)level;
         this.code=this.code>>>(32-commonPrefx);
 
     }
     public MortonCode(int code,int level){
         this.code=code;
-        this.level=(char)level;
+        this.level=(short)level;
 
     }
     public static long get4DMorton(long lc1, long lc2, int level){

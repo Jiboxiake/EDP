@@ -222,7 +222,7 @@ public class MergeVertices {
             Vertex v = new Vertex();
             v.setID(id);
             v.setCoordinates(rawLatitude,rawLongitude);
-            if(id<=300000)
+            if(id<=30000)
                 vSet.add(v);
             if(id==271449){
                 break;
@@ -269,7 +269,7 @@ public class MergeVertices {
                 flag=false;
                 weight = Float.parseFloat(fields[1]);
                 label = Integer.parseInt(fields[2]);
-                if(fromID==toID||fromID>300000||toID>300000){
+                if(fromID==toID||fromID>30000||toID>30000){
                     continue;
                 }
                 //todo: for test set all labels to 1

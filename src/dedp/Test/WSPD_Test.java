@@ -40,7 +40,7 @@ public class WSPD_Test {
             Partition p = t.index.getPartition(i);
             for(int j=0; j<p.ConnectedComponents.getConnectedComponentsCount();j++){
                 ConnectedComponent cc = p.ConnectedComponents.getConnectedComponent(j);
-                if(!cc.testDO(1)){
+                if(!cc.testDO(1)||!cc.WSPD_Reverse_Test()){
                     System.out.println("Partition "+i+" Connected component "+j+" failed the WSPD test");
                 }
             }
