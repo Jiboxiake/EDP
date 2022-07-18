@@ -14,7 +14,8 @@ public class DOLoader {
             p = index.partitions[i];
             for(int j=0; j<p.ConnectedComponents.getConnectedComponentsCount();j++){
                 cc = p.ConnectedComponents.getConnectedComponent(j);
-                cc.inputDO();
+                //cc.inputDO();
+                cc.inputDOFlatBuffer();
             }
         }
     }

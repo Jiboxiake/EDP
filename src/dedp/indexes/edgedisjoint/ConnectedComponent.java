@@ -12,6 +12,7 @@ import dedp.exceptions.ObjectNotFoundException;
 import dedp.structures.SPResult;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
@@ -592,7 +593,7 @@ public class ConnectedComponent {
             long key = Long.parseLong(fields[0]);
             int level = Integer.parseInt(fields[1]);
             float distance = Float.parseFloat(fields[2]);
-            SearchKey sk = new SearchKey(key,level);
+            SearchKey sk = new SearchKey(key, (short) level);
             DO.put(sk,distance);
         }
         reader.close();
@@ -776,4 +777,57 @@ public class ConnectedComponent {
             System.out.println(wsp.code()+","+wsp.level()+","+wsp.distance());
         }
     }
+    public void inputDOFlatBuffer() throws IOException {
+        File dir = new File("./DOResult/");
+        int pID = this.partition.Label;
+        int ccID = this.ID;
+        File[] foundFiles = dir.listFiles(new FilenameFilter() {
+            public boolean accept(File dir, String name) {
+                return name.startsWith(String.valueOf(pID)+"_"+String.valueOf(ccID));
+            }
+        });
+        for(int i=0; i<foundFiles.length;i++){
+            //byte[] fileContent = Files.readAllBytes(foundFiles[i].toPath());
+            try (FileInputStream fis = new FileInputStream(foundFiles[i].toPath().toString())) {
+                byte[]bytes = fis.readAllBytes();
+                parseFlatBufferToDO(bytes);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+        }
+        System.out.println("Load finish");
+    }
+    public void parseFlatBufferToDO( byte[] bytes){
+        java.nio.ByteBuffer buf = java.nio.ByteBuffer.wrap(bytes);
+        Oracle oracle = Oracle.getRootAsOracle(buf);
+        Wsp.Vector vector = oracle.wspsVector();
+        for(int i=0; i<vector.length();i++){
+            Wsp wsp = vector.get(i);
+            SearchKey key = new SearchKey(wsp.code(),wsp.level());
+            float distance = wsp.distance();
+            DO.put(key,distance);
+            //System.out.println(wsp.code()+","+wsp.level()+","+wsp.distance());
+        }
+
+    }
+    public boolean checkDOFile(){
+        String uniqueID = "./DistanceOracles/"+this.partition.Label+"_"+this.ID+".txt";
+        File f = new File(uniqueID);
+        if(this.vertices!=null&&this.vertices.size()>1){
+            if(f.exists()){
+                return true;
+            }else{
+                return false;
+            }
+        }else{
+            if(f.exists() ){
+                return false;
+            }else{
+                return true;
+            }
+        }
+    }
+
 }

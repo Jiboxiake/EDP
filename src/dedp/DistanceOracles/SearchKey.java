@@ -31,9 +31,9 @@ public class SearchKey implements Comparable<SearchKey> {
         this.mc=key.mc;
         this.level=key.level;
     }
-    public SearchKey (long key, int level){
+    public SearchKey (long key, short level){
         this.mc = key;
-        this.level = (short)level;
+        this.level = level;
     }
     @Override
     public int hashCode(){

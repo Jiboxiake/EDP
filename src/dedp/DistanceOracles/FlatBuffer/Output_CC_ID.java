@@ -36,15 +36,19 @@ public class Output_CC_ID {
         }
         String pathname = "./allCCNames.txt";;
         FileWriter fileWriter = new FileWriter(pathname);
-        DOLoader.DOLoad(t.index);
         String name;
         for(int i=0; i<t.index.getNumOfPartitions();i++){
             Partition p = t.index.getPartition(i);
             for(int j=0; j<p.ConnectedComponents.getConnectedComponentsCount();j++){
                 ConnectedComponent cc = p.ConnectedComponents.getConnectedComponent(j);
-                if(cc.DO.size()>0){
+                if(cc.vertices!=null&&cc.vertices.size()>1){
                     name = i+"_"+j+".txt\n";
+                    //System.out.print(name);
                     fileWriter.write(name);
+                }
+                boolean test = cc.checkDOFile();
+                if(!test){
+                    System.out.println("CC "+j+" in partition "+i+" has error");
                 }
             }
         }
